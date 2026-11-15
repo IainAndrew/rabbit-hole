@@ -10,21 +10,54 @@ const USER_AGENT = "RabbitHole/0.1 (https://iainandrew.com) bot";
 const ARTICLE_NAMESPACE = 0;
 
 export type LinksPage = {
+  // The canonical title, after normalisation ("guinness" → "Guinness") and
+  // redirects ("Einstein" → "Albert Einstein").
   title: string;
   links: string[];
-  // True when Wikipedia has more links than fit in this response.
-  hasMore: boolean;
+  // How many API requests it took to collect every link.
+  requests: number;
 };
 
+// One response's worth of links, plus where to continue from if there's more.
+type Batch = {
+  title: string;
+  links: string[];
+  continueFrom: Record<string, string> | null;
+};
+
+// Every article link on a page. Wikipedia returns at most 500 per request, so
+// keep asking until it stops giving a continuation token.
 export async function fetchLinks(title: string): Promise<LinksPage> {
+  const links: string[] = [];
+  let continueFrom: Record<string, string> | null = {};
+  let canonicalTitle = title;
+  let requests = 0;
+
+  while (continueFrom) {
+    const batch = await fetchBatch(title, continueFrom);
+    canonicalTitle = batch.title;
+    links.push(...batch.links);
+    continueFrom = batch.continueFrom;
+    requests++;
+  }
+
+  return { title: canonicalTitle, links, requests };
+}
+
+async function fetchBatch(
+  title: string,
+  continueFrom: Record<string, string>,
+): Promise<Batch> {
   const params = new URLSearchParams({
     action: "query",
     prop: "links",
     titles: title,
+    redirects: "1",
     plnamespace: String(ARTICLE_NAMESPACE),
     pllimit: "max",
     format: "json",
     formatversion: "2",
+    ...continueFrom,
   });
 
   const response = await fetch(`${API_URL}?${params}`, {
@@ -34,11 +67,11 @@ export async function fetchLinks(title: string): Promise<LinksPage> {
     throw new Error(`Wikipedia returned HTTP ${response.status} for "${title}"`);
   }
 
-  return parseLinksResponse(await response.json(), title);
+  return parseBatch(await response.json(), title);
 }
 
 // The API's JSON is outside data: check its shape before trusting it.
-function parseLinksResponse(body: unknown, requested: string): LinksPage {
+function parseBatch(body: unknown, requested: string): Batch {
   if (!isRecord(body) || !isRecord(body.query) || !Array.isArray(body.query.pages)) {
     throw new Error(`Unexpected Wikipedia response for "${requested}"`);
   }
@@ -46,6 +79,9 @@ function parseLinksResponse(body: unknown, requested: string): LinksPage {
   const page: unknown = body.query.pages[0];
   if (!isRecord(page) || typeof page.title !== "string") {
     throw new Error(`No page in Wikipedia response for "${requested}"`);
+  }
+  if (page.invalid === true) {
+    throw new Error(`"${requested}" is not a valid Wikipedia title`);
   }
   if (page.missing === true) {
     throw new Error(`Wikipedia has no page called "${requested}"`);
@@ -60,7 +96,23 @@ function parseLinksResponse(body: unknown, requested: string): LinksPage {
     return link.title;
   });
 
-  return { title: page.title, links, hasMore: "continue" in body };
+  return { title: page.title, links, continueFrom: parseContinue(body.continue) };
+}
+
+// The continuation block is opaque: send every field back exactly as given.
+function parseContinue(value: unknown): Record<string, string> | null {
+  if (value === undefined) return null;
+  if (!isRecord(value)) {
+    throw new Error("Malformed continuation in Wikipedia response");
+  }
+  const fields: Record<string, string> = {};
+  for (const [key, field] of Object.entries(value)) {
+    if (typeof field !== "string") {
+      throw new Error(`Malformed continuation field "${key}" in Wikipedia response`);
+    }
+    fields[key] = field;
+  }
+  return fields;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

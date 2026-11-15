@@ -11,8 +11,16 @@ if (!title) {
 
 const page = await fetchLinks(title);
 
-console.log(`${page.title}: ${page.links.length} links in this response`);
-console.log(page.hasMore ? "(Wikipedia has more; paging comes next step)" : "(that's all of them)");
+// Rough size of this list if handed to a model as one title per line.
+// About 4 characters per token for English text; a real tokenizer will differ.
+const asText = page.links.join("\n");
+const estimatedTokens = Math.round(asText.length / 4);
+
+if (page.title !== title) {
+  console.log(`"${title}" resolves to "${page.title}"`);
+}
+console.log(`${page.title}: ${page.links.length} links (${page.requests} requests)`);
+console.log(`About ${estimatedTokens.toLocaleString()} tokens as a list`);
 console.log();
 for (const link of page.links.slice(0, 20)) {
   console.log(`  ${link}`);
