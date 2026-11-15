@@ -10,7 +10,8 @@
     "typecheck": "tsc",
     "test": "node --test",
     "links": "node src/links.ts",
-    "play": "node src/play.ts"
+    "play": "node src/play.ts",
+    "models": "node src/list-models.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",

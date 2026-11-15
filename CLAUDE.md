@@ -54,5 +54,6 @@ Needs Node 24 or later. Copy `.env.example` to `.env` before anything that calls
 - `npm test`: run tests with Node's built-in runner (`*.test.ts` files)
 - `npm run links -- "Page title"`: print the links on one Wikipedia page
 - `npm run play -- "Start" "Target"`: play a race yourself by typing tool calls
+- `npm run models`: list OpenRouter's tool-capable models by price and check the registry
 
 Add each new command here when the step that introduces it lands.
