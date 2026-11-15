@@ -6,9 +6,30 @@ import { fetchWithRetry } from "./retry.ts";
 
 const CHAT_URL = "https://openrouter.ai/api/v1/chat/completions";
 
-// The messages we send so far. The loop (next step) adds the assistant's
-// tool calls and the tool results that answer them.
-export type Message = { role: "system" | "user"; content: string };
+// The conversation, in the wire format: it is sent whole on every call.
+export type Message = SystemMessage | UserMessage | AssistantMessage | ToolMessage;
+
+export type SystemMessage = { role: "system"; content: string };
+
+export type UserMessage = { role: "user"; content: string };
+
+// The model's reply, sent back on later turns exactly as it came.
+export type AssistantMessage = {
+  role: "assistant";
+  content: string | null;
+  tool_calls?: WireToolCall[];
+  reasoning_details?: unknown[];
+};
+
+// Answers one tool call. Every call in an assistant message needs one.
+export type ToolMessage = { role: "tool"; tool_call_id: string; content: string };
+
+// A tool call as it appears on the wire, nested under "function".
+export type WireToolCall = {
+  id: string;
+  type: "function";
+  function: { name: string; arguments: string };
+};
 
 // Arguments arrive as a JSON string written by the model, so they may not
 // parse. The id pairs this call with the result we send back.
@@ -29,6 +50,9 @@ export type Usage = {
 export type ChatResult = {
   content: string | null;
   reasoning: string | null;
+  // Opaque: sent back unchanged on the next turn. Some models sign or encrypt
+  // their reasoning and reject a conversation that drops it.
+  reasoningDetails: unknown[] | null;
   toolCalls: ModelToolCall[];
   // "tool_calls", "stop", "length" (hit maxTokens), and others.
   finishReason: string | null;
@@ -104,6 +128,7 @@ function parseResponse(json: unknown): Omit<ChatResult, "durationMs"> {
   return {
     content: optionalString(message.content),
     reasoning: optionalString(message.reasoning),
+    reasoningDetails: Array.isArray(message.reasoning_details) ? message.reasoning_details : null,
     toolCalls: rawCalls.map(parseToolCall),
     finishReason: optionalString(choice.finish_reason),
     usage: {
