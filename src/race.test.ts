@@ -1,21 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { currentPage, hops, move, startRace, type LinkSource } from "./race.ts";
-
-// A tiny fake Wikipedia: three pages and one redirect. No network.
-const pages: Record<string, string[]> = {
-  Guinness: ["Republic of Ireland", "Stout"],
-  "Republic of Ireland": ["Einstein", "Guinness"],
-  "Albert Einstein": ["Physics"],
-};
-const redirects: Record<string, string> = { Einstein: "Albert Einstein" };
-
-const fakeLinks: LinkSource = async (title) => {
-  const canonical = redirects[title] ?? title;
-  const links = pages[canonical];
-  if (!links) throw new Error(`No page called "${title}"`);
-  return { title: canonical, links };
-};
+import { currentPage, hops, move, startRace } from "./race.ts";
+import { fakeLinks } from "./fake-wikipedia.ts";
 
 test("a race starts on the start page with no hops", async () => {
   const race = await startRace("Guinness", "Albert Einstein", fakeLinks);

@@ -20,6 +20,12 @@ export type LinksPage = {
   requests: number;
 };
 
+// The page doesn't exist. Unlike a network failure, this is something the
+// model asked for, so callers can report it back instead of crashing.
+export class PageNotFoundError extends Error {
+  override name = "PageNotFoundError";
+}
+
 // One response's worth of links, plus where to continue from if there's more.
 type Batch = {
   title: string;
@@ -103,10 +109,10 @@ function parseBatch(body: unknown, requested: string): Batch {
     throw new Error(`No page in Wikipedia response for "${requested}"`);
   }
   if (page.invalid === true) {
-    throw new Error(`"${requested}" is not a valid Wikipedia title`);
+    throw new PageNotFoundError(`"${requested}" is not a valid Wikipedia title`);
   }
   if (page.missing === true) {
-    throw new Error(`Wikipedia has no page called "${requested}"`);
+    throw new PageNotFoundError(`Wikipedia has no page called "${requested}"`);
   }
 
   // A page with no article links has no "links" field at all.
