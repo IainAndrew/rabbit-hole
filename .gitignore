@@ -1,3 +1,6 @@
+node_modules/
+.env
+
 # Private working notes
 CLAUDE.local.md
 SPEC.md

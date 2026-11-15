@@ -16,14 +16,6 @@ of races, and a static site shows the results and replays of real runs.
 6. The static site: leaderboards, replays, method. Then the README.
 7. An MCP server for the same tools, and a shortest-path baseline.
 
-## Status
-
-Workspace setup. No code yet. Next: step 0 (the bare toolchain), then propose the steps
-for phase 1.
-
-Update this section at the end of each step: the current phase, the last step done, and
-what's next.
-
 ## Working rules
 
 The rules live in `.claude/rules/`, one topic per file. Each one below says when to read
@@ -37,8 +29,6 @@ running any git command that changes the repo.
 ### Workflow
 
 For how we work together, see [.claude/rules/workflow.md](.claude/rules/workflow.md).
-Read it at the start of every session, and before proposing, starting or finishing a
-step.
 
 ### Spending
 
@@ -57,5 +47,11 @@ before writing or changing code.
 
 ## Commands
 
-None yet. Add each command here when the step that introduces it lands (install,
-typecheck, test, run a race, replay a trace, run evals, build the site).
+Needs Node 24 or later. Copy `.env.example` to `.env` before anything that calls a model.
+
+- `npm install`: install dev dependencies (TypeScript and Node types only)
+- `npm run typecheck`: type-check everything in `src/`
+- `npm test`: run tests with Node's built-in runner (`*.test.ts` files)
+- `npm run hello`: throwaway check that the toolchain runs
+
+Add each new command here when the step that introduces it lands.

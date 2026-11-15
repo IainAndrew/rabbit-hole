@@ -28,4 +28,3 @@ Work in small, reviewable steps. Every change is reviewed before the next one st
 - Keep the project small. Prefer fewer files, fewer dependencies, less configuration.
 - Ask when a choice is genuinely the user's (scope, cost, model field). Otherwise pick a
   sensible default and say what you picked.
-- Update the Status section of CLAUDE.md at the end of each step.
