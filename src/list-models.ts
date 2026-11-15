@@ -1,6 +1,6 @@
 // Print OpenRouter's tool-capable models, cheapest input first, and check the
 // registry against the live list. Free: no key, no model calls.
-// Usage: npm run models
+// Usage: npm run list-models
 
 import { fetchModelList } from "./model-list.ts";
 import { models } from "./models.ts";

@@ -52,11 +52,10 @@ Needs Node 24 or later. Copy `.env.example` to `.env` before anything that calls
 - `npm install`: install dev dependencies (TypeScript and Node types only)
 - `npm run typecheck`: type-check everything in `src/`
 - `npm test`: run tests with Node's built-in runner (`*.test.ts` files)
-- `npm run links -- "Page title"`: print the links on one Wikipedia page
-- `npm run play -- "Start" "Target"`: play a race yourself by typing tool calls
-- `npm run models`: list OpenRouter's tool-capable models by price and check the registry
-- `npm run call -- "Start" "Target"`: send one race opening to the build model and print
-  the reply (billed)
-- `npm run call -- "Start" "Target"`: send one race opening to the build model and print the reply (billed)
+- `npm run wiki-links -- "Page title"`: print the links on one Wikipedia page (free)
+- `npm run race-by-hand -- "Start" "Target"`: play a race yourself by typing tool calls
+  (free)
+- `npm run list-models`: list OpenRouter's tool-capable models by price and check the
+  registry (free)
 
 Add each new command here when the step that introduces it lands.

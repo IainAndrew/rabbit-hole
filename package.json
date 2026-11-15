@@ -9,10 +9,9 @@
   "scripts": {
     "typecheck": "tsc",
     "test": "node --test",
-    "links": "node src/links.ts",
-    "play": "node src/play.ts",
-    "models": "node src/list-models.ts",
-    "call": "node --env-file=.env src/call.ts"
+    "wiki-links": "node src/wiki-links.ts",
+    "race-by-hand": "node src/race-by-hand.ts",
+    "list-models": "node src/list-models.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",

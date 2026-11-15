@@ -1,5 +1,5 @@
 // Play a race yourself by typing tool calls, and see what a model would see.
-// Usage: npm run play -- "Start page" "Target page"
+// Usage: npm run race-by-hand -- "Start page" "Target page"
 
 import { createInterface } from "node:readline";
 import { currentPage, hops, startRace } from "./race.ts";
@@ -11,7 +11,7 @@ const PREVIEW_LINES = 30;
 
 const [start, target] = process.argv.slice(2);
 if (!start || !target) {
-  console.error('Usage: npm run play -- "Start page" "Target page"');
+  console.error('Usage: npm run race-by-hand -- "Start page" "Target page"');
   process.exit(1);
 }
 
