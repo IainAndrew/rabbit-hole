@@ -55,5 +55,8 @@ Needs Node 24 or later. Copy `.env.example` to `.env` before anything that calls
 - `npm run links -- "Page title"`: print the links on one Wikipedia page
 - `npm run play -- "Start" "Target"`: play a race yourself by typing tool calls
 - `npm run models`: list OpenRouter's tool-capable models by price and check the registry
+- `npm run call -- "Start" "Target"`: send one race opening to the build model and print
+  the reply (billed)
+- `npm run call -- "Start" "Target"`: send one race opening to the build model and print the reply (billed)
 
 Add each new command here when the step that introduces it lands.

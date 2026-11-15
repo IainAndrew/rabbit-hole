@@ -11,7 +11,8 @@
     "test": "node --test",
     "links": "node src/links.ts",
     "play": "node src/play.ts",
-    "models": "node src/list-models.ts"
+    "models": "node src/list-models.ts",
+    "call": "node --env-file=.env src/call.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",
