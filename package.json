@@ -9,8 +9,8 @@
   "scripts": {
     "typecheck": "tsc",
     "test": "node --test",
-    "hello": "node src/hello.ts",
-    "links": "node src/links.ts"
+    "links": "node src/links.ts",
+    "play": "node src/play.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",
