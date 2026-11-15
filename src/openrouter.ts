@@ -62,6 +62,19 @@ export type ChatResult = {
   durationMs: number;
 };
 
+// A failed call. status is the HTTP status, or null when the failure came
+// inside a 200 response. Callers use it to tell "out of credits" from other
+// failures.
+export class OpenRouterError extends Error {
+  override name = "OpenRouterError";
+  readonly status: number | null;
+
+  constructor(message: string, status: number | null) {
+    super(message);
+    this.status = status;
+  }
+}
+
 export type ChatRequest = {
   model: Model;
   messages: Message[];
@@ -99,7 +112,7 @@ export async function chat(request: ChatRequest): Promise<ChatResult> {
 
   if (!response.ok) {
     // 402 means the account is out of credits.
-    throw new Error(`OpenRouter returned HTTP ${response.status}: ${errorMessage(json)}`);
+    throw new OpenRouterError(`OpenRouter returned HTTP ${response.status}: ${errorMessage(json)}`, response.status);
   }
   return { ...parseResponse(json), durationMs };
 }
@@ -107,22 +120,22 @@ export async function chat(request: ChatRequest): Promise<ChatResult> {
 // The response is outside data: check every field we use.
 function parseResponse(json: unknown): Omit<ChatResult, "durationMs"> {
   if (!isRecord(json) || !Array.isArray(json.choices) || !isRecord(json.usage)) {
-    throw new Error("Unexpected OpenRouter response");
+    throw new OpenRouterError("Unexpected OpenRouter response", null);
   }
   const choice: unknown = json.choices[0];
   if (!isRecord(choice) || !isRecord(choice.message)) {
-    throw new Error("No choice in OpenRouter response");
+    throw new OpenRouterError("No choice in OpenRouter response", null);
   }
   // A provider can fail after OpenRouter has already answered 200.
   if (choice.error !== undefined) {
-    throw new Error(`Provider error: ${errorMessage({ error: choice.error })}`);
+    throw new OpenRouterError(`Provider error: ${errorMessage({ error: choice.error })}`, null);
   }
 
   const message = choice.message;
   const rawCalls: unknown[] = Array.isArray(message.tool_calls) ? message.tool_calls : [];
   const usage = json.usage;
   if (typeof usage.prompt_tokens !== "number" || typeof usage.completion_tokens !== "number") {
-    throw new Error("Missing token counts in OpenRouter response");
+    throw new OpenRouterError("Missing token counts in OpenRouter response", null);
   }
 
   return {
@@ -152,7 +165,7 @@ function parseToolCall(raw: unknown): ModelToolCall {
     typeof raw.function.name !== "string" ||
     typeof raw.function.arguments !== "string"
   ) {
-    throw new Error("Malformed tool call in OpenRouter response");
+    throw new OpenRouterError("Malformed tool call in OpenRouter response", null);
   }
   return { id: raw.id, name: raw.function.name, arguments: raw.function.arguments };
 }

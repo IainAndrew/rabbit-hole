@@ -9,6 +9,8 @@ import { toolDefinitions } from "./tools.ts";
 import { fetchLinks } from "./wikipedia.ts";
 
 const MAX_TURNS = 30;
+// Context size, not cost: stop once a prompt passes this.
+const MAX_PROMPT_TOKENS = 100_000;
 // One reply, reasoning included.
 const MAX_TOKENS = 2000;
 // A safety net for this script, not the eval's --max-cost. It's checked
@@ -45,10 +47,19 @@ const callModel: CallModel = async (messages) => {
 };
 
 console.log(`${buildModel.id}: "${start}" → "${target}"\n`);
-const result = await runAgent({ start, target, callModel, getLinks: fetchLinks, maxTurns: MAX_TURNS });
+const result = await runAgent({
+  start,
+  target,
+  callModel,
+  getLinks: fetchLinks,
+  maxTurns: MAX_TURNS,
+  maxPromptTokens: MAX_PROMPT_TOKENS,
+});
 
 console.log();
-console.log(`End:   ${result.end} after ${result.turns} turns, ${hops(result.race)} hops`);
+const { end } = result;
+const ending = end.kind === "finished" ? end.reason : `crashed (${end.cause}): ${end.error}`;
+console.log(`End:   ${ending} after ${result.turns} turns, ${hops(result.race)} hops`);
 console.log(`Path:  ${result.race.path.join(" > ")}`);
 console.log(`Cost:  $${spent.toFixed(6)}`);
 console.log(`Time:  ${((performance.now() - startedAt) / 1000).toFixed(1)} s`);

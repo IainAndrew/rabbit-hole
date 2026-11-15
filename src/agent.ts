@@ -1,19 +1,36 @@
 // The agent loop: call the model, run the tools it asks for, append the
 // results, repeat. The growing `messages` array is the agent's only memory.
 
-import type { AssistantMessage, ChatResult, Message } from "./openrouter.ts";
+import { OpenRouterError, type AssistantMessage, type ChatResult, type Message } from "./openrouter.ts";
 import { startRace, type LinkSource, type Race } from "./race.ts";
 import { executeTool } from "./tools.ts";
 
 // Passed in rather than imported, so tests can script the model's replies.
 export type CallModel = (messages: Message[]) => Promise<ChatResult>;
 
-// Step 4 adds the rest: token limit, output limit, refused.
-export type EndReason = "won" | "gave_up" | "no_tool_call" | "turn_limit";
+// How a race ended. Each one says something about the agent.
+export type EndReason =
+  | "won"
+  | "gave_up"
+  | "turn_limit"
+  // A call's prompt grew past maxPromptTokens.
+  | "token_limit"
+  // A reply was cut off at the output cap, so its tool calls can't be trusted.
+  | "output_limit"
+  // A reply with no tool call, or one the provider's filter blocked.
+  | "refused";
+
+// Why a run couldn't finish. These say nothing about the agent, so they are
+// kept out of success rates.
+export type CrashCause = "no_credits" | "retries_exhausted" | "api_error";
+
+export type RunEnd =
+  | { kind: "finished"; reason: EndReason }
+  | { kind: "crashed"; cause: CrashCause; error: string };
 
 export type RunResult = {
   race: Race;
-  end: EndReason;
+  end: RunEnd;
   // Model calls made.
   turns: number;
   messages: Message[];
@@ -27,6 +44,7 @@ export type RunOptions = {
   callModel: CallModel;
   getLinks: LinkSource;
   maxTurns: number;
+  maxPromptTokens: number;
 };
 
 export async function runAgent(options: RunOptions): Promise<RunResult> {
@@ -35,13 +53,27 @@ export async function runAgent(options: RunOptions): Promise<RunResult> {
     { role: "system", content: SYSTEM_PROMPT },
     { role: "user", content: `You are on "${race.start}". The target is "${race.target}".` },
   ];
+  const finished = (reason: EndReason, turns: number): RunResult => ({
+    race,
+    end: { kind: "finished", reason },
+    turns,
+    messages,
+  });
 
   for (let turn = 1; turn <= options.maxTurns; turn++) {
-    const reply = await options.callModel(messages);
+    let reply: ChatResult;
+    try {
+      reply = await options.callModel(messages);
+    } catch (err) {
+      // Only API failures are crashes. Anything else is a bug: let it throw.
+      if (!(err instanceof OpenRouterError)) throw err;
+      return { race, end: { kind: "crashed", cause: crashCause(err), error: err.message }, turns: turn - 1, messages };
+    }
     messages.push(assistantMessage(reply));
 
-    if (reply.toolCalls.length === 0) {
-      return { race, end: "no_tool_call", turns: turn, messages };
+    if (reply.finishReason === "length") return finished("output_limit", turn);
+    if (reply.finishReason === "content_filter" || reply.toolCalls.length === 0) {
+      return finished("refused", turn);
     }
 
     let end: "won" | "gave_up" | null = null;
@@ -58,12 +90,20 @@ export async function runAgent(options: RunOptions): Promise<RunResult> {
       messages.push({ role: "tool", tool_call_id: call.id, content });
     }
 
-    if (end !== null) {
-      return { race, end, turns: turn, messages };
-    }
+    if (end !== null) return finished(end, turn);
+    // Checked after the turn's tools run, so a winning move still counts. The
+    // next prompt would be bigger still.
+    if (reply.usage.promptTokens > options.maxPromptTokens) return finished("token_limit", turn);
   }
 
-  return { race, end: "turn_limit", turns: options.maxTurns, messages };
+  return finished("turn_limit", options.maxTurns);
+}
+
+function crashCause(err: OpenRouterError): CrashCause {
+  if (err.status === 402) return "no_credits";
+  // fetchWithRetry has already retried these.
+  if (err.status === 429 || (err.status !== null && err.status >= 500)) return "retries_exhausted";
+  return "api_error";
 }
 
 // The model's reply goes back into the conversation exactly as it asked,

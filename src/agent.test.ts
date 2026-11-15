@@ -2,54 +2,71 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { runAgent, type CallModel } from "./agent.ts";
 import { fakeLinks } from "./fake-wikipedia.ts";
-import type { ChatResult, Message } from "./openrouter.ts";
+import { OpenRouterError, type ChatResult, type Message } from "./openrouter.ts";
 
-// A model that replies from a script, one reply per turn, and records the
-// conversation it was shown each time.
-function scriptedModel(replies: { name: string; args: unknown }[][]) {
+type Call = { name: string; args: unknown };
+// One scripted turn: a reply, or an error the model call throws.
+type Turn = { calls?: Call[]; finishReason?: string; promptTokens?: number } | Error;
+
+// A model that replies from a script, one entry per turn, and records the
+// conversation it was shown each time. Past the end of the script it replies
+// with text only.
+function scriptedModel(turns: Turn[]) {
   const seen: Message[][] = [];
   const callModel: CallModel = async (messages) => {
     seen.push(structuredClone(messages));
-    const calls = replies[seen.length - 1] ?? [];
-    return reply(calls.map(({ name, args }, i) => ({ id: `call_${seen.length}_${i}`, name, arguments: JSON.stringify(args) })));
+    const turn = turns[seen.length - 1] ?? {};
+    if (turn instanceof Error) throw turn;
+    const calls = turn.calls ?? [];
+    return reply({
+      toolCalls: calls.map(({ name, args }, i) => ({ id: `call_${seen.length}_${i}`, name, arguments: JSON.stringify(args) })),
+      finishReason: turn.finishReason ?? (calls.length > 0 ? "tool_calls" : "stop"),
+      promptTokens: turn.promptTokens ?? 0,
+    });
   };
   return { callModel, seen };
 }
 
-function reply(toolCalls: ChatResult["toolCalls"]): ChatResult {
+function reply(fields: Pick<ChatResult, "toolCalls" | "finishReason"> & { promptTokens: number }): ChatResult {
   return {
-    content: null,
+    content: fields.toolCalls.length > 0 ? null : "I think I'm done.",
     reasoning: null,
     reasoningDetails: null,
-    toolCalls,
-    finishReason: toolCalls.length > 0 ? "tool_calls" : "stop",
-    usage: { promptTokens: 0, cachedTokens: null, completionTokens: 0, reasoningTokens: null, cost: null },
+    toolCalls: fields.toolCalls,
+    finishReason: fields.finishReason,
+    usage: { promptTokens: fields.promptTokens, cachedTokens: null, completionTokens: 0, reasoningTokens: null, cost: null },
     provider: null,
     durationMs: 0,
   };
 }
 
-const race = (callModel: CallModel, maxTurns = 10) =>
-  runAgent({ start: "Guinness", target: "Albert Einstein", callModel, getLinks: fakeLinks, maxTurns });
+const race = (callModel: CallModel, limits: { maxTurns?: number; maxPromptTokens?: number } = {}) =>
+  runAgent({
+    start: "Guinness",
+    target: "Albert Einstein",
+    callModel,
+    getLinks: fakeLinks,
+    maxTurns: limits.maxTurns ?? 10,
+    maxPromptTokens: limits.maxPromptTokens ?? 100_000,
+  });
+
+const look = (page: string): Call => ({ name: "get_links", args: { page } });
+const go = (page: string): Call => ({ name: "move_to", args: { page } });
+const finished = (reason: string) => ({ kind: "finished", reason });
 
 test("follows tool calls to the target and wins", async () => {
-  const model = scriptedModel([
-    [{ name: "get_links", args: { page: "Guinness" } }],
-    [{ name: "move_to", args: { page: "Republic of Ireland" } }],
-    [{ name: "move_to", args: { page: "Einstein" } }],
-  ]);
+  const model = scriptedModel([{ calls: [look("Guinness")] }, { calls: [go("Republic of Ireland")] }, { calls: [go("Einstein")] }]);
   const result = await race(model.callModel);
-  assert.equal(result.end, "won");
+  assert.deepEqual(result.end, finished("won"));
   assert.equal(result.turns, 3);
   assert.deepEqual(result.race.path, ["Guinness", "Republic of Ireland", "Albert Einstein"]);
 });
 
 test("each turn sees the last turn's call answered by a result with its id", async () => {
-  const model = scriptedModel([[{ name: "get_links", args: { page: "Guinness" } }], []]);
+  const model = scriptedModel([{ calls: [look("Guinness")] }]);
   await race(model.callModel);
 
-  const second = model.seen[1]!;
-  const [assistant, toolResult] = second.slice(-2);
+  const [assistant, toolResult] = model.seen[1]!.slice(-2);
   assert.equal(assistant?.role, "assistant");
   assert.deepEqual(toolResult, {
     role: "tool",
@@ -59,15 +76,9 @@ test("each turn sees the last turn's call answered by a result with its id", asy
 });
 
 test("calls after the winning move get a result but aren't run", async () => {
-  const model = scriptedModel([
-    [{ name: "move_to", args: { page: "Republic of Ireland" } }],
-    [
-      { name: "move_to", args: { page: "Einstein" } },
-      { name: "move_to", args: { page: "Physics" } },
-    ],
-  ]);
+  const model = scriptedModel([{ calls: [go("Republic of Ireland")] }, { calls: [go("Einstein"), go("Physics")] }]);
   const result = await race(model.callModel);
-  assert.equal(result.end, "won");
+  assert.deepEqual(result.end, finished("won"));
   assert.deepEqual(result.race.path, ["Guinness", "Republic of Ireland", "Albert Einstein"]);
   assert.deepEqual(result.messages.at(-1), {
     role: "tool",
@@ -76,15 +87,68 @@ test("calls after the winning move get a result but aren't run", async () => {
   });
 });
 
-test("a reply with no tool call ends the run", async () => {
+test("give_up ends the run as gave_up", async () => {
+  const result = await race(scriptedModel([{ calls: [{ name: "give_up", args: { reason: "lost" } }] }]).callModel);
+  assert.deepEqual(result.end, finished("gave_up"));
+});
+
+test("a reply with no tool call is refused, at once", async () => {
   const result = await race(scriptedModel([]).callModel);
-  assert.equal(result.end, "no_tool_call");
+  assert.deepEqual(result.end, finished("refused"));
   assert.equal(result.turns, 1);
 });
 
+test("a reply blocked by the provider's filter is refused", async () => {
+  const model = scriptedModel([{ calls: [go("Republic of Ireland")], finishReason: "content_filter" }]);
+  const result = await race(model.callModel);
+  assert.deepEqual(result.end, finished("refused"));
+  assert.deepEqual(result.race.path, ["Guinness"]);
+});
+
+test("a reply cut off at the output cap ends the run without running its calls", async () => {
+  const model = scriptedModel([{ calls: [go("Republic of Ireland")], finishReason: "length" }]);
+  const result = await race(model.callModel);
+  assert.deepEqual(result.end, finished("output_limit"));
+  assert.deepEqual(result.race.path, ["Guinness"]);
+});
+
+test("a prompt over the token limit ends the run after that turn's tools", async () => {
+  const model = scriptedModel([{ calls: [go("Republic of Ireland")], promptTokens: 150_000 }]);
+  const result = await race(model.callModel, { maxPromptTokens: 100_000 });
+  assert.deepEqual(result.end, finished("token_limit"));
+  assert.deepEqual(result.race.path, ["Guinness", "Republic of Ireland"]);
+});
+
+test("a winning move still wins over the token limit", async () => {
+  const model = scriptedModel([{ calls: [go("Republic of Ireland")] }, { calls: [go("Einstein")], promptTokens: 150_000 }]);
+  const result = await race(model.callModel, { maxPromptTokens: 100_000 });
+  assert.deepEqual(result.end, finished("won"));
+});
+
 test("stops at the turn limit", async () => {
-  const lookForever = scriptedModel(Array(5).fill([{ name: "get_links", args: { page: "Guinness" } }]));
-  const result = await race(lookForever.callModel, 3);
-  assert.equal(result.end, "turn_limit");
+  const lookForever = scriptedModel(Array(5).fill({ calls: [look("Guinness")] }));
+  const result = await race(lookForever.callModel, { maxTurns: 3 });
+  assert.deepEqual(result.end, finished("turn_limit"));
   assert.equal(result.turns, 3);
+});
+
+test("API failures are crashes, not losses, with a cause", async () => {
+  const cases = [
+    { status: 402, cause: "no_credits" },
+    { status: 429, cause: "retries_exhausted" },
+    { status: 503, cause: "retries_exhausted" },
+    { status: 400, cause: "api_error" },
+    { status: null, cause: "api_error" },
+  ];
+  for (const { status, cause } of cases) {
+    const model = scriptedModel([{ calls: [look("Guinness")] }, new OpenRouterError("boom", status)]);
+    const result = await race(model.callModel);
+    assert.deepEqual(result.end, { kind: "crashed", cause, error: "boom" }, `status ${status}`);
+    assert.equal(result.turns, 1, "only the call that returned counts as a turn");
+  }
+});
+
+test("any other error is a bug and is thrown, not recorded as a crash", async () => {
+  const model = scriptedModel([new TypeError("oops")]);
+  await assert.rejects(race(model.callModel), TypeError);
 });
