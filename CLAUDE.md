@@ -53,5 +53,6 @@ Needs Node 24 or later. Copy `.env.example` to `.env` before anything that calls
 - `npm run typecheck`: type-check everything in `src/`
 - `npm test`: run tests with Node's built-in runner (`*.test.ts` files)
 - `npm run hello`: throwaway check that the toolchain runs
+- `npm run links -- "Page title"`: print the links on one Wikipedia page
 
 Add each new command here when the step that introduces it lands.
