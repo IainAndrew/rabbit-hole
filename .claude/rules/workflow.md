@@ -17,7 +17,8 @@ Work in small, reviewable steps. Every change is reviewed before the next one st
    - what you ran to check it, and the result
    - any concept a reviewer needs to follow the change
 5. **Wait.** Don't start the next step until the user says so.
-6. **When the user is happy and asks**, commit the step (see `git.md`).
+6. **When the user moves on**, commit and push the step before starting the next one
+   (see `git.md`).
 
 ## Scope discipline
 
