@@ -4,3 +4,6 @@ node_modules/
 # Private working notes
 CLAUDE.local.md
 SPEC.md
+
+# Traces from development runs. Eval traces meant to be kept are committed on purpose.
+runs/

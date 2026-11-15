@@ -1,11 +1,13 @@
-// Run one race with the build model and print each turn as it happens. Billed.
+// Run one race with the build model, print each turn as it happens, and write
+// a trace to runs/. Billed.
 // Usage: npm run race-agent -- "Start page" "Target page"
 
-import { runAgent, type CallModel } from "./agent.ts";
+import { promptHash, runAgent, SYSTEM_PROMPT, type CallModel } from "./agent.ts";
 import { buildModel } from "./models.ts";
 import { chat } from "./openrouter.ts";
 import { hops } from "./race.ts";
 import { toolDefinitions } from "./tools.ts";
+import { gitState, openTrace } from "./trace.ts";
 import { fetchLinks } from "./wikipedia.ts";
 
 const MAX_TURNS = 30;
@@ -46,6 +48,18 @@ const callModel: CallModel = async (messages) => {
   return result;
 };
 
+const trace = openTrace("runs", `${buildModel.id} ${start} ${target}`);
+trace.record({
+  type: "run_start",
+  model: buildModel,
+  start,
+  target,
+  systemPrompt: SYSTEM_PROMPT,
+  promptHash: promptHash(),
+  ...gitState(),
+  limits: { maxTurns: MAX_TURNS, maxPromptTokens: MAX_PROMPT_TOKENS, maxOutputTokens: MAX_TOKENS },
+});
+
 console.log(`${buildModel.id}: "${start}" → "${target}"\n`);
 const result = await runAgent({
   start,
@@ -54,6 +68,7 @@ const result = await runAgent({
   getLinks: fetchLinks,
   maxTurns: MAX_TURNS,
   maxPromptTokens: MAX_PROMPT_TOKENS,
+  record: trace.record,
 });
 
 console.log();
@@ -63,3 +78,4 @@ console.log(`End:   ${ending} after ${result.turns} turns, ${hops(result.race)} 
 console.log(`Path:  ${result.race.path.join(" > ")}`);
 console.log(`Cost:  $${spent.toFixed(6)}`);
 console.log(`Time:  ${((performance.now() - startedAt) / 1000).toFixed(1)} s`);
+console.log(`Trace: ${trace.path}`);

@@ -1,12 +1,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { runAgent, type CallModel } from "./agent.ts";
+import { runAgent, type CallModel, type RunOptions } from "./agent.ts";
 import { fakeLinks } from "./fake-wikipedia.ts";
 import { OpenRouterError, type ChatResult, type Message } from "./openrouter.ts";
+import type { TraceEvent } from "./trace.ts";
 
 type Call = { name: string; args: unknown };
 // One scripted turn: a reply, or an error the model call throws.
-type Turn = { calls?: Call[]; finishReason?: string; promptTokens?: number } | Error;
+type Turn = { calls?: Call[]; finishReason?: string; promptTokens?: number; cost?: number | null } | Error;
 
 // A model that replies from a script, one entry per turn, and records the
 // conversation it was shown each time. Past the end of the script it replies
@@ -22,32 +23,39 @@ function scriptedModel(turns: Turn[]) {
       toolCalls: calls.map(({ name, args }, i) => ({ id: `call_${seen.length}_${i}`, name, arguments: JSON.stringify(args) })),
       finishReason: turn.finishReason ?? (calls.length > 0 ? "tool_calls" : "stop"),
       promptTokens: turn.promptTokens ?? 0,
+      cost: turn.cost === undefined ? 0.001 : turn.cost,
     });
   };
   return { callModel, seen };
 }
 
-function reply(fields: Pick<ChatResult, "toolCalls" | "finishReason"> & { promptTokens: number }): ChatResult {
+function reply(
+  fields: Pick<ChatResult, "toolCalls" | "finishReason"> & { promptTokens: number; cost: number | null },
+): ChatResult {
   return {
     content: fields.toolCalls.length > 0 ? null : "I think I'm done.",
     reasoning: null,
     reasoningDetails: null,
     toolCalls: fields.toolCalls,
     finishReason: fields.finishReason,
-    usage: { promptTokens: fields.promptTokens, cachedTokens: null, completionTokens: 0, reasoningTokens: null, cost: null },
+    usage: { promptTokens: fields.promptTokens, cachedTokens: null, completionTokens: 0, reasoningTokens: null, cost: fields.cost },
     provider: null,
+    generationId: null,
+    attempts: 1,
     durationMs: 0,
   };
 }
 
-const race = (callModel: CallModel, limits: { maxTurns?: number; maxPromptTokens?: number } = {}) =>
+const race = (callModel: CallModel, options: Partial<RunOptions> = {}) =>
   runAgent({
     start: "Guinness",
     target: "Albert Einstein",
     callModel,
     getLinks: fakeLinks,
-    maxTurns: limits.maxTurns ?? 10,
-    maxPromptTokens: limits.maxPromptTokens ?? 100_000,
+    maxTurns: 10,
+    maxPromptTokens: 100_000,
+    record: () => {},
+    ...options,
   });
 
 const look = (page: string): Call => ({ name: "get_links", args: { page } });
@@ -151,4 +159,36 @@ test("API failures are crashes, not losses, with a cause", async () => {
 test("any other error is a bug and is thrown, not recorded as a crash", async () => {
   const model = scriptedModel([new TypeError("oops")]);
   await assert.rejects(race(model.callModel), TypeError);
+});
+
+test("records each model call, each tool call and the end, in order", async () => {
+  const events: TraceEvent[] = [];
+  const model = scriptedModel([{ calls: [look("Guinness"), go("Republic of Ireland")] }, { calls: [go("Einstein")] }]);
+  await race(model.callModel, { record: (event) => events.push(event) });
+
+  assert.deepEqual(
+    events.map((event) => event.type),
+    ["model_call", "tool_call", "tool_call", "model_call", "tool_call", "run_end"],
+  );
+  const move = events[2];
+  assert.equal(move?.type === "tool_call" && `${move.pageBefore} > ${move.pageAfter}`, "Guinness > Republic of Ireland");
+  const end = events.at(-1);
+  assert.equal(end?.type, "run_end");
+  if (end?.type === "run_end") {
+    assert.deepEqual(end.end, finished("won"));
+    assert.deepEqual(end.path, ["Guinness", "Republic of Ireland", "Albert Einstein"]);
+    assert.equal(end.totals.cost, 0.002);
+  }
+});
+
+test("a crash still records a run_end", async () => {
+  const events: TraceEvent[] = [];
+  await race(scriptedModel([new OpenRouterError("boom", 402)]).callModel, { record: (event) => events.push(event) });
+  assert.deepEqual(events.map((event) => event.type), ["run_end"]);
+});
+
+test("one unreported cost makes the total unknown, not lower", async () => {
+  const model = scriptedModel([{ calls: [look("Guinness")], cost: null }, { calls: [go("Republic of Ireland")] }]);
+  const result = await race(model.callModel, { maxTurns: 2 });
+  assert.equal(result.totals.cost, null);
 });

@@ -59,6 +59,10 @@ export type ChatResult = {
   usage: Usage;
   // Which upstream provider OpenRouter routed the call to.
   provider: string | null;
+  // OpenRouter's id for this call ("gen-...").
+  generationId: string | null;
+  // Requests sent, retries included. Their waits are part of durationMs.
+  attempts: number;
   durationMs: number;
 };
 
@@ -98,14 +102,16 @@ export async function chat(request: ChatRequest): Promise<ChatResult> {
   };
 
   const started = performance.now();
+  let attempts = 0;
   // Retries only 429s and 5xx, which aren't billed.
-  const response = await fetchWithRetry(() =>
-    fetch(CHAT_URL, {
+  const response = await fetchWithRetry(() => {
+    attempts++;
+    return fetch(CHAT_URL, {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
       body: JSON.stringify(body),
-    }),
-  );
+    });
+  });
   // A gateway error can be an HTML page; treat a body that isn't JSON as empty.
   const json: unknown = await response.json().catch(() => null);
   const durationMs = performance.now() - started;
@@ -114,11 +120,11 @@ export async function chat(request: ChatRequest): Promise<ChatResult> {
     // 402 means the account is out of credits.
     throw new OpenRouterError(`OpenRouter returned HTTP ${response.status}: ${errorMessage(json)}`, response.status);
   }
-  return { ...parseResponse(json), durationMs };
+  return { ...parseResponse(json), attempts, durationMs };
 }
 
 // The response is outside data: check every field we use.
-function parseResponse(json: unknown): Omit<ChatResult, "durationMs"> {
+function parseResponse(json: unknown): Omit<ChatResult, "attempts" | "durationMs"> {
   if (!isRecord(json) || !Array.isArray(json.choices) || !isRecord(json.usage)) {
     throw new OpenRouterError("Unexpected OpenRouter response", null);
   }
@@ -154,6 +160,7 @@ function parseResponse(json: unknown): Omit<ChatResult, "durationMs"> {
       cost: optionalNumber(usage.cost),
     },
     provider: optionalString(json.provider),
+    generationId: optionalString(json.id),
   };
 }
 
