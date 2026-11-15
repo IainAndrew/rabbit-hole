@@ -9,7 +9,14 @@ if (!title) {
   process.exit(1);
 }
 
+const firstStart = performance.now();
 const page = await fetchLinks(title);
+const firstMs = performance.now() - firstStart;
+
+// Ask again to show the cache: no requests, near-instant.
+const againStart = performance.now();
+await fetchLinks(title);
+const againMs = performance.now() - againStart;
 
 // Rough size of this list if handed to a model as one title per line.
 // About 4 characters per token for English text; a real tokenizer will differ.
@@ -19,7 +26,10 @@ const estimatedTokens = Math.round(asText.length / 4);
 if (page.title !== title) {
   console.log(`"${title}" resolves to "${page.title}"`);
 }
-console.log(`${page.title}: ${page.links.length} links (${page.requests} requests)`);
+console.log(
+  `${page.title}: ${page.links.length} links (${page.requests} requests, ${Math.round(firstMs)} ms)`,
+);
+console.log(`Asked again: ${againMs.toFixed(2)} ms from the cache`);
 console.log(`About ${estimatedTokens.toLocaleString()} tokens as a list`);
 console.log();
 for (const link of page.links.slice(0, 20)) {

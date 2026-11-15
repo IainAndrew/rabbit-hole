@@ -1,5 +1,7 @@
 // Client for the English Wikipedia Action API.
 
+import { fetchWithRetry } from "./retry.ts";
+
 const API_URL = "https://en.wikipedia.org/w/api.php";
 
 // Wikipedia allows far more requests from clients that say who they are.
@@ -25,9 +27,29 @@ type Batch = {
   continueFrom: Record<string, string> | null;
 };
 
-// Every article link on a page. Wikipedia returns at most 500 per request, so
-// keep asking until it stops giving a continuation token.
-export async function fetchLinks(title: string): Promise<LinksPage> {
+// Pages already fetched this run, keyed by both the requested and the
+// canonical title. Storing the promise means two lookups of the same page at
+// once share one fetch.
+const cache = new Map<string, Promise<LinksPage>>();
+
+// Every article link on a page, fetched at most once per run.
+export function fetchLinks(title: string): Promise<LinksPage> {
+  const cached = cache.get(title);
+  if (cached) return cached;
+
+  const pending = fetchAllLinks(title);
+  cache.set(title, pending);
+  pending.then(
+    (page) => cache.set(page.title, pending),
+    // Don't remember failures: the next lookup should try again.
+    () => cache.delete(title),
+  );
+  return pending;
+}
+
+// Wikipedia returns at most 500 links per request, so keep asking until it
+// stops giving a continuation token.
+async function fetchAllLinks(title: string): Promise<LinksPage> {
   const links: string[] = [];
   let continueFrom: Record<string, string> | null = {};
   let canonicalTitle = title;
@@ -60,9 +82,9 @@ async function fetchBatch(
     ...continueFrom,
   });
 
-  const response = await fetch(`${API_URL}?${params}`, {
-    headers: { "User-Agent": USER_AGENT },
-  });
+  const response = await fetchWithRetry(() =>
+    fetch(`${API_URL}?${params}`, { headers: { "User-Agent": USER_AGENT } }),
+  );
   if (!response.ok) {
     throw new Error(`Wikipedia returned HTTP ${response.status} for "${title}"`);
   }
