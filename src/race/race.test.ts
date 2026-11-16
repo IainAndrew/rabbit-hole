@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { currentPage, hops, move, startRace } from "./race.ts";
-import { fakeLinks } from "./fake-wikipedia.ts";
+import { fakeLinks } from "../wikipedia/fake-wikipedia.ts";
 
 test("a race starts on the start page with no hops", async () => {
   const race = await startRace("Guinness", "Albert Einstein", fakeLinks);

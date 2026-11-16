@@ -4,7 +4,7 @@
 // read. Only failures the model didn't cause (network errors) are thrown.
 
 import { currentPage, hops, move, type LinkSource, type Race } from "./race.ts";
-import { PageNotFoundError } from "./wikipedia.ts";
+import { PageNotFoundError } from "../wikipedia/wikipedia.ts";
 
 // In the OpenAI-compatible format OpenRouter accepts. The descriptions are
 // part of the prompt: they're all the model knows about each tool.

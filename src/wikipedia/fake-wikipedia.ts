@@ -1,6 +1,6 @@
 // A tiny fake Wikipedia for tests: three pages and one redirect. No network.
 
-import type { LinkSource } from "./race.ts";
+import type { LinkSource } from "../race/race.ts";
 import { PageNotFoundError } from "./wikipedia.ts";
 
 const pages: Record<string, string[]> = {

@@ -2,13 +2,13 @@
 // a trace to runs/. Billed.
 // Usage: npm run race-agent -- "Start page" "Target page"
 
-import { promptHash, runAgent, SYSTEM_PROMPT, type CallModel } from "./agent.ts";
-import { buildModel } from "./models.ts";
-import { chat } from "./openrouter.ts";
-import { hops } from "./race.ts";
-import { toolDefinitions } from "./tools.ts";
-import { gitState, openTrace } from "./trace.ts";
-import { fetchLinks } from "./wikipedia.ts";
+import { promptHash, runAgent, SYSTEM_PROMPT, type CallModel } from "../race/agent.ts";
+import { buildModel } from "../models/models.ts";
+import { chat } from "../models/openrouter.ts";
+import { hops } from "../race/race.ts";
+import { toolDefinitions } from "../race/tools.ts";
+import { gitState, openTrace } from "../race/trace.ts";
+import { fetchLinks } from "../wikipedia/wikipedia.ts";
 
 const MAX_TURNS = 30;
 // Context size, not cost: stop once a prompt passes this.

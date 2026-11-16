@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { startRace } from "./race.ts";
 import { executeTool } from "./tools.ts";
-import { fakeLinks } from "./fake-wikipedia.ts";
+import { fakeLinks } from "../wikipedia/fake-wikipedia.ts";
 
 const newRace = () => startRace("Guinness", "Albert Einstein", fakeLinks);
 const call = (name: string, args: unknown) => ({ name, arguments: JSON.stringify(args) });

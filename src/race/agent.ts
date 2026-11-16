@@ -2,7 +2,7 @@
 // results, repeat. The growing `messages` array is the agent's only memory.
 
 import { createHash } from "node:crypto";
-import { OpenRouterError, type AssistantMessage, type ChatResult, type Message } from "./openrouter.ts";
+import { OpenRouterError, type AssistantMessage, type ChatResult, type Message } from "../models/openrouter.ts";
 import { currentPage, hops, startRace, type LinkSource, type Race } from "./race.ts";
 import { executeTool, toolDefinitions } from "./tools.ts";
 import type { Totals, TraceEvent } from "./trace.ts";

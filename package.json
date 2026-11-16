@@ -9,11 +9,11 @@
   "scripts": {
     "typecheck": "tsc",
     "test": "node --test",
-    "wiki-links": "node src/wiki-links.ts",
-    "race-by-hand": "node src/race-by-hand.ts",
-    "list-models": "node src/list-models.ts",
-    "race-agent": "node --env-file=.env src/race-agent.ts",
-    "replay-trace": "node src/replay-trace.ts"
+    "wiki-links": "node src/commands/wiki-links.ts",
+    "race-by-hand": "node src/commands/race-by-hand.ts",
+    "list-models": "node src/commands/list-models.ts",
+    "race-agent": "node --env-file=.env src/commands/race-agent.ts",
+    "replay-trace": "node src/commands/replay-trace.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",

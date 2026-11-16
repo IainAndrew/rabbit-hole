@@ -2,9 +2,9 @@
 // Usage: npm run race-by-hand -- "Start page" "Target page"
 
 import { createInterface } from "node:readline";
-import { currentPage, hops, startRace } from "./race.ts";
-import { executeTool, type ToolCall } from "./tools.ts";
-import { fetchLinks } from "./wikipedia.ts";
+import { currentPage, hops, startRace } from "../race/race.ts";
+import { executeTool, type ToolCall } from "../race/tools.ts";
+import { fetchLinks } from "../wikipedia/wikipedia.ts";
 
 // Long link lists would bury the terminal. The model gets the full text.
 const PREVIEW_LINES = 30;

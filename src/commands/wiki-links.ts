@@ -1,7 +1,7 @@
 // Try the Wikipedia client: print the links on one page.
 // Usage: npm run wiki-links -- "Page title"
 
-import { fetchLinks } from "./wikipedia.ts";
+import { fetchLinks } from "../wikipedia/wikipedia.ts";
 
 const title = process.argv[2];
 if (!title) {

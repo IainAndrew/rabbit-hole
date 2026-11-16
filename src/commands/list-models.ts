@@ -2,8 +2,8 @@
 // registry against the live list. Free: no key, no model calls.
 // Usage: npm run list-models
 
-import { fetchModelList } from "./model-list.ts";
-import { models } from "./models.ts";
+import { fetchModelList } from "../models/model-list.ts";
+import { models } from "../models/models.ts";
 
 const listed = await fetchModelList();
 

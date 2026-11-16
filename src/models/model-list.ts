@@ -1,7 +1,7 @@
 // OpenRouter's live list of models, filtered to ones the race can use.
 // Free to call: no key needed.
 
-import { fetchWithRetry } from "./retry.ts";
+import { fetchWithRetry } from "../wikipedia/retry.ts";
 
 const MODELS_URL = "https://openrouter.ai/api/v1/models";
 

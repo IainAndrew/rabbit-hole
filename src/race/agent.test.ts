@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { runAgent, type CallModel, type RunOptions } from "./agent.ts";
-import { fakeLinks } from "./fake-wikipedia.ts";
-import { OpenRouterError, type ChatResult, type Message } from "./openrouter.ts";
+import { fakeLinks } from "../wikipedia/fake-wikipedia.ts";
+import { OpenRouterError, type ChatResult, type Message } from "../models/openrouter.ts";
 import type { TraceEvent } from "./trace.ts";
 
 type Call = { name: string; args: unknown };

@@ -5,8 +5,8 @@ import { execFileSync } from "node:child_process";
 import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { RunEnd } from "./agent.ts";
-import type { Model } from "./models.ts";
-import type { ModelToolCall, Usage } from "./openrouter.ts";
+import type { Model } from "../models/models.ts";
+import type { ModelToolCall, Usage } from "../models/openrouter.ts";
 
 export type TraceEvent = RunStartEvent | ModelCallEvent | ToolCallEvent | RunEndEvent;
 
