@@ -92,15 +92,18 @@ export type ChatResult = {
 
 /**
  * A failed call. Callers use `status` to tell "out of credits" from other
- * failures.
+ * failures. A network failure has a TypeError as its `cause`.
  */
 export class OpenRouterError extends Error {
   override name = "OpenRouterError";
-  /** The HTTP status, or null when the failure came inside a 200 response. */
+  /**
+   * The HTTP status, or null when there was none: the failure came inside a
+   * 200 response, or no response arrived at all.
+   */
   readonly status: number | null;
 
-  constructor(message: string, status: number | null) {
-    super(message);
+  constructor(message: string, status: number | null, options?: { cause: unknown }) {
+    super(message, options);
     this.status = status;
   }
 }
@@ -118,12 +121,13 @@ export type ChatRequest = {
 };
 
 /**
- * Send the conversation to OpenRouter and return the model's checked reply.
- * Reads the key from OPENROUTER_API_KEY. Retries 429s and 5xx, which aren't
- * billed.
+ * Send the conversation to OpenRouter and return the model's checked reply,
+ * always from the model's pinned provider. Reads the key from
+ * OPENROUTER_API_KEY. Retries 429s and 5xx, which aren't billed.
  *
  * @throws {OpenRouterError} For an HTTP error, a provider error inside a 200,
- *   or a response that doesn't have the expected shape.
+ *   a response that doesn't have the expected shape, or no response at all
+ *   after every retry.
  * @throws If OPENROUTER_API_KEY isn't set.
  */
 export async function chat(request: ChatRequest): Promise<ChatResult> {
@@ -138,19 +142,32 @@ export async function chat(request: ChatRequest): Promise<ChatResult> {
     tools: request.tools,
     max_tokens: request.maxTokens,
     ...(request.model.reasoning === "default" ? {} : { reasoning: { effort: request.model.reasoning } }),
+    // One provider, no fallback: a different provider is a different setup
+    // (price, precision, cache). require_parameters makes a provider that
+    // would ignore a setting, such as tools or reasoning, refuse instead.
+    provider: { order: [request.model.provider], allow_fallbacks: false, require_parameters: true },
   };
 
   const started = performance.now();
   let attempts = 0;
   // Retries only 429s and 5xx, which aren't billed.
-  const response = await fetchWithRetry(() => {
-    attempts++;
-    return fetch(CHAT_URL, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+  let response: Response;
+  try {
+    response = await fetchWithRetry(() => {
+      attempts++;
+      return fetch(CHAT_URL, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
     });
-  });
+  } catch (error) {
+    // Every attempt failed before any response arrived. fetch's own message is
+    // just "fetch failed"; the reason is in its cause.
+    if (!(error instanceof TypeError)) throw error;
+    const reason = error.cause instanceof Error ? error.cause.message : error.message;
+    throw new OpenRouterError(`No response from OpenRouter after ${attempts} attempts: ${reason}`, null, { cause: error });
+  }
   // A gateway error can be an HTML page; treat a body that isn't JSON as empty.
   const json: unknown = await response.json().catch(() => null);
   const durationMs = performance.now() - started;

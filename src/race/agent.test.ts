@@ -147,9 +147,11 @@ test("API failures are crashes, not losses, with a cause", async () => {
     { status: 503, cause: "retries_exhausted" },
     { status: 400, cause: "api_error" },
     { status: null, cause: "api_error" },
+    { status: null, network: true, cause: "retries_exhausted" },
   ];
-  for (const { status, cause } of cases) {
-    const model = scriptedModel([{ calls: [look("Guinness")] }, new OpenRouterError("boom", status)]);
+  for (const { status, network, cause } of cases) {
+    const error = new OpenRouterError("boom", status, network ? { cause: new TypeError("fetch failed") } : undefined);
+    const model = scriptedModel([{ calls: [look("Guinness")] }, error]);
     const result = await race(model.callModel);
     assert.deepEqual(result.end, { kind: "crashed", cause, error: "boom" }, `status ${status}`);
     assert.equal(result.turns, 1, "only the call that returned counts as a turn");

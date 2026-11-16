@@ -31,7 +31,7 @@ export type EndReason = "won" | "gave_up" | "turn_limit" | "token_limit" | "outp
  * kept out of success rates.
  *
  * - `no_credits`: OpenRouter answered 402.
- * - `retries_exhausted`: 429s or 5xx kept coming after every retry.
+ * - `retries_exhausted`: 429s, 5xx or network errors kept coming after every retry.
  * - `api_error`: any other API failure, such as a malformed response.
  */
 export type CrashCause = "no_credits" | "retries_exhausted" | "api_error";
@@ -196,6 +196,8 @@ function addUsage(totals: Totals, reply: ChatResult): void {
 /** Sort an API failure into a crash cause, by HTTP status. */
 function crashCause(err: OpenRouterError): CrashCause {
   if (err.status === 402) return "no_credits";
+  // A network failure: fetchWithRetry has already retried it.
+  if (err.cause instanceof TypeError) return "retries_exhausted";
   // fetchWithRetry has already retried these.
   if (err.status === 429 || (err.status !== null && err.status >= 500)) return "retries_exhausted";
   return "api_error";

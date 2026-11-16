@@ -1,5 +1,6 @@
 // Retry HTTP requests that failed for reasons that might pass: rate limiting
-// (429) and server errors (5xx). Anything else is returned as-is.
+// (429), server errors (5xx) and network errors (no response at all).
+// Anything else is returned as-is.
 
 /** How hard to retry, and how to wait between tries. */
 export type RetryOptions = {
@@ -22,23 +23,34 @@ export const defaultRetryOptions: RetryOptions = {
 };
 
 /**
- * Send a request, retrying 429s and 5xx with exponential backoff.
+ * Send a request, retrying 429s, 5xx and network errors with exponential
+ * backoff.
  *
  * @param request Makes a fresh request each time it's called. A Response body
  *   can only be read once, so retries need a new request, not the old one.
  * @returns The first response that isn't retryable, or the last one once
  *   attempts run out. The caller checks `response.ok`.
+ * @throws The last network error, if every attempt failed to get a response.
  */
 export async function fetchWithRetry(
   request: () => Promise<Response>,
   options: RetryOptions = defaultRetryOptions,
 ): Promise<Response> {
   for (let attempt = 1; ; attempt++) {
-    const response = await request();
+    const backoff = options.baseDelayMs * 2 ** (attempt - 1);
+    let response: Response;
+    try {
+      response = await request();
+    } catch (error) {
+      // fetch rejects with a TypeError when no response arrives: a dropped
+      // connection, a DNS failure, a broken TLS record. Anything else is a bug.
+      if (!(error instanceof TypeError) || attempt === options.maxAttempts) throw error;
+      await options.sleep(Math.min(backoff, options.maxDelayMs));
+      continue;
+    }
     if (!isRetryable(response.status) || attempt === options.maxAttempts) {
       return response;
     }
-    const backoff = options.baseDelayMs * 2 ** (attempt - 1);
     const delay = Math.min(retryAfterMs(response) ?? backoff, options.maxDelayMs);
     await options.sleep(delay);
   }
