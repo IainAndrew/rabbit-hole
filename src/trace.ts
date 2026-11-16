@@ -97,6 +97,63 @@ export function gitState(): { gitCommit: string; gitDirty: boolean } {
   return { gitCommit: git("rev-parse", "HEAD"), gitDirty: git("status", "--porcelain") !== "" };
 }
 
+// An event as read back from a file, with its time stamp.
+export type TraceLine = TraceEvent & { t: number };
+
+// The fields each event type must have, by dotted path. A file is outside
+// data: it may be hand-edited, cut short, or from an older version of the
+// format. These are the fields the replay relies on.
+const requiredFields: Record<TraceEvent["type"], Record<string, string>> = {
+  run_start: {
+    "model.id": "string",
+    start: "string",
+    target: "string",
+    promptHash: "string",
+    gitCommit: "string",
+    gitDirty: "boolean",
+    "limits.maxPromptTokens": "number",
+  },
+  model_call: { turn: "number", toolCalls: "array", "usage.promptTokens": "number", durationMs: "number" },
+  tool_call: { turn: "number", name: "string", arguments: "string", result: "string", status: "string", pageAfter: "string" },
+  run_end: { "end.kind": "string", path: "array", hops: "number", turns: "number", "totals.promptTokens": "number" },
+};
+
+// Parse a trace file's text, checking each line before anything trusts it.
+export function parseTrace(text: string): TraceLine[] {
+  return text
+    .split("\n")
+    .map((line, index) => ({ line, number: index + 1 }))
+    .filter(({ line }) => line.trim() !== "")
+    .map(({ line, number }) => parseLine(line, number));
+}
+
+function parseLine(line: string, number: number): TraceLine {
+  let event: unknown;
+  try {
+    event = JSON.parse(line);
+  } catch {
+    throw new Error(`Trace line ${number} is not JSON`);
+  }
+  if (!isRecord(event) || typeof event.t !== "number" || typeof event.type !== "string") {
+    throw new Error(`Trace line ${number} has no "t" and "type"`);
+  }
+  // hasOwn, so a type like "constructor" can't match the object's prototype.
+  if (!Object.hasOwn(requiredFields, event.type)) {
+    throw new Error(`Trace line ${number} has unknown type "${event.type}"`);
+  }
+  const fields = requiredFields[event.type as TraceEvent["type"]];
+  for (const [path, kind] of Object.entries(fields)) {
+    const value = path.split(".").reduce<unknown>((at, key) => (isRecord(at) ? at[key] : undefined), event);
+    const ok = kind === "array" ? Array.isArray(value) : typeof value === kind;
+    if (!ok) throw new Error(`Trace line ${number} (${event.type}): "${path}" should be ${kind}`);
+  }
+  return event as TraceLine;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
 function slug(text: string): string {
   return text.replace(/[^A-Za-z0-9.]+/g, "-").replace(/^-|-$/g, "");
 }

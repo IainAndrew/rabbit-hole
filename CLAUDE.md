@@ -58,6 +58,8 @@ Needs Node 24 or later. Copy `.env.example` to `.env` before anything that calls
 - `npm run list-models`: list OpenRouter's tool-capable models by price and check the
   registry (free)
 - `npm run race-agent -- "Start" "Target"`: the build model plays one race, printed turn
-  by turn (billed, stops at 30 turns or $0.05)
+  by turn, and writes a trace to `runs/` (billed, stops at 30 turns or $0.05)
+- `npm run replay-trace -- runs/<file>.jsonl`: replay a run from its trace, turn by turn
+  (free)
 
 Add each new command here when the step that introduces it lands.

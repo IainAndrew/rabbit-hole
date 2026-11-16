@@ -12,7 +12,8 @@
     "wiki-links": "node src/wiki-links.ts",
     "race-by-hand": "node src/race-by-hand.ts",
     "list-models": "node src/list-models.ts",
-    "race-agent": "node --env-file=.env src/race-agent.ts"
+    "race-agent": "node --env-file=.env src/race-agent.ts",
+    "replay-trace": "node src/replay-trace.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",
