@@ -8,6 +8,7 @@ import { chat } from "../models/openrouter.ts";
 import { hops } from "../race/race.ts";
 import { toolDefinitions } from "../race/tools.ts";
 import { gitState, openTrace } from "../race/trace.ts";
+import { snapshotLinks } from "../wikipedia/snapshot.ts";
 import { fetchLinks } from "../wikipedia/wikipedia.ts";
 
 const MAX_TURNS = 30;
@@ -65,7 +66,7 @@ const result = await runAgent({
   start,
   target,
   callModel,
-  getLinks: fetchLinks,
+  getLinks: snapshotLinks("snapshot", fetchLinks),
   maxTurns: MAX_TURNS,
   maxPromptTokens: MAX_PROMPT_TOKENS,
   record: trace.record,

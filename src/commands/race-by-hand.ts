@@ -4,6 +4,7 @@
 import { createInterface } from "node:readline";
 import { currentPage, hops, startRace } from "../race/race.ts";
 import { executeTool, type ToolCall } from "../race/tools.ts";
+import { snapshotLinks } from "../wikipedia/snapshot.ts";
 import { fetchLinks } from "../wikipedia/wikipedia.ts";
 
 // Long link lists would bury the terminal. The model gets the full text.
@@ -15,7 +16,14 @@ if (!start || !target) {
   process.exit(1);
 }
 
-let race = await startRace(start, target, fetchLinks);
+// Count live fetches, to show a replayed race touches the network not at all.
+let liveFetches = 0;
+const getLinks = snapshotLinks("snapshot", (title) => {
+  liveFetches++;
+  return fetchLinks(title);
+});
+
+let race = await startRace(start, target, getLinks);
 let calls = 0;
 let resultChars = 0;
 
@@ -39,7 +47,7 @@ for await (const line of input) {
     continue;
   }
 
-  const outcome = await executeTool(call, race, fetchLinks);
+  const outcome = await executeTool(call, race, getLinks);
   race = outcome.race;
   calls++;
   resultChars += outcome.content.length;
@@ -60,6 +68,7 @@ for await (const line of input) {
   prompt();
 }
 input.close();
+console.log(`Pages fetched live and added to snapshot/: ${liveFetches}`);
 
 // "move_to Republic of Ireland" → { name: "move_to", arguments: '{"page":"Republic of Ireland"}' }.
 // Arguments are sent as a JSON string, exactly as a model sends them.
