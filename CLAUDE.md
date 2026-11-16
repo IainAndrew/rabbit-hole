@@ -61,5 +61,9 @@ Needs Node 24 or later. Copy `.env.example` to `.env` before anything that calls
   by turn, and writes a trace to `runs/` (billed, stops at 30 turns or $0.05)
 - `npm run replay-trace -- runs/<file>.jsonl`: replay a run from its trace, turn by turn
   (free)
+- `npm run measure-races`: count each race's 2-hop routes on live Wikipedia and write the
+  counts and difficulty into `races.json` (free, about 2 minutes)
+- `npm run check-races`: check every race in `races.json` against the snapshot, recording
+  pages it doesn't have yet (free)
 
 Add each new command here when the step that introduces it lands.

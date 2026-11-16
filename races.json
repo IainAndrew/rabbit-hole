@@ -1,0 +1,417 @@
+[
+  {
+    "id": "pizza-united-states",
+    "difficulty": "easy",
+    "start": "Pizza",
+    "target": "United States",
+    "knownPath": [
+      "Pizza",
+      "Chicago",
+      "United States"
+    ],
+    "measured": {
+      "twoHopRoutes": 11,
+      "complete": false,
+      "examples": [
+        "Buffalo, New York",
+        "Chicago",
+        "Detroit"
+      ],
+      "measuredOn": "2026-11-16"
+    }
+  },
+  {
+    "id": "tennis-world-war-ii",
+    "difficulty": "easy",
+    "start": "Tennis",
+    "target": "World War II",
+    "knownPath": [
+      "Tennis",
+      "Belgium",
+      "World War II"
+    ],
+    "measured": {
+      "twoHopRoutes": 12,
+      "complete": false,
+      "examples": [
+        "Belgium",
+        "Brazil",
+        "Bermuda"
+      ],
+      "measuredOn": "2026-11-16"
+    }
+  },
+  {
+    "id": "banana-charles-darwin",
+    "difficulty": "easy",
+    "start": "Banana",
+    "target": "Charles Darwin",
+    "knownPath": [
+      "Banana",
+      "Domestication",
+      "Charles Darwin"
+    ],
+    "measured": {
+      "twoHopRoutes": 10,
+      "complete": false,
+      "examples": [
+        "Botany",
+        "Carl Linnaeus",
+        "Flowering plant"
+      ],
+      "measuredOn": "2026-11-16"
+    }
+  },
+  {
+    "id": "volcano-isaac-newton",
+    "difficulty": "easy",
+    "start": "Volcano",
+    "target": "Isaac Newton",
+    "knownPath": [
+      "Volcano",
+      "Johannes Kepler",
+      "Isaac Newton"
+    ],
+    "measured": {
+      "twoHopRoutes": 10,
+      "complete": false,
+      "examples": [
+        "Exoplanet",
+        "Johannes Kepler",
+        "James Hutton"
+      ],
+      "measuredOn": "2026-11-16"
+    }
+  },
+  {
+    "id": "chocolate-france",
+    "difficulty": "easy",
+    "start": "Chocolate",
+    "target": "France",
+    "knownPath": [
+      "Chocolate",
+      "Catholic Church",
+      "France"
+    ],
+    "measured": {
+      "twoHopRoutes": 10,
+      "complete": false,
+      "examples": [
+        "Benzodiazepine",
+        "Calcium",
+        "Easter egg"
+      ],
+      "measuredOn": "2026-11-16"
+    }
+  },
+  {
+    "id": "dinosaur-moon",
+    "difficulty": "easy",
+    "start": "Dinosaur",
+    "target": "Moon",
+    "knownPath": [
+      "Dinosaur",
+      "Impact event",
+      "Moon"
+    ],
+    "measured": {
+      "twoHopRoutes": 10,
+      "complete": false,
+      "examples": [
+        "Biome",
+        "Ecology",
+        "Geologic time scale"
+      ],
+      "measuredOn": "2026-11-16"
+    }
+  },
+  {
+    "id": "guinness-albert-einstein",
+    "difficulty": "medium",
+    "start": "Guinness",
+    "target": "Albert Einstein",
+    "knownPath": [
+      "Guinness",
+      "The New York Times",
+      "Albert Einstein"
+    ],
+    "measured": {
+      "twoHopRoutes": 3,
+      "complete": true,
+      "examples": [
+        "Mary Coughlan (politician)",
+        "The New York Times",
+        "University of Nottingham"
+      ],
+      "measuredOn": "2026-11-16"
+    }
+  },
+  {
+    "id": "chess-moon",
+    "difficulty": "medium",
+    "start": "Chess",
+    "target": "Moon",
+    "knownPath": [
+      "Chess",
+      "Adrien-Marie Legendre",
+      "Moon"
+    ],
+    "measured": {
+      "twoHopRoutes": 5,
+      "complete": true,
+      "examples": [
+        "Leonhard Euler",
+        "Adrien-Marie Legendre",
+        "Howard Staunton"
+      ],
+      "measuredOn": "2026-11-16"
+    }
+  },
+  {
+    "id": "lighthouse-william-shakespeare",
+    "difficulty": "medium",
+    "start": "Lighthouse",
+    "target": "William Shakespeare",
+    "knownPath": [
+      "Lighthouse",
+      "United Kingdom",
+      "William Shakespeare"
+    ],
+    "measured": {
+      "twoHopRoutes": 6,
+      "complete": true,
+      "examples": [
+        "English Channel",
+        "United Kingdom",
+        "William Tecumseh Sherman"
+      ],
+      "measuredOn": "2026-11-16"
+    }
+  },
+  {
+    "id": "sushi-napoleon",
+    "difficulty": "medium",
+    "start": "Sushi",
+    "target": "Napoleon",
+    "knownPath": [
+      "Sushi",
+      "Catalonia",
+      "Napoleon"
+    ],
+    "measured": {
+      "twoHopRoutes": 7,
+      "complete": true,
+      "examples": [
+        "Catalonia",
+        "Salt",
+        "The New York Times"
+      ],
+      "measuredOn": "2026-11-16"
+    }
+  },
+  {
+    "id": "bicycle-ancient-egypt",
+    "difficulty": "medium",
+    "start": "Bicycle",
+    "target": "Ancient Egypt",
+    "knownPath": [
+      "Bicycle",
+      "Toy",
+      "Ancient Egypt"
+    ],
+    "measured": {
+      "twoHopRoutes": 7,
+      "complete": true,
+      "examples": [
+        "Copenhagen",
+        "Hydraulics",
+        "Toy"
+      ],
+      "measuredOn": "2026-11-16"
+    }
+  },
+  {
+    "id": "coffee-mount-everest",
+    "difficulty": "medium",
+    "start": "Coffee",
+    "target": "Mount Everest",
+    "knownPath": [
+      "Coffee",
+      "National Geographic",
+      "Mount Everest"
+    ],
+    "measured": {
+      "twoHopRoutes": 2,
+      "complete": true,
+      "examples": [
+        "Oxford English Dictionary",
+        "National Geographic"
+      ],
+      "measuredOn": "2026-11-16"
+    }
+  },
+  {
+    "id": "honey-bee-jupiter",
+    "difficulty": "medium",
+    "start": "Honey bee",
+    "target": "Jupiter",
+    "knownPath": [
+      "Honey bee",
+      "Antarctica",
+      "Jupiter"
+    ],
+    "measured": {
+      "twoHopRoutes": 1,
+      "complete": true,
+      "examples": [
+        "Antarctica"
+      ],
+      "measuredOn": "2026-11-16"
+    }
+  },
+  {
+    "id": "hedgehog-stock-exchange",
+    "difficulty": "medium",
+    "start": "Hedgehog",
+    "target": "Stock exchange",
+    "knownPath": [
+      "Hedgehog",
+      "New York City",
+      "Stock exchange"
+    ],
+    "measured": {
+      "twoHopRoutes": 1,
+      "complete": true,
+      "examples": [
+        "New York City"
+      ],
+      "measuredOn": "2026-11-16"
+    }
+  },
+  {
+    "id": "kazoo-higgs-boson",
+    "difficulty": "hard",
+    "start": "Kazoo",
+    "target": "Higgs boson",
+    "knownPath": [
+      "Kazoo",
+      "Vibration",
+      "Mass",
+      "Higgs boson"
+    ],
+    "measured": {
+      "twoHopRoutes": 0,
+      "complete": true,
+      "examples": [],
+      "measuredOn": "2026-11-16"
+    }
+  },
+  {
+    "id": "tardigrade-cricket-world-cup",
+    "difficulty": "hard",
+    "start": "Tardigrade",
+    "target": "Cricket World Cup",
+    "knownPath": [
+      "Tardigrade",
+      "Sponge",
+      "Australia",
+      "Cricket World Cup"
+    ],
+    "measured": {
+      "twoHopRoutes": 0,
+      "complete": true,
+      "examples": [],
+      "measuredOn": "2026-11-16"
+    }
+  },
+  {
+    "id": "bagpipes-quantum-entanglement",
+    "difficulty": "hard",
+    "start": "Bagpipes",
+    "target": "Quantum entanglement",
+    "knownPath": [
+      "Bagpipes",
+      "Jordan",
+      "CERN",
+      "Quantum entanglement"
+    ],
+    "measured": {
+      "twoHopRoutes": 0,
+      "complete": true,
+      "examples": [],
+      "measuredOn": "2026-11-16"
+    }
+  },
+  {
+    "id": "haiku-fermats-last-theorem",
+    "difficulty": "hard",
+    "start": "Haiku",
+    "target": "Fermat's Last Theorem",
+    "knownPath": [
+      "Haiku",
+      "Japan",
+      "Fields Medal",
+      "Fermat's Last Theorem"
+    ],
+    "measured": {
+      "twoHopRoutes": 0,
+      "complete": true,
+      "examples": [],
+      "measuredOn": "2026-11-16"
+    }
+  },
+  {
+    "id": "origami-peace-of-westphalia",
+    "difficulty": "hard",
+    "start": "Origami",
+    "target": "Peace of Westphalia",
+    "knownPath": [
+      "Origami",
+      "Lace",
+      "French Revolution",
+      "Peace of Westphalia"
+    ],
+    "measured": {
+      "twoHopRoutes": 0,
+      "complete": true,
+      "examples": [],
+      "measuredOn": "2026-11-16"
+    }
+  },
+  {
+    "id": "lichen-rubiks-cube",
+    "difficulty": "hard",
+    "start": "Lichen",
+    "target": "Rubik's Cube",
+    "knownPath": [
+      "Lichen",
+      "Roof",
+      "Hungary",
+      "Rubik's Cube"
+    ],
+    "measured": {
+      "twoHopRoutes": 0,
+      "complete": true,
+      "examples": [],
+      "measuredOn": "2026-11-16"
+    }
+  },
+  {
+    "id": "penguin-bauhaus",
+    "difficulty": "hard",
+    "start": "Penguin",
+    "target": "Bauhaus",
+    "knownPath": [
+      "Penguin",
+      "Bird",
+      "Germany",
+      "Bauhaus"
+    ],
+    "measured": {
+      "twoHopRoutes": 0,
+      "complete": true,
+      "examples": [],
+      "measuredOn": "2026-11-16"
+    }
+  }
+]
