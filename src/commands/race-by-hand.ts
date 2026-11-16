@@ -70,8 +70,15 @@ for await (const line of input) {
 input.close();
 console.log(`Pages fetched live and added to snapshot/: ${liveFetches}`);
 
-// "move_to Republic of Ireland" → { name: "move_to", arguments: '{"page":"Republic of Ireland"}' }.
-// Arguments are sent as a JSON string, exactly as a model sends them.
+/**
+ * Turn a typed line into a tool call. Arguments are sent as a JSON string,
+ * exactly as a model sends them.
+ *
+ * @example
+ * parseCall("move_to Republic of Ireland")
+ * // { name: "move_to", arguments: '{"page":"Republic of Ireland"}' }
+ * @returns Null for a blank line.
+ */
 function parseCall(line: string): ToolCall | null {
   const trimmed = line.trim();
   if (trimmed === "") return null;
@@ -82,6 +89,7 @@ function parseCall(line: string): ToolCall | null {
   return { name, arguments: JSON.stringify({ [key]: value }) };
 }
 
+/** Print the start of a tool result; the model gets the whole of it. */
 function printPreview(content: string): void {
   const lines = content.split("\n");
   console.log(lines.slice(0, PREVIEW_LINES).join("\n"));

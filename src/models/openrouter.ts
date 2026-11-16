@@ -6,71 +6,97 @@ import { fetchWithRetry } from "../wikipedia/retry.ts";
 
 const CHAT_URL = "https://openrouter.ai/api/v1/chat/completions";
 
-// The conversation, in the wire format: it is sent whole on every call.
+/** The conversation, in the wire format: it is sent whole on every call. */
 export type Message = SystemMessage | UserMessage | AssistantMessage | ToolMessage;
 
+/** The task and rules, first in every conversation. */
 export type SystemMessage = { role: "system"; content: string };
 
+/** A message from our side; here, only the opening that names the race. */
 export type UserMessage = { role: "user"; content: string };
 
-// The model's reply, sent back on later turns exactly as it came.
+/** The model's reply, sent back on later turns exactly as it came. */
 export type AssistantMessage = {
   role: "assistant";
+  /** Null when the reply is only tool calls. */
   content: string | null;
+  /** Left out, not empty, when the reply has none. */
   tool_calls?: WireToolCall[];
+  /** Opaque reasoning blocks; see `ChatResult.reasoningDetails`. */
   reasoning_details?: unknown[];
 };
 
-// Answers one tool call. Every call in an assistant message needs one.
-export type ToolMessage = { role: "tool"; tool_call_id: string; content: string };
+/** Answers one tool call. Every call in an assistant message needs one. */
+export type ToolMessage = {
+  role: "tool";
+  /** The `id` of the tool call this answers. */
+  tool_call_id: string;
+  content: string;
+};
 
-// A tool call as it appears on the wire, nested under "function".
+/** A tool call as it appears on the wire, nested under "function". */
 export type WireToolCall = {
   id: string;
   type: "function";
   function: { name: string; arguments: string };
 };
 
-// Arguments arrive as a JSON string written by the model, so they may not
-// parse. The id pairs this call with the result we send back.
-export type ModelToolCall = { id: string; name: string; arguments: string };
+/** A tool call from a reply, flattened out of the wire format. */
+export type ModelToolCall = {
+  /** Pairs this call with the result we send back. */
+  id: string;
+  name: string;
+  /** A JSON string written by the model, so it may not parse. */
+  arguments: string;
+};
 
+/** One call's tokens and cost. Null means the provider didn't report it. */
 export type Usage = {
-  // Everything sent, including tool definitions and cached tokens.
+  /** Everything sent, including tool definitions and cached tokens. */
   promptTokens: number;
-  // The part of the prompt served from the provider's cache, billed cheaper.
+  /** The part of the prompt served from the provider's cache, billed cheaper. */
   cachedTokens: number | null;
-  // Everything generated, including reasoning.
+  /** Everything generated, including reasoning. */
   completionTokens: number;
+  /** The part of completionTokens spent thinking. */
   reasoningTokens: number | null;
-  // Dollars, as OpenRouter charged it.
+  /** Dollars, as OpenRouter charged it. */
   cost: number | null;
 };
 
+/** One checked reply from the model. */
 export type ChatResult = {
+  /** Text the model wrote, if any. */
   content: string | null;
+  /** The model's thinking as readable text, when the provider returns it. */
   reasoning: string | null;
-  // Opaque: sent back unchanged on the next turn. Some models sign or encrypt
-  // their reasoning and reject a conversation that drops it.
+  /**
+   * Opaque: sent back unchanged on the next turn. Some models sign or encrypt
+   * their reasoning and reject a conversation that drops it.
+   */
   reasoningDetails: unknown[] | null;
+  /** Empty when the model answered in text only. */
   toolCalls: ModelToolCall[];
-  // "tool_calls", "stop", "length" (hit maxTokens), and others.
+  /** "tool_calls", "stop", "length" (hit maxTokens), and others. */
   finishReason: string | null;
   usage: Usage;
-  // Which upstream provider OpenRouter routed the call to.
+  /** Which upstream provider OpenRouter routed the call to. */
   provider: string | null;
-  // OpenRouter's id for this call ("gen-...").
+  /** OpenRouter's id for this call ("gen-..."). */
   generationId: string | null;
-  // Requests sent, retries included. Their waits are part of durationMs.
+  /** Requests sent, retries included. Their waits are part of durationMs. */
   attempts: number;
+  /** From sending the first request to reading the last response. */
   durationMs: number;
 };
 
-// A failed call. status is the HTTP status, or null when the failure came
-// inside a 200 response. Callers use it to tell "out of credits" from other
-// failures.
+/**
+ * A failed call. Callers use `status` to tell "out of credits" from other
+ * failures.
+ */
 export class OpenRouterError extends Error {
   override name = "OpenRouterError";
+  /** The HTTP status, or null when the failure came inside a 200 response. */
   readonly status: number | null;
 
   constructor(message: string, status: number | null) {
@@ -79,14 +105,27 @@ export class OpenRouterError extends Error {
   }
 }
 
+/** One call to make. */
 export type ChatRequest = {
+  /** Supplies the model id and its reasoning setting. */
   model: Model;
+  /** The whole conversation so far. */
   messages: Message[];
+  /** Tool definitions in the OpenAI-compatible format. */
   tools: readonly object[];
-  // Caps one reply, reasoning included, so one call can't run away.
+  /** Caps one reply, reasoning included, so one call can't run away. */
   maxTokens: number;
 };
 
+/**
+ * Send the conversation to OpenRouter and return the model's checked reply.
+ * Reads the key from OPENROUTER_API_KEY. Retries 429s and 5xx, which aren't
+ * billed.
+ *
+ * @throws {OpenRouterError} For an HTTP error, a provider error inside a 200,
+ *   or a response that doesn't have the expected shape.
+ * @throws If OPENROUTER_API_KEY isn't set.
+ */
 export async function chat(request: ChatRequest): Promise<ChatResult> {
   const key = process.env.OPENROUTER_API_KEY;
   if (!key) {
@@ -123,7 +162,7 @@ export async function chat(request: ChatRequest): Promise<ChatResult> {
   return { ...parseResponse(json), attempts, durationMs };
 }
 
-// The response is outside data: check every field we use.
+/** The response is outside data: check every field we use. */
 function parseResponse(json: unknown): Omit<ChatResult, "attempts" | "durationMs"> {
   if (!isRecord(json) || !Array.isArray(json.choices) || !isRecord(json.usage)) {
     throw new OpenRouterError("Unexpected OpenRouter response", null);
@@ -164,6 +203,7 @@ function parseResponse(json: unknown): Omit<ChatResult, "attempts" | "durationMs
   };
 }
 
+/** Check one wire tool call and flatten it. */
 function parseToolCall(raw: unknown): ModelToolCall {
   if (
     !isRecord(raw) ||
@@ -177,6 +217,7 @@ function parseToolCall(raw: unknown): ModelToolCall {
   return { id: raw.id, name: raw.function.name, arguments: raw.function.arguments };
 }
 
+/** The `error.message` from an error body, if it has one. */
 function errorMessage(json: unknown): string {
   if (isRecord(json) && isRecord(json.error) && typeof json.error.message === "string") {
     return json.error.message;
@@ -184,14 +225,17 @@ function errorMessage(json: unknown): string {
   return "no error message";
 }
 
+/** The value if it's a string, otherwise null. */
 function optionalString(value: unknown): string | null {
   return typeof value === "string" ? value : null;
 }
 
+/** The value if it's a number, otherwise null. */
 function optionalNumber(value: unknown): number | null {
   return typeof value === "number" ? value : null;
 }
 
+/** True for any non-null object, so its fields can be read and checked. */
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }

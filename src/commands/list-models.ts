@@ -30,6 +30,7 @@ for (const model of models) {
   }
 }
 
+/** Dollars per million tokens, to 3 places. */
 function price(dollars: number): string {
   return `$${dollars.toFixed(3)}`;
 }

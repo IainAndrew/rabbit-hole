@@ -6,8 +6,11 @@
 import { currentPage, hops, move, type LinkSource, type Race } from "./race.ts";
 import { PageNotFoundError } from "../wikipedia/wikipedia.ts";
 
-// In the OpenAI-compatible format OpenRouter accepts. The descriptions are
-// part of the prompt: they're all the model knows about each tool.
+/**
+ * The tools offered to the model, in the OpenAI-compatible format OpenRouter
+ * accepts. The descriptions are part of the prompt: they're all the model
+ * knows about each tool.
+ */
 export const toolDefinitions = [
   {
     type: "function",
@@ -49,19 +52,32 @@ export const toolDefinitions = [
   },
 ] as const;
 
-// A tool call as the model sends it: arguments arrive as a JSON string.
-export type ToolCall = { name: string; arguments: string };
+/** A tool call as the model sends it. */
+export type ToolCall = {
+  name: string;
+  /** A JSON string written by the model, so it may not parse. */
+  arguments: string;
+};
 
+/** The result of running one tool call. */
 export type ToolOutcome = {
-  // What the model sees.
+  /** What the model sees. */
   content: string;
-  // "error" means the model made a mistake it can recover from.
+  /** "error" means the model made a mistake it can recover from. */
   status: "ok" | "error";
+  /** The race after the call: moved on by a move, otherwise unchanged. */
   race: Race;
-  // Set when this call ends the race.
+  /** Set when this call ends the race. */
   end: "won" | "gave_up" | null;
 };
 
+/**
+ * Run one tool call against the race and say what happened, in words for the
+ * model. Bad arguments, unknown tools and illegal moves come back as errors
+ * the model can read and recover from, not exceptions.
+ *
+ * @throws Only for failures the model didn't cause, such as a network error.
+ */
 export async function executeTool(call: ToolCall, race: Race, getLinks: LinkSource): Promise<ToolOutcome> {
   const success = (content: string, extra: { end?: ToolOutcome["end"]; race?: Race } = {}): ToolOutcome => ({
     content,
@@ -119,7 +135,11 @@ export async function executeTool(call: ToolCall, race: Race, getLinks: LinkSour
   }
 }
 
-// Model output is outside data: it may not be JSON, or not an object.
+/**
+ * Model output is outside data: it may not be JSON, or not an object.
+ *
+ * @returns The parsed object, or null if it isn't one.
+ */
 function parseArguments(json: string): Record<string, unknown> | null {
   try {
     const value: unknown = JSON.parse(json);
@@ -131,6 +151,7 @@ function parseArguments(json: string): Record<string, unknown> | null {
   }
 }
 
+/** The named argument if it's a non-blank string, otherwise null. */
 function stringArg(args: Record<string, unknown>, key: string): string | null {
   const value = args[key];
   return typeof value === "string" && value.trim() !== "" ? value : null;

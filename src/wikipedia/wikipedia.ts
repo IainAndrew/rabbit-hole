@@ -11,34 +11,48 @@ const USER_AGENT = "RabbitHole/0.1 (https://iainandrew.com) bot";
 // part of the race.
 const ARTICLE_NAMESPACE = 0;
 
+/** One page's article links, as fetched from Wikipedia. */
 export type LinksPage = {
-  // The canonical title, after normalisation ("guinness" → "Guinness") and
-  // redirects ("Einstein" → "Albert Einstein").
+  /**
+   * The canonical title, after normalisation ("guinness" → "Guinness") and
+   * redirects ("Einstein" → "Albert Einstein").
+   */
   title: string;
+  /** Titles of every article the page links to, in Wikipedia's order. */
   links: string[];
-  // How many API requests it took to collect every link.
+  /** How many API requests it took to collect every link. */
   requests: number;
 };
 
-// The page doesn't exist. Unlike a network failure, this is something the
-// model asked for, so callers can report it back instead of crashing.
+/**
+ * The page doesn't exist. Unlike a network failure, this is something the
+ * model asked for, so callers can report it back instead of crashing.
+ */
 export class PageNotFoundError extends Error {
   override name = "PageNotFoundError";
 }
 
-// One response's worth of links, plus where to continue from if there's more.
+/** One response's worth of links. */
 type Batch = {
   title: string;
   links: string[];
+  /** Fields to send back to get the next batch, or null on the last one. */
   continueFrom: Record<string, string> | null;
 };
 
-// Pages already fetched this run, keyed by both the requested and the
-// canonical title. Storing the promise means two lookups of the same page at
-// once share one fetch.
+/**
+ * Pages already fetched this run, keyed by both the requested and the
+ * canonical title. Storing the promise means two lookups of the same page at
+ * once share one fetch.
+ */
 const cache = new Map<string, Promise<LinksPage>>();
 
-// Every article link on a page, fetched at most once per run.
+/**
+ * Every article link on a page, fetched at most once per run.
+ *
+ * @param title Any title Wikipedia accepts, including a redirect.
+ * @throws {PageNotFoundError} If the page doesn't exist or the title is invalid.
+ */
 export function fetchLinks(title: string): Promise<LinksPage> {
   const cached = cache.get(title);
   if (cached) return cached;
@@ -53,8 +67,10 @@ export function fetchLinks(title: string): Promise<LinksPage> {
   return pending;
 }
 
-// Wikipedia returns at most 500 links per request, so keep asking until it
-// stops giving a continuation token.
+/**
+ * Wikipedia returns at most 500 links per request, so keep asking until it
+ * stops giving a continuation token.
+ */
 async function fetchAllLinks(title: string): Promise<LinksPage> {
   const links: string[] = [];
   let continueFrom: Record<string, string> | null = {};
@@ -72,6 +88,11 @@ async function fetchAllLinks(title: string): Promise<LinksPage> {
   return { title: canonicalTitle, links, requests };
 }
 
+/**
+ * One API request for a page's links.
+ *
+ * @param continueFrom The previous batch's continuation, or `{}` for the first.
+ */
 async function fetchBatch(
   title: string,
   continueFrom: Record<string, string>,
@@ -98,7 +119,11 @@ async function fetchBatch(
   return parseBatch(await response.json(), title);
 }
 
-// The API's JSON is outside data: check its shape before trusting it.
+/**
+ * The API's JSON is outside data: check its shape before trusting it.
+ *
+ * @param requested The title asked for, used in error messages.
+ */
 function parseBatch(body: unknown, requested: string): Batch {
   if (!isRecord(body) || !isRecord(body.query) || !Array.isArray(body.query.pages)) {
     throw new Error(`Unexpected Wikipedia response for "${requested}"`);
@@ -127,7 +152,7 @@ function parseBatch(body: unknown, requested: string): Batch {
   return { title: page.title, links, continueFrom: parseContinue(body.continue) };
 }
 
-// The continuation block is opaque: send every field back exactly as given.
+/** The continuation block is opaque: send every field back exactly as given. */
 function parseContinue(value: unknown): Record<string, string> | null {
   if (value === undefined) return null;
   if (!isRecord(value)) {
@@ -143,6 +168,7 @@ function parseContinue(value: unknown): Record<string, string> | null {
   return fields;
 }
 
+/** True for any non-null object, so its fields can be read and checked. */
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }

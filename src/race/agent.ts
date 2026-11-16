@@ -7,59 +7,96 @@ import { currentPage, hops, startRace, type LinkSource, type Race } from "./race
 import { executeTool, toolDefinitions } from "./tools.ts";
 import type { Totals, TraceEvent } from "./trace.ts";
 
-// Passed in rather than imported, so tests can script the model's replies.
+/**
+ * Sends the conversation so far and returns the model's reply. Passed in
+ * rather than imported, so tests can script the model's replies.
+ */
 export type CallModel = (messages: Message[]) => Promise<ChatResult>;
 
-// How a race ended. Each one says something about the agent.
-export type EndReason =
-  | "won"
-  | "gave_up"
-  | "turn_limit"
-  // A call's prompt grew past maxPromptTokens.
-  | "token_limit"
-  // A reply was cut off at the output cap, so its tool calls can't be trusted.
-  | "output_limit"
-  // A reply with no tool call, or one the provider's filter blocked.
-  | "refused";
+/**
+ * How a race ended. Each one says something about the agent.
+ *
+ * - `won`: reached the target.
+ * - `gave_up`: called give_up.
+ * - `turn_limit`: used every turn without finishing.
+ * - `token_limit`: a call's prompt grew past maxPromptTokens.
+ * - `output_limit`: a reply was cut off at the output cap, so its tool calls
+ *   can't be trusted.
+ * - `refused`: a reply with no tool call, or one the provider's filter blocked.
+ */
+export type EndReason = "won" | "gave_up" | "turn_limit" | "token_limit" | "output_limit" | "refused";
 
-// Why a run couldn't finish. These say nothing about the agent, so they are
-// kept out of success rates.
+/**
+ * Why a run couldn't finish. These say nothing about the agent, so they are
+ * kept out of success rates.
+ *
+ * - `no_credits`: OpenRouter answered 402.
+ * - `retries_exhausted`: 429s or 5xx kept coming after every retry.
+ * - `api_error`: any other API failure, such as a malformed response.
+ */
 export type CrashCause = "no_credits" | "retries_exhausted" | "api_error";
 
+/** A run either finished, which counts for or against the agent, or crashed, which doesn't. */
 export type RunEnd =
   | { kind: "finished"; reason: EndReason }
   | { kind: "crashed"; cause: CrashCause; error: string };
 
+/** Everything a run produced. The trace holds the same, event by event. */
 export type RunResult = {
+  /** The race as it ended, with the full path. */
   race: Race;
   end: RunEnd;
-  // Model calls made.
+  /** Model calls made. */
   turns: number;
   totals: Totals;
+  /** The whole conversation, the final reply and its tool results included. */
   messages: Message[];
 };
 
+/** The task and goal. Facts about the tools live in their descriptions. */
 export const SYSTEM_PROMPT = `You are playing a Wikipedia race. You start on one Wikipedia page and must reach the target page by following links, in as few hops as possible.`;
+/** The first user message; `{start}` and `{target}` are filled in per race. */
 const OPENING = `You are on "{start}". The target is "{target}".`;
 
-// Changes whenever anything the model is told changes, so results are only
-// compared between runs that saw the same prompt.
+/**
+ * A short hash of everything the model is told: system prompt, opening
+ * message and tool definitions. It changes whenever any of them does, so
+ * results are only compared between runs that saw the same prompt.
+ */
 export function promptHash(): string {
   const prompt = JSON.stringify({ system: SYSTEM_PROMPT, opening: OPENING, tools: toolDefinitions });
   return createHash("sha256").update(prompt).digest("hex").slice(0, 12);
 }
 
+/** One race to run, and the limits it runs under. */
 export type RunOptions = {
+  /** Start page title; redirects are resolved before the first turn. */
   start: string;
+  /** Target page title; redirects are resolved before the first turn. */
   target: string;
   callModel: CallModel;
   getLinks: LinkSource;
+  /** Model calls allowed before the run ends as "turn_limit". */
   maxTurns: number;
+  /**
+   * Context size, not cost: once a call's prompt is bigger than this, the run
+   * ends as "token_limit" after that turn's tools run.
+   */
   maxPromptTokens: number;
-  // Receives each model call, tool call and the run's end, as they happen.
+  /**
+   * Receives each model call, tool call and the run's end, as they happen.
+   * The caller writes run_start itself, since it knows the model and commit.
+   */
   record: (event: TraceEvent) => void;
 };
 
+/**
+ * Play one race: call the model, run the tools it asks for, append the
+ * results, and repeat until the race ends or a limit is reached.
+ *
+ * @returns How it ended. An API failure is returned as a crash, not thrown.
+ * @throws Anything that isn't an API failure, because that's a bug.
+ */
 export async function runAgent(options: RunOptions): Promise<RunResult> {
   let race = await startRace(options.start, options.target, options.getLinks);
   const messages: Message[] = [
@@ -145,6 +182,7 @@ export async function runAgent(options: RunOptions): Promise<RunResult> {
   return finished("turn_limit", options.maxTurns);
 }
 
+/** Add one call's tokens and cost to the run's totals, in place. */
 function addUsage(totals: Totals, reply: ChatResult): void {
   const { usage } = reply;
   totals.promptTokens += usage.promptTokens;
@@ -155,6 +193,7 @@ function addUsage(totals: Totals, reply: ChatResult): void {
   totals.cost = totals.cost === null || usage.cost === null ? null : totals.cost + usage.cost;
 }
 
+/** Sort an API failure into a crash cause, by HTTP status. */
 function crashCause(err: OpenRouterError): CrashCause {
   if (err.status === 402) return "no_credits";
   // fetchWithRetry has already retried these.
@@ -162,8 +201,11 @@ function crashCause(err: OpenRouterError): CrashCause {
   return "api_error";
 }
 
-// The model's reply goes back into the conversation exactly as it asked,
-// including reasoning, so the next turn sees its own earlier thinking.
+/**
+ * The reply in the form it's sent back on the next turn. It goes back exactly
+ * as the model wrote it, reasoning included, so the next turn sees its own
+ * earlier thinking.
+ */
 function assistantMessage(reply: ChatResult): AssistantMessage {
   return {
     role: "assistant",

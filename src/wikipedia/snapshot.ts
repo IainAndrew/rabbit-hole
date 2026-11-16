@@ -8,13 +8,24 @@ import { join } from "node:path";
 import { normalizeTitle, type LinkSource } from "../race/race.ts";
 import { PageNotFoundError } from "./wikipedia.ts";
 
-// One file per title looked up. A redirect or a missing page is recorded too,
-// so asking for "Einstein" or a page that doesn't exist is also offline.
+/**
+ * What one snapshot file holds. There's one file per title looked up. A
+ * redirect or a missing page is recorded too, so asking for "Einstein" or a
+ * page that doesn't exist is also offline.
+ */
 type Entry =
   | { kind: "page"; title: string; links: string[]; fetchedAt: string }
   | { kind: "redirect"; from: string; to: string; fetchedAt: string }
   | { kind: "missing"; title: string; message: string; fetchedAt: string };
 
+/**
+ * A link source that reads from the snapshot and records any miss.
+ *
+ * @param dir The snapshot directory; created on the first write.
+ * @param fetchLive Where a miss is fetched from: live Wikipedia, or a fake in tests.
+ * @returns A source that gives the same answer for a title on every run.
+ * @throws {PageNotFoundError} If the page doesn't exist, now or when recorded.
+ */
 export function snapshotLinks(dir: string, fetchLive: LinkSource): LinkSource {
   const lookup: LinkSource = async (title) => {
     const entry = await readEntry(dir, title);
@@ -26,6 +37,7 @@ export function snapshotLinks(dir: string, fetchLive: LinkSource): LinkSource {
   return lookup;
 }
 
+/** Fetch a title live and write what came back: a page, a redirect, or a miss. */
 async function record(dir: string, title: string, fetchLive: LinkSource) {
   const fetchedAt = new Date().toISOString();
   let live;
@@ -50,9 +62,13 @@ async function record(dir: string, title: string, fetchLive: LinkSource) {
   return live;
 }
 
-// "republic_of Ireland" and "Republic of Ireland" are one page to Wikipedia,
-// so they share a file. The hash keeps titles apart that differ only in case
-// or punctuation ("AIDS" and "Aids"), which macOS would treat as one file.
+/**
+ * The file a title is stored in.
+ *
+ * "republic_of Ireland" and "Republic of Ireland" are one page to Wikipedia,
+ * so they share a file. The hash keeps titles apart that differ only in case
+ * or punctuation ("AIDS" and "Aids"), which macOS would treat as one file.
+ */
 function fileFor(dir: string, title: string): string {
   const key = normalizeTitle(title);
   const readable = key.replace(/[^A-Za-z0-9]+/g, "_").slice(0, 80);
@@ -60,6 +76,7 @@ function fileFor(dir: string, title: string): string {
   return join(dir, `${readable}.${hash}.json`);
 }
 
+/** The title's entry, or null if the snapshot doesn't have it yet. */
 async function readEntry(dir: string, title: string): Promise<Entry | null> {
   const file = fileFor(dir, title);
   let text;
@@ -72,13 +89,18 @@ async function readEntry(dir: string, title: string): Promise<Entry | null> {
   return parseEntry(JSON.parse(text), file);
 }
 
+/** Write a title's entry, replacing any file already there. */
 async function writeEntry(dir: string, title: string, entry: Entry): Promise<void> {
   await mkdir(dir, { recursive: true });
   // Pretty-printed, one link per line, so a change to the snapshot reads as a diff.
   await writeFile(fileFor(dir, title), JSON.stringify(entry, null, 2) + "\n");
 }
 
-// Snapshot files are committed and could be hand-edited: check before trusting.
+/**
+ * Snapshot files are committed and could be hand-edited: check before trusting.
+ *
+ * @param file The file's path, used in the error message.
+ */
 function parseEntry(value: unknown, file: string): Entry {
   const bad = new Error(`Malformed snapshot file ${file}`);
   if (!isRecord(value) || typeof value.fetchedAt !== "string") throw bad;
@@ -98,6 +120,7 @@ function parseEntry(value: unknown, file: string): Entry {
   throw bad;
 }
 
+/** True for any non-null object, so its fields can be read and checked. */
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }

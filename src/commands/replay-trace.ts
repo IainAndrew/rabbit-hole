@@ -39,6 +39,7 @@ if (!ended) {
   console.log("\nThe trace stops without a run_end: the run was killed before it finished.");
 }
 
+/** Print one event and update the running totals. */
 function print(event: TraceLine): void {
   switch (event.type) {
     case "model_call": {
@@ -84,12 +85,13 @@ function print(event: TraceLine): void {
   }
 }
 
-// How full the context is, against the token limit.
+/** How full the context is, against the token limit, as a text bar. */
 function bar(tokens: number, limit: number): string {
   const filled = Math.min(BAR_WIDTH, Math.round((tokens / limit) * BAR_WIDTH));
   return `[${"█".repeat(filled)}${"·".repeat(BAR_WIDTH - filled)}]`;
 }
 
+/** The first few lines of a tool result, with a count of the rest. */
 function trim(result: string): string {
   const lines = result.split("\n");
   if (lines.length <= RESULT_LINES + 1) return result;
@@ -97,6 +99,7 @@ function trim(result: string): string {
   return `${shown}\n…and ${lines.length - RESULT_LINES - 1} more`;
 }
 
+/** Put the prefix on the first line and line the others up under it. */
 function indent(text: string, prefix: string): string {
   const pad = " ".repeat(prefix.length);
   return text
@@ -105,10 +108,12 @@ function indent(text: string, prefix: string): string {
     .join("\n");
 }
 
+/** Dollars to 6 places, enough to show a single cheap call. */
 function money(dollars: number | null): string {
   return dollars === null ? "cost unknown" : `$${dollars.toFixed(6)}`;
 }
 
+/** Milliseconds as seconds, to one place. */
 function seconds(ms: number): string {
   return `${(ms / 1000).toFixed(1)} s`;
 }

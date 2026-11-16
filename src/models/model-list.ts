@@ -5,17 +5,19 @@ import { fetchWithRetry } from "../wikipedia/retry.ts";
 
 const MODELS_URL = "https://openrouter.ai/api/v1/models";
 
+/** A model from OpenRouter's live list. Prices are dollars per million tokens. */
 export type ListedModel = {
   id: string;
   name: string;
+  /** Tokens. */
   contextLength: number;
-  // Dollars per million tokens. Cached input is null when the model has no
-  // cache price listed.
   inputPrice: number;
+  /** Null when the model has no cache price listed. */
   cachedInputPrice: number | null;
   outputPrice: number;
 };
 
+/** Fetch OpenRouter's live model list, filtered and sorted as `parseModelList` does. */
 export async function fetchModelList(): Promise<ListedModel[]> {
   const response = await fetchWithRetry(() => fetch(MODELS_URL));
   if (!response.ok) {
@@ -24,9 +26,14 @@ export async function fetchModelList(): Promise<ListedModel[]> {
   return parseModelList(await response.json());
 }
 
-// Keep models the race could run on, cheapest input first. A race is mostly
-// input tokens (the whole conversation is resent every turn), so input price
-// matters most.
+/**
+ * Keep models the race could run on, cheapest input first. A race is mostly
+ * input tokens (the whole conversation is resent every turn), so input price
+ * matters most.
+ *
+ * @param body The list endpoint's JSON, unchecked.
+ * @throws If the body or any model in it is malformed.
+ */
 export function parseModelList(body: unknown): ListedModel[] {
   if (!isRecord(body) || !Array.isArray(body.data)) {
     throw new Error("Unexpected OpenRouter model list");
@@ -37,6 +44,7 @@ export function parseModelList(body: unknown): ListedModel[] {
     .sort((a, b) => a.inputPrice - b.inputPrice);
 }
 
+/** True for models with tools, a pinned id, chat support and a real price. */
 function isUsable(raw: unknown): boolean {
   if (!isRecord(raw) || typeof raw.id !== "string") {
     throw new Error("Malformed model in OpenRouter list");
@@ -56,6 +64,7 @@ function isUsable(raw: unknown): boolean {
   );
 }
 
+/** Check one raw model and convert its prices. */
 function toListedModel(raw: unknown): ListedModel {
   if (
     !isRecord(raw) ||
@@ -77,7 +86,11 @@ function toListedModel(raw: unknown): ListedModel {
   };
 }
 
-// OpenRouter lists prices as strings in dollars per token.
+/**
+ * OpenRouter lists prices as strings in dollars per token.
+ *
+ * @param id The model's id, for the error message.
+ */
 function perMillion(value: unknown, id: string): number {
   const perToken = Number(value);
   if (typeof value !== "string" || !Number.isFinite(perToken)) {
@@ -86,6 +99,7 @@ function perMillion(value: unknown, id: string): number {
   return perToken * 1_000_000;
 }
 
+/** True for any non-null object, so its fields can be read and checked. */
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }

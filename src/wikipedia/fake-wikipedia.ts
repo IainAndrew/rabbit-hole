@@ -10,6 +10,7 @@ const pages: Record<string, string[]> = {
 };
 const redirects: Record<string, string> = { Einstein: "Albert Einstein" };
 
+/** A link source over the fake pages, with Wikipedia's not-found error. */
 export const fakeLinks: LinkSource = async (title) => {
   const canonical = redirects[title] ?? title;
   const links = pages[canonical];
