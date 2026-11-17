@@ -131,13 +131,13 @@ export function openTrace(dir: string, name: string): { path: string; record: (e
 }
 
 /**
- * The harness commit and whether the code has uncommitted changes. snapshot/
- * doesn't count: it's data that grows during runs, and a page added to it
- * never changes one already there.
+ * The harness commit and whether the code has uncommitted changes. Data
+ * that grows during runs doesn't count: snapshot/, where a page added never
+ * changes one already there, and results/, where evals write their traces.
  */
 export function gitState(): { gitCommit: string; gitDirty: boolean } {
   const git = (...args: string[]) => execFileSync("git", args, { encoding: "utf8" }).trim();
-  const changes = git("status", "--porcelain", "--", ".", ":(exclude)snapshot");
+  const changes = git("status", "--porcelain", "--", ".", ":(exclude)snapshot", ":(exclude)results");
   return { gitCommit: git("rev-parse", "HEAD"), gitDirty: changes !== "" };
 }
 

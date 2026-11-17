@@ -60,14 +60,14 @@ Needs Node 24 or later. Copy `.env.example` to `.env` before anything that calls
 - `npm run race-agent -- "Start" "Target"`: the build model plays one race, printed turn
   by turn, and writes a trace to `runs/` (billed, stops at 30 turns or $0.05)
 - `npm run eval-model -- --model <id> --max-cost <dollars> [--repeats 3]`: run every race
-  in `races.json` against one model, writing traces and `eval.json` to `runs/<eval>/`.
+  in `races.json` against one model, writing traces and `eval.json` to `results/<eval>/`.
   Refuses uncommitted code; stops starting runs at the cap (billed). With
-  `--resume runs/<eval> --max-cost <dollars>`, re-runs crashed runs and starts unstarted
+  `--resume results/<eval> --max-cost <dollars>`, re-runs crashed runs and starts unstarted
   ones, at the same commit (billed)
-- `npm run eval-report -- runs/<eval>`: score one eval from its `eval.json` and traces
+- `npm run eval-report -- results/<eval>`: score one eval from its `eval.json` and traces
   (success rate, then hops on wins), by tier, repeat and race; refuses runs from another
   model, prompt or commit (free)
-- `npm run replay-trace -- runs/<file>.jsonl`: replay a run from its trace, turn by turn
+- `npm run replay-trace -- <trace>.jsonl`: replay a run from its trace, turn by turn
   (free)
 - `npm run measure-races`: count each race's 2-hop routes on live Wikipedia and write the
   counts and difficulty into `races.json` (free, about 2 minutes)

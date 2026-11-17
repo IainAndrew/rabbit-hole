@@ -1,6 +1,6 @@
 // Report on one eval, from its manifest and traces only: the score, then the
 // same by tier, by repeat and by race. Free: reads files.
-// Usage: npm run eval-report -- runs/<eval>
+// Usage: npm run eval-report -- results/<eval>
 
 import { loadEval, type LoadedRun } from "../evals/report.ts";
 import { averagesOf, outcomeOf, scoreRuns, type Outcome, type Score } from "../evals/score.ts";
@@ -13,7 +13,7 @@ const UNRELIABLE_SHARE = 0.1;
 
 const dir = process.argv[2];
 if (!dir) {
-  console.error("Usage: npm run eval-report -- runs/<eval>");
+  console.error("Usage: npm run eval-report -- results/<eval>");
   process.exit(1);
 }
 

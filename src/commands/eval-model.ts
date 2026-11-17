@@ -4,7 +4,7 @@
 // With --resume, picks up an unfinished eval instead: crashed, killed and
 // never-started runs, at the same commit.
 // Usage: npm run eval-model -- --model <id> --max-cost <dollars> [--repeats 3]
-//        npm run eval-model -- --resume runs/<eval> --max-cost <dollars>
+//        npm run eval-model -- --resume results/<eval> --max-cost <dollars>
 
 import { readFileSync } from "node:fs";
 import { parseArgs } from "node:util";
@@ -20,7 +20,7 @@ import { snapshotLinks } from "../wikipedia/snapshot.ts";
 import { fetchLinks } from "../wikipedia/wikipedia.ts";
 
 const USAGE = `Usage: npm run eval-model -- --model <id> --max-cost <dollars> [--repeats 3]
-       npm run eval-model -- --resume runs/<eval> --max-cost <dollars>`;
+       npm run eval-model -- --resume results/<eval> --max-cost <dollars>`;
 
 const { values } = parseArgs({
   options: {
@@ -52,12 +52,13 @@ if (!Number.isInteger(repeats) || repeats < 1) {
 
 const git = gitState();
 if (git.gitDirty) {
-  console.error("Uncommitted changes outside snapshot/: commit them first, so the results point at the code that made them");
+  console.error("Uncommitted code (outside snapshot/ and results/): commit it first, so the results point at the code that made them");
   process.exit(1);
 }
 
 const races = parseRaceSet(JSON.parse(readFileSync("races.json", "utf8")));
-const dir = values.resume ?? `runs/${new Date().toISOString().replaceAll(":", "-")}_${model.id.replaceAll("/", "-")}`;
+// Evals live in results/, committed by name when kept; runs/ is for dev races.
+const dir = values.resume ?? `results/${new Date().toISOString().replaceAll(":", "-")}_${model.id.replaceAll("/", "-")}`;
 const todo = runsToDo(races, repeats, previous?.runs ?? []).length;
 
 console.log(`${model.id} on ${model.provider}: ${todo} runs to do (${races.length} races × ${repeats}), cap $${maxCost}`);

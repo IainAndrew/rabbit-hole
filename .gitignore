@@ -5,5 +5,5 @@ node_modules/
 CLAUDE.local.md
 SPEC.md
 
-# Traces from development runs. Eval traces meant to be kept are committed on purpose.
+# Traces from development races. Evals go to results/ and are committed by name.
 runs/

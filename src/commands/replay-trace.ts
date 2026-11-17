@@ -1,7 +1,7 @@
 // Replay a run from its trace, turn by turn, with running totals. Reads the
 // file only: no network, no model, free. If the replay needs something the
 // trace doesn't have, the trace is missing data.
-// Usage: npm run replay-trace -- runs/<file>.jsonl
+// Usage: npm run replay-trace -- <trace>.jsonl
 
 import { readFileSync } from "node:fs";
 import { parseTrace, type TraceLine } from "../agent/trace.ts";
@@ -12,7 +12,7 @@ const BAR_WIDTH = 30;
 
 const file = process.argv[2];
 if (!file) {
-  console.error("Usage: npm run replay-trace -- runs/<file>.jsonl");
+  console.error("Usage: npm run replay-trace -- <trace>.jsonl");
   process.exit(1);
 }
 
