@@ -89,9 +89,9 @@ function toListedModel(raw: unknown): ListedModel {
 /**
  * OpenRouter lists prices as strings in dollars per token.
  *
- * @param id The model's id, for the error message.
+ * @param id What the price belongs to (a model id or endpoint tag), for the error message.
  */
-function perMillion(value: unknown, id: string): number {
+export function perMillion(value: unknown, id: string): number {
   const perToken = Number(value);
   if (typeof value !== "string" || !Number.isFinite(perToken)) {
     throw new Error(`Malformed price for ${id}`);
@@ -100,6 +100,6 @@ function perMillion(value: unknown, id: string): number {
 }
 
 /** True for any non-null object, so its fields can be read and checked. */
-function isRecord(value: unknown): value is Record<string, unknown> {
+export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }

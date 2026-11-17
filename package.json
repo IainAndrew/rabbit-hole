@@ -12,6 +12,7 @@
     "wiki-links": "node src/commands/wiki-links.ts",
     "race-by-hand": "node src/commands/race-by-hand.ts",
     "list-models": "node src/commands/list-models.ts",
+    "model-endpoints": "node src/commands/model-endpoints.ts",
     "race-agent": "node --env-file=.env src/commands/race-agent.ts",
     "replay-trace": "node src/commands/replay-trace.ts",
     "check-races": "node src/commands/check-races.ts",
