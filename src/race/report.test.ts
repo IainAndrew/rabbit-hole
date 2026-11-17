@@ -1,0 +1,57 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import { fakeEval, failingModel, winningModel } from "./fake-eval.ts";
+import { loadEval } from "./report.ts";
+
+// Rewrite one file of an eval, to simulate a tampered or damaged eval.
+function edit(dir: string, file: string, change: (text: string) => string): void {
+  const path = join(dir, file);
+  writeFileSync(path, change(readFileSync(path, "utf8")));
+}
+
+test("an eval loads every run in order, with how each began and ended", async () => {
+  const { dir, run } = fakeEval(winningModel(0.001));
+  await run;
+  const { manifest, runs } = loadEval(dir);
+  assert.equal(manifest.stop, "completed");
+  assert.deepEqual(runs.map((r) => `${r.raceId}${r.repeat}`), ["a1", "b1", "a2", "b2"]);
+  assert.equal(runs[0]?.start.gitCommit, "abc123");
+  assert.deepEqual(runs[0]?.end?.end, { kind: "finished", reason: "won" });
+});
+
+test("crashed runs load too, with their crash recorded", async () => {
+  const { dir, run } = fakeEval(failingModel(402));
+  await run;
+  const { runs } = loadEval(dir);
+  assert.deepEqual(runs[0]?.end?.end, { kind: "crashed", cause: "no_credits", error: "boom" });
+});
+
+test("a run killed before it finished has no end", async () => {
+  const { dir, run, manifest } = fakeEval(winningModel(0.001));
+  await run;
+  const trace = manifest().runs[1]!.trace;
+  edit(dir, trace, (text) => text.split("\n").filter((line) => !line.includes('"run_end"')).join("\n"));
+  assert.equal(loadEval(dir).runs[1]?.end, null);
+});
+
+test("a trace made with another commit is refused", async () => {
+  const { dir, run, manifest } = fakeEval(winningModel(0.001));
+  await run;
+  edit(dir, manifest().runs[2]!.trace, (text) => text.replace('"abc123"', '"def456"'));
+  assert.throws(() => loadEval(dir), /made with commit def456, the eval with abc123/);
+});
+
+test("runs made with uncommitted code are refused", async () => {
+  const { dir, run } = fakeEval(winningModel(0.001), { git: { gitCommit: "abc123", gitDirty: true } });
+  await run;
+  assert.throws(() => loadEval(dir), /uncommitted code/);
+});
+
+test("a malformed eval.json is refused", async () => {
+  const { dir, run } = fakeEval(winningModel(0.001));
+  await run;
+  edit(dir, "eval.json", (text) => text.replace('"plannedRuns"', '"planned"'));
+  assert.throws(() => loadEval(dir), /Malformed eval.json: no plan/);
+});

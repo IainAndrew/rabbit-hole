@@ -4,7 +4,7 @@
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { basename, join } from "node:path";
-import { promptHash, runAgent, SYSTEM_PROMPT, type CallModel, type RunEnd } from "./agent.ts";
+import { promptHash, runAgent, SYSTEM_PROMPT, type CallModel } from "./agent.ts";
 import type { LinkSource } from "./race.ts";
 import type { RaceSpec } from "./race-set.ts";
 import { openTrace } from "./trace.ts";
@@ -46,8 +46,29 @@ export type EvalOptions = {
   log: (line: string) => void;
 };
 
-/** One run in eval.json: which race, which repeat, and its trace file. */
-type ManifestRun = { raceId: string; difficulty: string; repeat: number; trace: string; end: RunEnd; cost: number | null };
+/**
+ * eval.json: what only the eval knows. How each run went is in its trace,
+ * the single source of truth, so it isn't copied here.
+ */
+export type EvalManifest = {
+  model: Model;
+  promptHash: string;
+  gitCommit: string;
+  gitDirty: boolean;
+  limits: EvalOptions["limits"];
+  repeats: number;
+  maxCost: number;
+  races: { id: string; difficulty: string }[];
+  /** Races × repeats. Runs that never started have no trace, only this count. */
+  plannedRuns: number;
+  /** Null while the eval runs, or if it was killed. */
+  stop: EvalStop | null;
+  /** The runs made, in order. */
+  runs: ManifestRun[];
+};
+
+/** Which race and repeat a trace file is. */
+export type ManifestRun = { raceId: string; difficulty: string; repeat: number; trace: string };
 
 /**
  * Run every race `repeats` times, all races once before any twice, so an
@@ -56,7 +77,7 @@ type ManifestRun = { raceId: string; difficulty: string; repeat: number; trace: 
  * @returns Why it stopped, what it spent and how many runs it made.
  */
 export async function runEval(options: EvalOptions): Promise<{ stop: EvalStop; spent: number; runs: number }> {
-  const manifest = {
+  const manifest: EvalManifest = {
     model: options.model,
     promptHash: promptHash(),
     ...options.git,
@@ -65,23 +86,23 @@ export async function runEval(options: EvalOptions): Promise<{ stop: EvalStop; s
     maxCost: options.maxCost,
     races: options.races.map(({ id, difficulty }) => ({ id, difficulty })),
     plannedRuns: options.races.length * options.repeats,
-    stop: null as EvalStop | null,
-    spent: 0,
-    runs: [] as ManifestRun[],
+    stop: null,
+    runs: [],
   };
+  let spent = 0;
   mkdirSync(options.dir, { recursive: true });
   // Rewritten after every run, so an eval that's killed still leaves a record.
   const save = () => writeFileSync(join(options.dir, "eval.json"), JSON.stringify(manifest, null, 2) + "\n");
   const stop = (reason: EvalStop) => {
     manifest.stop = reason;
     save();
-    return { stop: reason, spent: manifest.spent, runs: manifest.runs.length };
+    return { stop: reason, spent, runs: manifest.runs.length };
   };
 
   let crashesInARow = 0;
   for (let repeat = 1; repeat <= options.repeats; repeat++) {
     for (const race of options.races) {
-      if (manifest.spent >= options.maxCost) return stop("cost_cap");
+      if (spent >= options.maxCost) return stop("cost_cap");
 
       const trace = openTrace(options.dir, `${race.id}-r${repeat}`);
       trace.record({
@@ -105,18 +126,11 @@ export async function runEval(options: EvalOptions): Promise<{ stop: EvalStop; s
       });
 
       const { end, totals } = result;
-      manifest.spent += totals.cost ?? 0;
-      manifest.runs.push({
-        raceId: race.id,
-        difficulty: race.difficulty,
-        repeat,
-        trace: basename(trace.path),
-        end,
-        cost: totals.cost,
-      });
+      spent += totals.cost ?? 0;
+      manifest.runs.push({ raceId: race.id, difficulty: race.difficulty, repeat, trace: basename(trace.path) });
       save();
       const ending = end.kind === "finished" ? end.reason : `crashed (${end.cause})`;
-      options.log(`${race.id} r${repeat}: ${ending}, $${(totals.cost ?? 0).toFixed(4)}, total $${manifest.spent.toFixed(4)}`);
+      options.log(`${race.id} r${repeat}: ${ending}, $${(totals.cost ?? 0).toFixed(4)}, total $${spent.toFixed(4)}`);
 
       if (totals.cost === null) return stop("unknown_cost");
       if (end.kind === "crashed") {
