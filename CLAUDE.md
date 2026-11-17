@@ -62,8 +62,9 @@ Needs Node 24 or later. Copy `.env.example` to `.env` before anything that calls
 - `npm run eval-model -- --model <id> --max-cost <dollars> [--repeats 3]`: run every race
   in `races.json` against one model, writing traces and `eval.json` to `runs/<eval>/`.
   Refuses uncommitted code; stops starting runs at the cap (billed)
-- `npm run eval-report -- runs/<eval>`: report on one eval from its `eval.json` and
-  traces, refusing runs from another model, prompt or commit (free)
+- `npm run eval-report -- runs/<eval>`: score one eval from its `eval.json` and traces
+  (success rate, then hops on wins), by tier, repeat and race; refuses runs from another
+  model, prompt or commit (free)
 - `npm run replay-trace -- runs/<file>.jsonl`: replay a run from its trace, turn by turn
   (free)
 - `npm run measure-races`: count each race's 2-hop routes on live Wikipedia and write the
