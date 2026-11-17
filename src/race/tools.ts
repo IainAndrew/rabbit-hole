@@ -119,7 +119,17 @@ export async function executeTool(call: ToolCall, race: Race, getLinks: LinkSour
       if (page === null) {
         return mistake('move_to needs a "page" string.');
       }
-      const result = await move(race, page, getLinks);
+      let result;
+      try {
+        result = await move(race, page, getLinks);
+      } catch (err) {
+        // A red link: listed on the page, but its article doesn't exist.
+        // Refused like any illegal move, so the model can pick another link.
+        if (err instanceof PageNotFoundError) {
+          return mistake(`${err.message}, so "${page}" can't be visited. You're still on "${currentPage(race)}".`);
+        }
+        throw err;
+      }
       if (!result.ok) {
         const here = currentPage(race);
         return result.reason === "not_a_link"

@@ -35,6 +35,18 @@ test("an illegal move is an error that says what to do next", async () => {
   assert.equal(out.race, race);
 });
 
+test("a move to a red link is an error, not a crash, and costs no hop", async () => {
+  // The fake Guinness page links "Stout", which has no page.
+  const race = await newRace();
+  const out = await executeTool(call("move_to", { page: "Stout" }), race, fakeLinks);
+  assert.equal(out.status, "error");
+  assert.equal(
+    out.content,
+    'Error: Wikipedia has no page called "Stout", so "Stout" can\'t be visited. You\'re still on "Guinness".',
+  );
+  assert.equal(out.race, race);
+});
+
 test("reaching the target ends the race as won", async () => {
   const first = await executeTool(call("move_to", { page: "Republic of Ireland" }), await newRace(), fakeLinks);
   const second = await executeTool(call("move_to", { page: "Einstein" }), first.race, fakeLinks);

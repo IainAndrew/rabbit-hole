@@ -61,6 +61,8 @@ export function hasWon(race: Race): boolean {
  *
  * @param to A link title as the model wrote it; matched the way Wikipedia
  *   matches titles (see `normalizeTitle`).
+ * @throws {PageNotFoundError} If the link is a red link: on the page, but
+ *   its article doesn't exist.
  */
 export async function move(race: Race, to: string, getLinks: LinkSource): Promise<MoveResult> {
   if (hasWon(race)) {
