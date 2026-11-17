@@ -15,7 +15,8 @@
     "race-agent": "node --env-file=.env src/commands/race-agent.ts",
     "replay-trace": "node src/commands/replay-trace.ts",
     "check-races": "node src/commands/check-races.ts",
-    "measure-races": "node src/commands/measure-races.ts"
+    "measure-races": "node src/commands/measure-races.ts",
+    "eval-model": "node --env-file=.env src/commands/eval-model.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",

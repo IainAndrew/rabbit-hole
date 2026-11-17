@@ -130,10 +130,15 @@ export function openTrace(dir: string, name: string): { path: string; record: (e
   return { path, record };
 }
 
-/** The harness commit and whether the working tree has uncommitted changes. */
+/**
+ * The harness commit and whether the code has uncommitted changes. snapshot/
+ * doesn't count: it's data that grows during runs, and a page added to it
+ * never changes one already there.
+ */
 export function gitState(): { gitCommit: string; gitDirty: boolean } {
   const git = (...args: string[]) => execFileSync("git", args, { encoding: "utf8" }).trim();
-  return { gitCommit: git("rev-parse", "HEAD"), gitDirty: git("status", "--porcelain") !== "" };
+  const changes = git("status", "--porcelain", "--", ".", ":(exclude)snapshot");
+  return { gitCommit: git("rev-parse", "HEAD"), gitDirty: changes !== "" };
 }
 
 /** An event as read back from a file, with `t`, ms since the trace was opened. */

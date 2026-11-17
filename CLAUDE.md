@@ -59,6 +59,9 @@ Needs Node 24 or later. Copy `.env.example` to `.env` before anything that calls
   registry (free)
 - `npm run race-agent -- "Start" "Target"`: the build model plays one race, printed turn
   by turn, and writes a trace to `runs/` (billed, stops at 30 turns or $0.05)
+- `npm run eval-model -- --model <id> --max-cost <dollars> [--repeats 3]`: run every race
+  in `races.json` against one model, writing traces and `eval.json` to `runs/<eval>/`.
+  Refuses uncommitted code; stops starting runs at the cap (billed)
 - `npm run replay-trace -- runs/<file>.jsonl`: replay a run from its trace, turn by turn
   (free)
 - `npm run measure-races`: count each race's 2-hop routes on live Wikipedia and write the

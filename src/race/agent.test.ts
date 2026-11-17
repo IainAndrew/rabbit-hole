@@ -143,6 +143,7 @@ test("stops at the turn limit", async () => {
 test("API failures are crashes, not losses, with a cause", async () => {
   const cases = [
     { status: 402, cause: "no_credits" },
+    { status: 401, cause: "unauthorized" },
     { status: 429, cause: "retries_exhausted" },
     { status: 503, cause: "retries_exhausted" },
     { status: 400, cause: "api_error" },

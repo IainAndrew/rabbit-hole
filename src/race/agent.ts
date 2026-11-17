@@ -31,10 +31,11 @@ export type EndReason = "won" | "gave_up" | "turn_limit" | "token_limit" | "outp
  * kept out of success rates.
  *
  * - `no_credits`: OpenRouter answered 402.
+ * - `unauthorized`: the API key was refused (401 or 403).
  * - `retries_exhausted`: 429s, 5xx or network errors kept coming after every retry.
  * - `api_error`: any other API failure, such as a malformed response.
  */
-export type CrashCause = "no_credits" | "retries_exhausted" | "api_error";
+export type CrashCause = "no_credits" | "unauthorized" | "retries_exhausted" | "api_error";
 
 /** A run either finished, which counts for or against the agent, or crashed, which doesn't. */
 export type RunEnd =
@@ -51,6 +52,19 @@ export type RunResult = {
   totals: Totals;
   /** The whole conversation, the final reply and its tool results included. */
   messages: Message[];
+};
+
+/**
+ * The limits every race runs under, dev races and evals alike, so their
+ * results can be compared.
+ */
+export const RACE_LIMITS = {
+  /** Model calls allowed. */
+  maxTurns: 30,
+  /** Context size, not cost: the run stops once a prompt passes this. */
+  maxPromptTokens: 100_000,
+  /** One reply, reasoning included. */
+  maxOutputTokens: 2000,
 };
 
 /** The task and goal. Facts about the tools live in their descriptions. */
@@ -196,6 +210,7 @@ function addUsage(totals: Totals, reply: ChatResult): void {
 /** Sort an API failure into a crash cause, by HTTP status. */
 function crashCause(err: OpenRouterError): CrashCause {
   if (err.status === 402) return "no_credits";
+  if (err.status === 401 || err.status === 403) return "unauthorized";
   // A network failure: fetchWithRetry has already retried it.
   if (err.cause instanceof TypeError) return "retries_exhausted";
   // fetchWithRetry has already retried these.

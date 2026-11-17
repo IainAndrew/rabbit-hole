@@ -2,7 +2,7 @@
 // a trace to runs/. Billed.
 // Usage: npm run race-agent -- "Start page" "Target page"
 
-import { promptHash, runAgent, SYSTEM_PROMPT, type CallModel } from "../race/agent.ts";
+import { promptHash, RACE_LIMITS, runAgent, SYSTEM_PROMPT, type CallModel } from "../race/agent.ts";
 import { buildModel } from "../models/models.ts";
 import { chat } from "../models/openrouter.ts";
 import { hops } from "../race/race.ts";
@@ -11,11 +11,6 @@ import { gitState, openTrace } from "../race/trace.ts";
 import { snapshotLinks } from "../wikipedia/snapshot.ts";
 import { fetchLinks } from "../wikipedia/wikipedia.ts";
 
-const MAX_TURNS = 30;
-// Context size, not cost: stop once a prompt passes this.
-const MAX_PROMPT_TOKENS = 100_000;
-// One reply, reasoning included.
-const MAX_TOKENS = 2000;
 // A safety net for this script, not the eval's --max-cost. It's checked
 // before each call, so the last call can go over by its own cost.
 const MAX_COST = 0.05;
@@ -35,7 +30,7 @@ const callModel: CallModel = async (messages) => {
   if (spent >= MAX_COST) {
     throw new Error(`Stopped: spent $${spent.toFixed(4)}, over the $${MAX_COST} cap`);
   }
-  const result = await chat({ model: buildModel, messages, tools: toolDefinitions, maxTokens: MAX_TOKENS });
+  const result = await chat({ model: buildModel, messages, tools: toolDefinitions, maxTokens: RACE_LIMITS.maxOutputTokens });
   const { usage } = result;
   spent += usage.cost ?? 0;
   turn++;
@@ -58,7 +53,7 @@ trace.record({
   systemPrompt: SYSTEM_PROMPT,
   promptHash: promptHash(),
   ...gitState(),
-  limits: { maxTurns: MAX_TURNS, maxPromptTokens: MAX_PROMPT_TOKENS, maxOutputTokens: MAX_TOKENS },
+  limits: RACE_LIMITS,
 });
 
 console.log(`${buildModel.id}: "${start}" → "${target}"\n`);
@@ -67,8 +62,8 @@ const result = await runAgent({
   target,
   callModel,
   getLinks: snapshotLinks("snapshot", fetchLinks),
-  maxTurns: MAX_TURNS,
-  maxPromptTokens: MAX_PROMPT_TOKENS,
+  maxTurns: RACE_LIMITS.maxTurns,
+  maxPromptTokens: RACE_LIMITS.maxPromptTokens,
   record: trace.record,
 });
 
