@@ -61,7 +61,9 @@ Needs Node 24 or later. Copy `.env.example` to `.env` before anything that calls
   by turn, and writes a trace to `runs/` (billed, stops at 30 turns or $0.05)
 - `npm run eval-model -- --model <id> --max-cost <dollars> [--repeats 3]`: run every race
   in `races.json` against one model, writing traces and `eval.json` to `runs/<eval>/`.
-  Refuses uncommitted code; stops starting runs at the cap (billed)
+  Refuses uncommitted code; stops starting runs at the cap (billed). With
+  `--resume runs/<eval> --max-cost <dollars>`, re-runs crashed runs and starts unstarted
+  ones, at the same commit (billed)
 - `npm run eval-report -- runs/<eval>`: score one eval from its `eval.json` and traces
   (success rate, then hops on wins), by tier, repeat and race; refuses runs from another
   model, prompt or commit (free)

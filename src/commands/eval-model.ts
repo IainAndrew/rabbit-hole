@@ -1,12 +1,16 @@
 // Run the race set against one model: every race, --repeats times, under a
 // --max-cost cap. Billed. Refuses to start with uncommitted code, so every
 // result points at a commit that describes it.
+// With --resume, picks up an unfinished eval instead: crashed, killed and
+// never-started runs, at the same commit.
 // Usage: npm run eval-model -- --model <id> --max-cost <dollars> [--repeats 3]
+//        npm run eval-model -- --resume runs/<eval> --max-cost <dollars>
 
 import { readFileSync } from "node:fs";
 import { parseArgs } from "node:util";
 import { RACE_LIMITS } from "../agent/agent.ts";
-import { runEval } from "../evals/run-eval.ts";
+import { loadEval } from "../evals/report.ts";
+import { runEval, runsToDo } from "../evals/run-eval.ts";
 import { parseRaceSet } from "../evals/race-set.ts";
 import { toolDefinitions } from "../race/tools.ts";
 import { gitState } from "../agent/trace.ts";
@@ -15,19 +19,26 @@ import { chat } from "../models/openrouter.ts";
 import { snapshotLinks } from "../wikipedia/snapshot.ts";
 import { fetchLinks } from "../wikipedia/wikipedia.ts";
 
-const USAGE = "Usage: npm run eval-model -- --model <id> --max-cost <dollars> [--repeats 3]";
+const USAGE = `Usage: npm run eval-model -- --model <id> --max-cost <dollars> [--repeats 3]
+       npm run eval-model -- --resume runs/<eval> --max-cost <dollars>`;
 
 const { values } = parseArgs({
   options: {
     model: { type: "string" },
     "max-cost": { type: "string" },
-    repeats: { type: "string", default: "3" },
+    repeats: { type: "string" },
+    resume: { type: "string" },
   },
 });
 
-const model = models.find((candidate) => candidate.id === values.model);
+// A resumed eval keeps its own model and repeats.
+const previous = values.resume ? loadEval(values.resume) : undefined;
+if (previous && (values.model || values.repeats)) {
+  fail("--resume takes the model and repeats from the eval: leave out --model and --repeats");
+}
+const model = models.find((candidate) => candidate.id === (previous?.manifest.model.id ?? values.model));
 const maxCost = Number(values["max-cost"]);
-const repeats = Number(values.repeats);
+const repeats = previous?.manifest.repeats ?? Number(values.repeats ?? "3");
 if (!model) {
   fail(`--model must be one of: ${models.map((m) => m.id).join(", ")}`);
 }
@@ -46,10 +57,11 @@ if (git.gitDirty) {
 }
 
 const races = parseRaceSet(JSON.parse(readFileSync("races.json", "utf8")));
-const dir = `runs/${new Date().toISOString().replaceAll(":", "-")}_${model.id.replaceAll("/", "-")}`;
+const dir = values.resume ?? `runs/${new Date().toISOString().replaceAll(":", "-")}_${model.id.replaceAll("/", "-")}`;
+const todo = runsToDo(races, repeats, previous?.runs ?? []).length;
 
-console.log(`${model.id} on ${model.provider}: ${races.length} races × ${repeats} = ${races.length * repeats} runs, cap $${maxCost}`);
-console.log(`Writing to ${dir}\n`);
+console.log(`${model.id} on ${model.provider}: ${todo} runs to do (${races.length} races × ${repeats}), cap $${maxCost}`);
+console.log(`${previous ? "Resuming" : "Writing to"} ${dir}\n`);
 
 const result = await runEval({
   dir,
@@ -62,9 +74,10 @@ const result = await runEval({
   limits: RACE_LIMITS,
   git,
   log: (line) => console.log(line),
+  ...(previous && { previous }),
 });
 
-console.log(`\nStopped: ${result.stop} after ${result.runs} of ${races.length * repeats} runs, $${result.spent.toFixed(4)} spent`);
+console.log(`\nStopped: ${result.stop} after ${result.runs} of ${todo} runs, $${result.spent.toFixed(4)} spent`);
 console.log(`Results: ${dir}/eval.json`);
 // Running out of budget is the cap working; anything else needs a look.
 if (result.stop !== "completed" && result.stop !== "cost_cap") {

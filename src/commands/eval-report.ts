@@ -7,6 +7,9 @@ import { averagesOf, outcomeOf, scoreRuns, type Outcome, type Score } from "../e
 
 const TIERS = ["easy", "medium", "hard"];
 const LETTERS: Record<Outcome, string> = { won: "W", lost: "L", crashed: "C", killed: "K" };
+// Past this share of planned runs with no result, the score may be biased:
+// long runs crash more, and those are mostly hard races and losses.
+const UNRELIABLE_SHARE = 0.1;
 
 const dir = process.argv[2];
 if (!dir) {
@@ -26,10 +29,28 @@ console.log(`${model.id} on ${model.provider} (reasoning: ${model.reasoning})`);
 console.log(`commit ${manifest.gitCommit.slice(0, 7)} | prompt ${manifest.promptHash}`);
 console.log(`limits: ${limits.maxTurns} turns, ${limits.maxPromptTokens.toLocaleString()} prompt tokens, ${limits.maxOutputTokens.toLocaleString()} output tokens`);
 console.log(`stopped: ${manifest.stop ?? "never (killed, or still running)"}`);
-console.log(`runs: ${runs.length} of ${manifest.plannedRuns} planned | spent ${money(spent)} of a $${manifest.maxCost} cap\n`);
+// A slot is one race and repeat; a crashed slot may have been re-run.
+const attempts = (raceId: string, repeat: number) => {
+  return runs.filter((run) => run.raceId === raceId && run.repeat === repeat);
+};
+const slots = manifest.races.flatMap((race) => {
+  return Array.from({ length: manifest.repeats }, (_, i) => attempts(race.id, i + 1));
+});
+const started = slots.filter((slot) => slot.length > 0).length;
+const unresolved = slots.filter((slot) => slot.length > 0 && scoreRuns(slot).decided === 0).length;
+console.log(
+  `runs: ${runs.length} (${started} of ${manifest.plannedRuns} planned started, ${runs.length - started} re-runs)` +
+    ` | spent ${money(spent)} of a $${manifest.maxCost} cap\n`,
+);
 
 const overall = scoreRuns(runs);
-console.log(`Score: ${won(overall)}, ${hops(overall)} hops on wins${notCounted(overall)}\n`);
+console.log(`Score: ${won(overall)}, ${hops(overall)} hops on wins${notCounted(overall)}`);
+if (unresolved / manifest.plannedRuns > UNRELIABLE_SHARE) {
+  console.log(`UNRELIABLE: ${unresolved} of ${manifest.plannedRuns} planned runs have no result. Resume the eval, or read why they crash.`);
+} else if (unresolved > 0) {
+  console.log(`${unresolved} planned runs have no result (crashed or killed every time)`);
+}
+console.log();
 
 console.log(`${"tier".padEnd(8)} ${"won".padEnd(12)} hops  turns  tokens/run  cost/run  time/run`);
 for (const tier of TIERS) {
@@ -45,16 +66,19 @@ for (let repeat = 1; repeat <= manifest.repeats; repeat++) {
 }
 console.log(`\nby repeat: ${byRepeat.join("   ")}\n`);
 
-console.log(`${"race".padEnd(34)} ${"repeats".padEnd(10)} ${"won".padEnd(12)} hops`);
+console.log(`${"race".padEnd(34)} ${"repeats".padEnd(14)} ${"won".padEnd(12)} hops`);
 for (const race of manifest.races) {
-  const raceRuns = runs.filter((run) => run.raceId === race.id);
-  const letters = raceRuns.map((run) => LETTERS[outcomeOf(run)]).join(" ") || "-";
-  const score = scoreRuns(raceRuns);
-  console.log(`${race.id.padEnd(34)} ${letters.padEnd(10)} ${won(score).padEnd(12)} ${hops(score)}`);
+  const repeats = [];
+  for (let repeat = 1; repeat <= manifest.repeats; repeat++) {
+    const letters = attempts(race.id, repeat).map((run) => LETTERS[outcomeOf(run)]);
+    repeats.push(letters.join(">") || "-");
+  }
+  const score = scoreRuns(runs.filter((run) => run.raceId === race.id));
+  console.log(`${race.id.padEnd(34)} ${repeats.join(" ").padEnd(14)} ${won(score).padEnd(12)} ${hops(score)}`);
 }
-console.log("\nW won, L lost, C crashed, K killed. Crashed and killed runs aren't counted.");
+console.log("\nW won, L lost, C crashed, K killed; C>W is a crash re-run. Crashed and killed runs aren't counted.");
 
-const notRun = manifest.plannedRuns - runs.length;
+const notRun = manifest.plannedRuns - started;
 if (notRun > 0) {
   console.log(`${notRun} planned runs never started`);
 }
