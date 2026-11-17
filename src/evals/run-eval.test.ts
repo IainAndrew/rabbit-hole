@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { failingModel, fakeEval, winningModel } from "./fake-eval.ts";
-import { parseTrace } from "./trace.ts";
+import { parseTrace } from "../agent/trace.ts";
 
 test("every race runs every repeat, all races once before any twice", async () => {
   const { dir, run, manifest } = fakeEval(winningModel(0.001));

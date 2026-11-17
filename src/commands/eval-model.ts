@@ -5,11 +5,11 @@
 
 import { readFileSync } from "node:fs";
 import { parseArgs } from "node:util";
-import { RACE_LIMITS } from "../race/agent.ts";
-import { runEval } from "../race/eval.ts";
-import { parseRaceSet } from "../race/race-set.ts";
+import { RACE_LIMITS } from "../agent/agent.ts";
+import { runEval } from "../evals/run-eval.ts";
+import { parseRaceSet } from "../evals/race-set.ts";
 import { toolDefinitions } from "../race/tools.ts";
-import { gitState } from "../race/trace.ts";
+import { gitState } from "../agent/trace.ts";
 import { models } from "../models/models.ts";
 import { chat } from "../models/openrouter.ts";
 import { snapshotLinks } from "../wikipedia/snapshot.ts";

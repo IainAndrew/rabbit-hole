@@ -5,7 +5,7 @@
 // Usage: npm run measure-races
 
 import { readFileSync, writeFileSync } from "node:fs";
-import { measureRace, parseRaceDrafts, type RaceSpec } from "../race/race-set.ts";
+import { measureRace, parseRaceDrafts, type RaceSpec } from "../evals/race-set.ts";
 import { fetchBacklinks, fetchNeighbours } from "../wikipedia/wikipedia.ts";
 
 const FILE = "races.json";

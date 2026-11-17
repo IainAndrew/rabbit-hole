@@ -1,7 +1,7 @@
 // Report on one eval, from its manifest and traces only. Free: reads files.
 // Usage: npm run eval-report -- runs/<eval>
 
-import { loadEval, type LoadedRun } from "../race/report.ts";
+import { loadEval, type LoadedRun } from "../evals/report.ts";
 
 const dir = process.argv[2];
 if (!dir) {

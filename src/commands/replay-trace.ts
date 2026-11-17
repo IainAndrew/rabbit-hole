@@ -4,7 +4,7 @@
 // Usage: npm run replay-trace -- runs/<file>.jsonl
 
 import { readFileSync } from "node:fs";
-import { parseTrace, type TraceLine } from "../race/trace.ts";
+import { parseTrace, type TraceLine } from "../agent/trace.ts";
 
 // Link lists run to hundreds of lines; show the start of each.
 const RESULT_LINES = 4;

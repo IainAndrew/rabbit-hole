@@ -3,7 +3,7 @@
 // Usage: npm run check-races
 
 import { readFileSync } from "node:fs";
-import { checkRace, parseRaceSet } from "../race/race-set.ts";
+import { checkRace, parseRaceSet } from "../evals/race-set.ts";
 import { snapshotLinks } from "../wikipedia/snapshot.ts";
 import { fetchLinks } from "../wikipedia/wikipedia.ts";
 

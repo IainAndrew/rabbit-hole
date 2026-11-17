@@ -4,10 +4,10 @@
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { basename, join } from "node:path";
-import { promptHash, runAgent, SYSTEM_PROMPT, type CallModel } from "./agent.ts";
-import type { LinkSource } from "./race.ts";
+import { promptHash, runAgent, SYSTEM_PROMPT, type CallModel } from "../agent/agent.ts";
+import type { LinkSource } from "../race/race.ts";
 import type { RaceSpec } from "./race-set.ts";
-import { openTrace } from "./trace.ts";
+import { openTrace } from "../agent/trace.ts";
 import type { Model } from "../models/models.ts";
 
 /** Crashes in a row that mean the setup is broken, not unlucky. */

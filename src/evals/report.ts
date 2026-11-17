@@ -3,8 +3,8 @@
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import type { EvalManifest, ManifestRun } from "./eval.ts";
-import { parseTrace, type RunEndEvent, type RunStartEvent } from "./trace.ts";
+import type { EvalManifest, ManifestRun } from "./run-eval.ts";
+import { parseTrace, type RunEndEvent, type RunStartEvent } from "../agent/trace.ts";
 
 /** One run, as its trace tells it. */
 export type LoadedRun = ManifestRun & {

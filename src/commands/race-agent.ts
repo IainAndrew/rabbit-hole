@@ -2,12 +2,12 @@
 // a trace to runs/. Billed.
 // Usage: npm run race-agent -- "Start page" "Target page"
 
-import { promptHash, RACE_LIMITS, runAgent, SYSTEM_PROMPT, type CallModel } from "../race/agent.ts";
+import { promptHash, RACE_LIMITS, runAgent, SYSTEM_PROMPT, type CallModel } from "../agent/agent.ts";
 import { buildModel } from "../models/models.ts";
 import { chat } from "../models/openrouter.ts";
 import { hops } from "../race/race.ts";
 import { toolDefinitions } from "../race/tools.ts";
-import { gitState, openTrace } from "../race/trace.ts";
+import { gitState, openTrace } from "../agent/trace.ts";
 import { snapshotLinks } from "../wikipedia/snapshot.ts";
 import { fetchLinks } from "../wikipedia/wikipedia.ts";
 

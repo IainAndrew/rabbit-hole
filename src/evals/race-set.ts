@@ -1,7 +1,7 @@
 // The fixed set of races evals run on, and the checks that keep it honest.
 
 import { PageNotFoundError } from "../wikipedia/wikipedia.ts";
-import { hasWon, hops, move, normalizeTitle, startRace, type LinkSource } from "./race.ts";
+import { hasWon, hops, move, normalizeTitle, startRace, type LinkSource } from "../race/race.ts";
 
 /**
  * How hard a race is, judged by how many 2-hop routes exist (see `tierFor`):

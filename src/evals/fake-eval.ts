@@ -4,8 +4,8 @@
 import { mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { CallModel } from "./agent.ts";
-import { runEval, type EvalManifest, type EvalOptions } from "./eval.ts";
+import type { CallModel } from "../agent/agent.ts";
+import { runEval, type EvalManifest, type EvalOptions } from "./run-eval.ts";
 import type { RaceSpec } from "./race-set.ts";
 import { buildModel } from "../models/models.ts";
 import { OpenRouterError, type ChatResult } from "../models/openrouter.ts";
