@@ -19,7 +19,7 @@ const spent = runs.reduce<number | null>((sum, run) => {
 
 console.log(`${model.id} on ${model.provider} (reasoning: ${model.reasoning})`);
 console.log(`commit ${manifest.gitCommit.slice(0, 7)} | prompt ${manifest.promptHash}`);
-console.log(`limits: ${limits.maxTurns} turns, ${limits.maxPromptTokens.toLocaleString()} prompt tokens, ${limits.maxOutputTokens} output tokens`);
+console.log(`limits: ${limits.maxTurns} turns, ${limits.maxPromptTokens.toLocaleString()} prompt tokens, ${limits.maxOutputTokens.toLocaleString()} output tokens`);
 console.log(`stopped: ${manifest.stop ?? "never (killed, or still running)"}`);
 console.log(`runs: ${runs.length} of ${manifest.plannedRuns} planned | spent ${money(spent)} of a $${manifest.maxCost} cap\n`);
 
