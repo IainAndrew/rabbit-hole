@@ -80,8 +80,12 @@ function fakeGraph(neighbours: string[], backlinks: string[]): GraphSource & { b
       const found = new Set<string>();
       for (let i = 0; i < backlinks.length; i += 5) {
         graph.batches++;
-        for (const page of backlinks.slice(i, i + 5)) found.add(page);
-        if (enough(found) && i + 5 < backlinks.length) return { pages: found, complete: false };
+        for (const page of backlinks.slice(i, i + 5)) {
+          found.add(page);
+        }
+        if (enough(found) && i + 5 < backlinks.length) {
+          return { pages: found, complete: false };
+        }
       }
       return { pages: found, complete: true };
     },

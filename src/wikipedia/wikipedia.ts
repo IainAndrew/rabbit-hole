@@ -55,7 +55,9 @@ const cache = new Map<string, Promise<LinksPage>>();
  */
 export function fetchLinks(title: string): Promise<LinksPage> {
   const cached = cache.get(title);
-  if (cached) return cached;
+  if (cached) {
+    return cached;
+  }
 
   const pending = fetchAllLinks(title);
   cache.set(title, pending);
@@ -147,14 +149,18 @@ export async function fetchNeighbours(title: string): Promise<Set<string>> {
       },
       `the links of "${title}"`,
     );
-    if (!isRecord(body)) throw new Error(`Unexpected Wikipedia response for the links of "${title}"`);
+    if (!isRecord(body)) {
+      throw new Error(`Unexpected Wikipedia response for the links of "${title}"`);
+    }
     // A page with no links has no "query" at all.
     const pages: unknown[] = isRecord(body.query) && Array.isArray(body.query.pages) ? body.query.pages : [];
     for (const page of pages) {
       if (!isRecord(page) || typeof page.title !== "string") {
         throw new Error(`Malformed page in the links of "${title}"`);
       }
-      if (page.missing !== true && page.invalid !== true) neighbours.add(page.title);
+      if (page.missing !== true && page.invalid !== true) {
+        neighbours.add(page.title);
+      }
     }
     continueFrom = parseContinue(body.continue);
   }
@@ -200,7 +206,9 @@ export async function fetchBacklinks(
       }
       // A redirect isn't a page a move can stop on: count the pages that link
       // through it instead.
-      if (link.redirect !== true) pages.add(link.title);
+      if (link.redirect !== true) {
+        pages.add(link.title);
+      }
       const through: unknown[] = Array.isArray(link.redirlinks) ? link.redirlinks : [];
       for (const page of through) {
         if (!isRecord(page) || typeof page.title !== "string") {
@@ -210,7 +218,9 @@ export async function fetchBacklinks(
       }
     }
     continueFrom = parseContinue(body.continue);
-    if (enough(pages)) break;
+    if (enough(pages)) {
+      break;
+    }
   }
   return { pages, complete: continueFrom === null };
 }
@@ -250,7 +260,9 @@ function parseBatch(body: unknown, requested: string): Batch {
 
 /** The continuation block is opaque: send every field back exactly as given. */
 function parseContinue(value: unknown): Record<string, string> | null {
-  if (value === undefined) return null;
+  if (value === undefined) {
+    return null;
+  }
   if (!isRecord(value)) {
     throw new Error("Malformed continuation in Wikipedia response");
   }

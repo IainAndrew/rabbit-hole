@@ -9,8 +9,12 @@ function fakeServer(...responses: (Response | Error)[]) {
   const waits: number[] = [];
   const request = async () => {
     const response = responses[calls++];
-    if (!response) throw new Error("Server asked for more responses than given");
-    if (response instanceof Error) throw response;
+    if (!response) {
+      throw new Error("Server asked for more responses than given");
+    }
+    if (response instanceof Error) {
+      throw response;
+    }
     return response;
   };
   const options: RetryOptions = {

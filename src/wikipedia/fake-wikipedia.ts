@@ -14,6 +14,8 @@ const redirects: Record<string, string> = { Einstein: "Albert Einstein" };
 export const fakeLinks: LinkSource = async (title) => {
   const canonical = redirects[title] ?? title;
   const links = pages[canonical];
-  if (!links) throw new PageNotFoundError(`Wikipedia has no page called "${title}"`);
+  if (!links) {
+    throw new PageNotFoundError(`Wikipedia has no page called "${title}"`);
+  }
   return { title: canonical, links };
 };

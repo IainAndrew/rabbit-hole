@@ -44,7 +44,9 @@ export async function fetchWithRetry(
     } catch (error) {
       // fetch rejects with a TypeError when no response arrives: a dropped
       // connection, a DNS failure, a broken TLS record. Anything else is a bug.
-      if (!(error instanceof TypeError) || attempt === options.maxAttempts) throw error;
+      if (!(error instanceof TypeError) || attempt === options.maxAttempts) {
+        throw error;
+      }
       await options.sleep(Math.min(backoff, options.maxDelayMs));
       continue;
     }
@@ -67,13 +69,19 @@ function isRetryable(status: number): boolean {
  */
 function retryAfterMs(response: Response): number | null {
   const header = response.headers.get("Retry-After");
-  if (header === null) return null;
+  if (header === null) {
+    return null;
+  }
 
   const seconds = Number(header);
-  if (Number.isFinite(seconds)) return Math.max(0, seconds * 1000);
+  if (Number.isFinite(seconds)) {
+    return Math.max(0, seconds * 1000);
+  }
 
   const date = Date.parse(header);
-  if (Number.isFinite(date)) return Math.max(0, date - Date.now());
+  if (Number.isFinite(date)) {
+    return Math.max(0, date - Date.now());
+  }
 
   return null;
 }

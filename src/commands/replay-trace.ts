@@ -46,8 +46,12 @@ function print(event: TraceLine): void {
       const { usage } = event;
       cost = cost === null || usage.cost === null ? null : cost + usage.cost;
       console.log(`\n── Turn ${event.turn} ── ${seconds(event.t)} ── ${event.provider ?? "unknown provider"}`);
-      if (event.reasoning) console.log(indent(event.reasoning, "  thinks: "));
-      if (event.content) console.log(indent(event.content, "  says:   "));
+      if (event.reasoning) {
+        console.log(indent(event.reasoning, "  thinks: "));
+      }
+      if (event.content) {
+        console.log(indent(event.content, "  says:   "));
+      }
       console.log(
         `  context ${bar(usage.promptTokens, limits.maxPromptTokens)} ${usage.promptTokens.toLocaleString()} tokens` +
           ` (${usage.cachedTokens ?? "?"} cached), ${usage.completionTokens} out`,
@@ -94,7 +98,9 @@ function bar(tokens: number, limit: number): string {
 /** The first few lines of a tool result, with a count of the rest. */
 function trim(result: string): string {
   const lines = result.split("\n");
-  if (lines.length <= RESULT_LINES + 1) return result;
+  if (lines.length <= RESULT_LINES + 1) {
+    return result;
+  }
   const shown = lines.slice(0, RESULT_LINES + 1).join("\n");
   return `${shown}\n…and ${lines.length - RESULT_LINES - 1} more`;
 }

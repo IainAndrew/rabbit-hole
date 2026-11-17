@@ -20,8 +20,12 @@ for (const race of races) {
   const problems = await checkRace(race, getLinks);
   const hops = race.knownPath.length - 1;
   console.log(`${problems.length === 0 ? "ok  " : "FAIL"} ${race.difficulty.padEnd(6)} ${race.id.padEnd(34)} ${hops} hops: ${race.knownPath.join(" > ")}`);
-  for (const problem of problems) console.log(`       ${problem}`);
-  if (problems.length > 0) failed++;
+  for (const problem of problems) {
+    console.log(`       ${problem}`);
+  }
+  if (problems.length > 0) {
+    failed++;
+  }
 }
 
 const count = (difficulty: string) => races.filter((race) => race.difficulty === difficulty).length;

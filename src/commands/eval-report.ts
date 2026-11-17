@@ -24,10 +24,14 @@ console.log(`stopped: ${manifest.stop ?? "never (killed, or still running)"}`);
 console.log(`runs: ${runs.length} of ${manifest.plannedRuns} planned | spent ${money(spent)} of a $${manifest.maxCost} cap\n`);
 
 console.log(`${"race".padEnd(34)} rep  ${"ending".padEnd(28)} hops  turns  ${"tokens".padStart(9)}  cost`);
-for (const run of runs) console.log(row(run));
+for (const run of runs) {
+  console.log(row(run));
+}
 
 const notRun = manifest.plannedRuns - runs.length;
-if (notRun > 0) console.log(`\n${notRun} planned runs never started`);
+if (notRun > 0) {
+  console.log(`\n${notRun} planned runs never started`);
+}
 
 /** One line per run: race, repeat, how it ended, and its totals. */
 function row(run: LoadedRun): string {

@@ -102,7 +102,9 @@ export async function runEval(options: EvalOptions): Promise<{ stop: EvalStop; s
   let crashesInARow = 0;
   for (let repeat = 1; repeat <= options.repeats; repeat++) {
     for (const race of options.races) {
-      if (spent >= options.maxCost) return stop("cost_cap");
+      if (spent >= options.maxCost) {
+        return stop("cost_cap");
+      }
 
       const trace = openTrace(options.dir, `${race.id}-r${repeat}`);
       trace.record({
@@ -132,11 +134,17 @@ export async function runEval(options: EvalOptions): Promise<{ stop: EvalStop; s
       const ending = end.kind === "finished" ? end.reason : `crashed (${end.cause})`;
       options.log(`${race.id} r${repeat}: ${ending}, $${(totals.cost ?? 0).toFixed(4)}, total $${spent.toFixed(4)}`);
 
-      if (totals.cost === null) return stop("unknown_cost");
+      if (totals.cost === null) {
+        return stop("unknown_cost");
+      }
       if (end.kind === "crashed") {
-        if (end.cause === "no_credits" || end.cause === "unauthorized") return stop(end.cause);
+        if (end.cause === "no_credits" || end.cause === "unauthorized") {
+          return stop(end.cause);
+        }
         crashesInARow++;
-        if (crashesInARow >= MAX_CRASHES_IN_A_ROW) return stop("repeated_crashes");
+        if (crashesInARow >= MAX_CRASHES_IN_A_ROW) {
+          return stop("repeated_crashes");
+        }
       } else {
         crashesInARow = 0;
       }

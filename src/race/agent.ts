@@ -133,7 +133,9 @@ export async function runAgent(options: RunOptions): Promise<RunResult> {
       reply = await options.callModel(messages);
     } catch (err) {
       // Only API failures are crashes. Anything else is a bug: let it throw.
-      if (!(err instanceof OpenRouterError)) throw err;
+      if (!(err instanceof OpenRouterError)) {
+        throw err;
+      }
       return finish({ kind: "crashed", cause: crashCause(err), error: err.message }, turn - 1);
     }
     messages.push(assistantMessage(reply));
@@ -152,7 +154,9 @@ export async function runAgent(options: RunOptions): Promise<RunResult> {
       usage: reply.usage,
     });
 
-    if (reply.finishReason === "length") return finished("output_limit", turn);
+    if (reply.finishReason === "length") {
+      return finished("output_limit", turn);
+    }
     if (reply.finishReason === "content_filter" || reply.toolCalls.length === 0) {
       return finished("refused", turn);
     }
@@ -187,10 +191,14 @@ export async function runAgent(options: RunOptions): Promise<RunResult> {
       });
     }
 
-    if (end !== null) return finished(end, turn);
+    if (end !== null) {
+      return finished(end, turn);
+    }
     // Checked after the turn's tools run, so a winning move still counts. The
     // next prompt would be bigger still.
-    if (reply.usage.promptTokens > options.maxPromptTokens) return finished("token_limit", turn);
+    if (reply.usage.promptTokens > options.maxPromptTokens) {
+      return finished("token_limit", turn);
+    }
   }
 
   return finished("turn_limit", options.maxTurns);
@@ -209,12 +217,20 @@ function addUsage(totals: Totals, reply: ChatResult): void {
 
 /** Sort an API failure into a crash cause, by HTTP status. */
 function crashCause(err: OpenRouterError): CrashCause {
-  if (err.status === 402) return "no_credits";
-  if (err.status === 401 || err.status === 403) return "unauthorized";
+  if (err.status === 402) {
+    return "no_credits";
+  }
+  if (err.status === 401 || err.status === 403) {
+    return "unauthorized";
+  }
   // A network failure: fetchWithRetry has already retried it.
-  if (err.cause instanceof TypeError) return "retries_exhausted";
+  if (err.cause instanceof TypeError) {
+    return "retries_exhausted";
+  }
   // fetchWithRetry has already retried these.
-  if (err.status === 429 || (err.status !== null && err.status >= 500)) return "retries_exhausted";
+  if (err.status === 429 || (err.status !== null && err.status >= 500)) {
+    return "retries_exhausted";
+  }
   return "api_error";
 }
 

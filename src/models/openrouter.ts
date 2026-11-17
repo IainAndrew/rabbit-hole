@@ -164,7 +164,9 @@ export async function chat(request: ChatRequest): Promise<ChatResult> {
   } catch (error) {
     // Every attempt failed before any response arrived. fetch's own message is
     // just "fetch failed"; the reason is in its cause.
-    if (!(error instanceof TypeError)) throw error;
+    if (!(error instanceof TypeError)) {
+      throw error;
+    }
     const reason = error.cause instanceof Error ? error.cause.message : error.message;
     throw new OpenRouterError(`No response from OpenRouter after ${attempts} attempts: ${reason}`, null, { cause: error });
   }

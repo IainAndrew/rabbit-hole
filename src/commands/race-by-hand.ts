@@ -36,7 +36,9 @@ const input = createInterface({ input: process.stdin, output: process.stdout, pr
 let inputClosed = false;
 input.on("close", () => (inputClosed = true));
 const prompt = () => {
-  if (!inputClosed) input.prompt();
+  if (!inputClosed) {
+    input.prompt();
+  }
 };
 prompt();
 
@@ -81,7 +83,9 @@ console.log(`Pages fetched live and added to snapshot/: ${liveFetches}`);
  */
 function parseCall(line: string): ToolCall | null {
   const trimmed = line.trim();
-  if (trimmed === "") return null;
+  if (trimmed === "") {
+    return null;
+  }
   const space = trimmed.indexOf(" ");
   const name = space === -1 ? trimmed : trimmed.slice(0, space);
   const value = space === -1 ? "" : trimmed.slice(space + 1).trim();

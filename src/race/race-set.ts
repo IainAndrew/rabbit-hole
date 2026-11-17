@@ -49,8 +49,12 @@ export type RaceSpec = RaceDraft & { difficulty: Difficulty; measured: Measureme
  * EASY_ROUTES routes found, but counting stopped before the end.
  */
 export function tierFor(measured: Measurement): Difficulty | null {
-  if (measured.twoHopRoutes >= EASY_ROUTES) return "easy";
-  if (!measured.complete) return null;
+  if (measured.twoHopRoutes >= EASY_ROUTES) {
+    return "easy";
+  }
+  if (!measured.complete) {
+    return null;
+  }
   return measured.twoHopRoutes === 0 ? "hard" : "medium";
 }
 
@@ -62,14 +66,22 @@ export function tierFor(measured: Measurement): Difficulty | null {
  * @throws On the first malformed race, or a repeated id.
  */
 export function parseRaceDrafts(value: unknown): RaceDraft[] {
-  if (!Array.isArray(value)) throw new Error("The race set must be a JSON array");
+  if (!Array.isArray(value)) {
+    throw new Error("The race set must be a JSON array");
+  }
   const seen = new Set<string>();
   return value.map((raw: unknown, index) => {
     const bad = (why: string) => new Error(`Race ${index + 1}: ${why}`);
-    if (!isRecord(raw)) throw bad("not an object");
+    if (!isRecord(raw)) {
+      throw bad("not an object");
+    }
     const { id, start, target, knownPath } = raw;
-    if (typeof id !== "string" || id === "") throw bad('needs an "id"');
-    if (seen.has(id)) throw bad(`repeats the id "${id}"`);
+    if (typeof id !== "string" || id === "") {
+      throw bad('needs an "id"');
+    }
+    if (seen.has(id)) {
+      throw bad(`repeats the id "${id}"`);
+    }
     seen.add(id);
     if (typeof start !== "string" || typeof target !== "string") {
       throw bad('"start" and "target" must be strings');
@@ -169,13 +181,19 @@ export async function checkRace(spec: RaceSpec, getLinks: LinkSource): Promise<s
   for (const title of [spec.start, spec.target]) {
     try {
       const page = await getLinks(title);
-      if (page.title !== title) problems.push(`"${title}" is not canonical: it resolves to "${page.title}"`);
+      if (page.title !== title) {
+        problems.push(`"${title}" is not canonical: it resolves to "${page.title}"`);
+      }
     } catch (error) {
-      if (!(error instanceof PageNotFoundError)) throw error;
+      if (!(error instanceof PageNotFoundError)) {
+        throw error;
+      }
       problems.push(error.message);
     }
   }
-  if (problems.length > 0) return problems;
+  if (problems.length > 0) {
+    return problems;
+  }
 
   if (tierFor(spec.measured) !== spec.difficulty) {
     problems.push(`marked ${spec.difficulty}, but its measurement says ${tierFor(spec.measured) ?? "nothing certain"}`);
@@ -187,7 +205,9 @@ export async function checkRace(spec: RaceSpec, getLinks: LinkSource): Promise<s
   }
 
   const [first, ...moves] = spec.knownPath;
-  if (first !== spec.start) return [...problems, "the known path must begin with the start"];
+  if (first !== spec.start) {
+    return [...problems, "the known path must begin with the start"];
+  }
   let race = await startRace(spec.start, spec.target, getLinks);
   for (const step of moves) {
     let result;
@@ -195,7 +215,9 @@ export async function checkRace(spec: RaceSpec, getLinks: LinkSource): Promise<s
       result = await move(race, step, getLinks);
     } catch (error) {
       // A red link: on the page, but there's no page behind it.
-      if (!(error instanceof PageNotFoundError)) throw error;
+      if (!(error instanceof PageNotFoundError)) {
+        throw error;
+      }
       return [...problems, `known path: can't move to "${step}": ${error.message}`];
     }
     if (!result.ok) {
@@ -204,7 +226,9 @@ export async function checkRace(spec: RaceSpec, getLinks: LinkSource): Promise<s
     }
     race = result.race;
   }
-  if (!hasWon(race)) return [...problems, "the known path doesn't reach the target"];
+  if (!hasWon(race)) {
+    return [...problems, "the known path doesn't reach the target"];
+  }
 
   const wrongLength = spec.difficulty === "hard" ? hops(race) < 3 : hops(race) !== 2;
   if (wrongLength) {

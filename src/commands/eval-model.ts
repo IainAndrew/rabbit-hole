@@ -28,10 +28,16 @@ const { values } = parseArgs({
 const model = models.find((candidate) => candidate.id === values.model);
 const maxCost = Number(values["max-cost"]);
 const repeats = Number(values.repeats);
-if (!model) fail(`--model must be one of: ${models.map((m) => m.id).join(", ")}`);
+if (!model) {
+  fail(`--model must be one of: ${models.map((m) => m.id).join(", ")}`);
+}
 // No default: the cap is a decision, made each time.
-if (!(maxCost > 0)) fail("--max-cost must be a number of dollars above 0");
-if (!Number.isInteger(repeats) || repeats < 1) fail("--repeats must be a whole number, 1 or more");
+if (!(maxCost > 0)) {
+  fail("--max-cost must be a number of dollars above 0");
+}
+if (!Number.isInteger(repeats) || repeats < 1) {
+  fail("--repeats must be a whole number, 1 or more");
+}
 
 const git = gitState();
 if (git.gitDirty) {
@@ -61,7 +67,9 @@ const result = await runEval({
 console.log(`\nStopped: ${result.stop} after ${result.runs} of ${races.length * repeats} runs, $${result.spent.toFixed(4)} spent`);
 console.log(`Results: ${dir}/eval.json`);
 // Running out of budget is the cap working; anything else needs a look.
-if (result.stop !== "completed" && result.stop !== "cost_cap") process.exit(1);
+if (result.stop !== "completed" && result.stop !== "cost_cap") {
+  process.exit(1);
+}
 
 function fail(message: string): never {
   console.error(`${message}\n${USAGE}`);

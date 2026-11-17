@@ -17,7 +17,9 @@ function scriptedModel(turns: Turn[]) {
   const callModel: CallModel = async (messages) => {
     seen.push(structuredClone(messages));
     const turn = turns[seen.length - 1] ?? {};
-    if (turn instanceof Error) throw turn;
+    if (turn instanceof Error) {
+      throw turn;
+    }
     const calls = turn.calls ?? [];
     return reply({
       toolCalls: calls.map(({ name, args }, i) => ({ id: `call_${seen.length}_${i}`, name, arguments: JSON.stringify(args) })),

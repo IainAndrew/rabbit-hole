@@ -93,24 +93,32 @@ export async function executeTool(call: ToolCall, race: Race, getLinks: LinkSour
   });
 
   const args = parseArguments(call.arguments);
-  if (args === null) return mistake("arguments must be a JSON object.");
+  if (args === null) {
+    return mistake("arguments must be a JSON object.");
+  }
 
   switch (call.name) {
     case "get_links": {
       const page = stringArg(args, "page");
-      if (page === null) return mistake('get_links needs a "page" string.');
+      if (page === null) {
+        return mistake('get_links needs a "page" string.');
+      }
       try {
         const result = await getLinks(page);
         return success(`Links on "${result.title}" (${result.links.length}):\n${result.links.join("\n")}`);
       } catch (err) {
-        if (err instanceof PageNotFoundError) return mistake(err.message);
+        if (err instanceof PageNotFoundError) {
+          return mistake(err.message);
+        }
         throw err;
       }
     }
 
     case "move_to": {
       const page = stringArg(args, "page");
-      if (page === null) return mistake('move_to needs a "page" string.');
+      if (page === null) {
+        return mistake('move_to needs a "page" string.');
+      }
       const result = await move(race, page, getLinks);
       if (!result.ok) {
         const here = currentPage(race);
@@ -126,7 +134,9 @@ export async function executeTool(call: ToolCall, race: Race, getLinks: LinkSour
 
     case "give_up": {
       const reason = stringArg(args, "reason");
-      if (reason === null) return mistake('give_up needs a "reason" string.');
+      if (reason === null) {
+        return mistake('give_up needs a "reason" string.');
+      }
       return success(`Gave up after ${hops(race)} hops.`, { end: "gave_up" });
     }
 

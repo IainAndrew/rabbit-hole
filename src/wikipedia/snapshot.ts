@@ -29,9 +29,15 @@ type Entry =
 export function snapshotLinks(dir: string, fetchLive: LinkSource): LinkSource {
   const lookup: LinkSource = async (title) => {
     const entry = await readEntry(dir, title);
-    if (entry?.kind === "page") return { title: entry.title, links: entry.links };
-    if (entry?.kind === "redirect") return lookup(entry.to);
-    if (entry?.kind === "missing") throw new PageNotFoundError(entry.message);
+    if (entry?.kind === "page") {
+      return { title: entry.title, links: entry.links };
+    }
+    if (entry?.kind === "redirect") {
+      return lookup(entry.to);
+    }
+    if (entry?.kind === "missing") {
+      throw new PageNotFoundError(entry.message);
+    }
     return record(dir, title, fetchLive);
   };
   return lookup;
@@ -56,7 +62,9 @@ async function record(dir: string, title: string, fetchLive: LinkSource) {
   // If the page itself is already recorded, keep that copy: today's version
   // may have different links, and the snapshot must not drift.
   const existing = await readEntry(dir, live.title);
-  if (existing?.kind === "page") return { title: existing.title, links: existing.links };
+  if (existing?.kind === "page") {
+    return { title: existing.title, links: existing.links };
+  }
 
   await writeEntry(dir, live.title, { kind: "page", title: live.title, links: live.links, fetchedAt });
   return live;
@@ -83,7 +91,9 @@ async function readEntry(dir: string, title: string): Promise<Entry | null> {
   try {
     text = await readFile(file, "utf8");
   } catch (error) {
-    if (isRecord(error) && error.code === "ENOENT") return null;
+    if (isRecord(error) && error.code === "ENOENT") {
+      return null;
+    }
     throw error;
   }
   return parseEntry(JSON.parse(text), file);
@@ -103,12 +113,16 @@ async function writeEntry(dir: string, title: string, entry: Entry): Promise<voi
  */
 function parseEntry(value: unknown, file: string): Entry {
   const bad = new Error(`Malformed snapshot file ${file}`);
-  if (!isRecord(value) || typeof value.fetchedAt !== "string") throw bad;
+  if (!isRecord(value) || typeof value.fetchedAt !== "string") {
+    throw bad;
+  }
   const { kind, fetchedAt } = value;
 
   if (kind === "page" && typeof value.title === "string" && Array.isArray(value.links)) {
     const links = value.links;
-    if (!links.every((link) => typeof link === "string")) throw bad;
+    if (!links.every((link) => typeof link === "string")) {
+      throw bad;
+    }
     return { kind, title: value.title, links, fetchedAt };
   }
   if (kind === "redirect" && typeof value.from === "string" && typeof value.to === "string") {

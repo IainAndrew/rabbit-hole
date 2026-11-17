@@ -200,7 +200,9 @@ function parseLine(line: string, number: number): TraceLine {
   for (const [path, kind] of Object.entries(fields)) {
     const value = path.split(".").reduce<unknown>((at, key) => (isRecord(at) ? at[key] : undefined), event);
     const ok = kind === "array" ? Array.isArray(value) : typeof value === kind;
-    if (!ok) throw new Error(`Trace line ${number} (${event.type}): "${path}" should be ${kind}`);
+    if (!ok) {
+      throw new Error(`Trace line ${number} (${event.type}): "${path}" should be ${kind}`);
+    }
   }
   return event as TraceLine;
 }
