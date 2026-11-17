@@ -68,6 +68,11 @@ test("notices peak and off-peak pricing, and refuses an unknown override", () =>
   assert.throws(() => parseEndpoints({ data: { endpoints: [odd] } }), /Unknown kind of price override/);
 });
 
+test("an endpoint with no recent traffic has a null uptime, not a crash", () => {
+  const [e] = parseEndpoints({ data: { endpoints: [endpoint("quiet", "0.0000001", { uptime_last_1d: null })] } });
+  assert.equal(e!.uptime, null);
+});
+
 test("rejects a response that isn't an endpoint list", () => {
   assert.throws(() => parseEndpoints({ data: [] }), /Unexpected/);
   assert.throws(() => parseEndpoints({ data: { endpoints: [{ tag: "x" }] } }), /Malformed endpoint/);

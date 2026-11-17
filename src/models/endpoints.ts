@@ -25,8 +25,8 @@ export type Endpoint = {
   /** True if the provider caches repeated prompt prefixes without being asked. */
   implicitCaching: boolean;
   supportsTools: boolean;
-  /** Percent of requests that succeeded over the last day. */
-  uptime: number;
+  /** Percent of requests that succeeded over the last day; null with no recent traffic. */
+  uptime: number | null;
   /**
    * Some endpoints charge more once a prompt passes a size, such as 5x the
    * input price over 100k tokens. Null when the price is flat.
@@ -69,7 +69,7 @@ function toEndpoint(raw: unknown): Endpoint {
     !isRecord(raw) ||
     typeof raw.tag !== "string" ||
     typeof raw.quantization !== "string" ||
-    typeof raw.uptime_last_1d !== "number" ||
+    (typeof raw.uptime_last_1d !== "number" && raw.uptime_last_1d !== null) ||
     !Array.isArray(raw.supported_parameters) ||
     !isRecord(raw.pricing)
   ) {

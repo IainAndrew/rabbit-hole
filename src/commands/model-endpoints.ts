@@ -60,7 +60,7 @@ function row(endpoint: Endpoint, isPinned: boolean): string {
     price(endpoint.cachedInputPrice).padEnd(8) +
     price(endpoint.cacheWritePrice).padEnd(8) +
     price(endpoint.outputPrice).padEnd(8) +
-    `${endpoint.uptime.toFixed(1)}%`.padEnd(8) +
+    (endpoint.uptime === null ? "-" : `${endpoint.uptime.toFixed(1)}%`).padEnd(8) +
     caching.padEnd(10) +
     (endpoint.supportsTools ? "yes" : "no").padEnd(7) +
     (varies.join(", ") || "-")
