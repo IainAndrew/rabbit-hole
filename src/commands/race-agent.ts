@@ -1,9 +1,10 @@
-// Run one race with the build model, print each turn as it happens, and write
-// a trace to runs/. Billed.
-// Usage: npm run race-agent -- "Start page" "Target page"
+// Run one race, print each turn as it happens, and write a trace to runs/.
+// Uses the build model unless --model names another from the registry. Billed.
+// Usage: npm run race-agent -- "Start page" "Target page" [--model <id>] [--max-cost <dollars>]
 
+import { parseArgs } from "node:util";
 import { promptHash, RACE_LIMITS, runAgent, SYSTEM_PROMPT, type CallModel } from "../agent/agent.ts";
-import { buildModel } from "../models/models.ts";
+import { buildModel, models } from "../models/models.ts";
 import { chat } from "../models/openrouter.ts";
 import { hops } from "../race/race.ts";
 import { toolDefinitions } from "../race/tools.ts";
@@ -11,14 +12,31 @@ import { gitState, openTrace } from "../agent/trace.ts";
 import { snapshotLinks } from "../wikipedia/snapshot.ts";
 import { fetchLinks } from "../wikipedia/wikipedia.ts";
 
-// A safety net for this script, not the eval's --max-cost. It's checked
-// before each call, so the last call can go over by its own cost.
-const MAX_COST = 0.05;
+const USAGE = 'Usage: npm run race-agent -- "Start page" "Target page" [--model <id>] [--max-cost <dollars>]';
 
-const [start, target] = process.argv.slice(2);
+// A safety net for this script, not the eval's --max-cost. It's checked
+// before each call, so the last call can go over by its own cost. Raise it
+// with --max-cost for a model that costs more per race.
+const DEFAULT_MAX_COST = 0.05;
+
+const { values, positionals } = parseArgs({
+  allowPositionals: true,
+  options: {
+    model: { type: "string" },
+    "max-cost": { type: "string" },
+  },
+});
+const [start, target] = positionals;
+const model = values.model === undefined ? buildModel : models.find((candidate) => candidate.id === values.model);
+const maxCost = values["max-cost"] === undefined ? DEFAULT_MAX_COST : Number(values["max-cost"]);
 if (!start || !target) {
-  console.error('Usage: npm run race-agent -- "Start page" "Target page"');
-  process.exit(1);
+  fail(USAGE);
+}
+if (!model) {
+  fail(`--model must be one of: ${models.map((m) => m.id).join(", ")}`);
+}
+if (!(maxCost > 0)) {
+  fail("--max-cost must be a number of dollars above 0");
 }
 
 let spent = 0;
@@ -27,10 +45,10 @@ const startedAt = performance.now();
 
 // The real model, wrapped to enforce the cap and print each turn.
 const callModel: CallModel = async (messages) => {
-  if (spent >= MAX_COST) {
-    throw new Error(`Stopped: spent $${spent.toFixed(4)}, over the $${MAX_COST} cap`);
+  if (spent >= maxCost) {
+    throw new Error(`Stopped: spent $${spent.toFixed(4)}, over the $${maxCost} cap`);
   }
-  const result = await chat({ model: buildModel, messages, tools: toolDefinitions, maxTokens: RACE_LIMITS.maxOutputTokens });
+  const result = await chat({ model, messages, tools: toolDefinitions, maxTokens: RACE_LIMITS.maxOutputTokens });
   const { usage } = result;
   spent += usage.cost ?? 0;
   turn++;
@@ -44,10 +62,10 @@ const callModel: CallModel = async (messages) => {
   return result;
 };
 
-const trace = openTrace("runs", `${buildModel.id} ${start} ${target}`);
+const trace = openTrace("runs", `${model.id} ${start} ${target}`);
 trace.record({
   type: "run_start",
-  model: buildModel,
+  model,
   start,
   target,
   systemPrompt: SYSTEM_PROMPT,
@@ -56,14 +74,14 @@ trace.record({
   limits: RACE_LIMITS,
 });
 
-console.log(`${buildModel.id}: "${start}" → "${target}"\n`);
+console.log(`${model.id} on ${model.provider}: "${start}" → "${target}", cap $${maxCost}\n`);
 const result = await runAgent({
   start,
   target,
   callModel,
   getLinks: snapshotLinks("snapshot", fetchLinks),
   maxTurns: RACE_LIMITS.maxTurns,
-  maxPromptTokens: RACE_LIMITS.maxPromptTokens,
+  maxContextChars: RACE_LIMITS.maxContextChars,
   record: trace.record,
 });
 
@@ -75,3 +93,9 @@ console.log(`Path:  ${result.race.path.join(" > ")}`);
 console.log(`Cost:  $${spent.toFixed(6)}`);
 console.log(`Time:  ${((performance.now() - startedAt) / 1000).toFixed(1)} s`);
 console.log(`Trace: ${trace.path}`);
+
+/** Print why the arguments were refused, and stop. */
+function fail(message: string): never {
+  console.error(message);
+  process.exit(1);
+}

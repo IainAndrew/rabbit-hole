@@ -28,7 +28,7 @@ export type RunStartEvent = {
   /** Uncommitted changes mean the commit alone doesn't describe the code. */
   gitDirty: boolean;
   /** maxOutputTokens caps one reply, reasoning included. */
-  limits: { maxTurns: number; maxPromptTokens: number; maxOutputTokens: number };
+  limits: { maxTurns: number; maxContextChars: number; maxOutputTokens: number };
 };
 
 /** One call to the model and its full reply. */
@@ -36,6 +36,8 @@ export type ModelCallEvent = {
   type: "model_call";
   /** Counts from 1. A turn is one model call and the tool calls it asked for. */
   turn: number;
+  /** Size of the prompt sent, in characters, the measure the context limit uses. */
+  contextChars: number;
   /** Which upstream provider OpenRouter routed the call to. */
   provider: string | null;
   /** OpenRouter's id for this call, to look it up in their dashboard. */
@@ -157,9 +159,9 @@ const requiredFields: Record<TraceEvent["type"], Record<string, string>> = {
     promptHash: "string",
     gitCommit: "string",
     gitDirty: "boolean",
-    "limits.maxPromptTokens": "number",
+    "limits.maxContextChars": "number",
   },
-  model_call: { turn: "number", toolCalls: "array", "usage.promptTokens": "number", durationMs: "number" },
+  model_call: { turn: "number", contextChars: "number", toolCalls: "array", "usage.promptTokens": "number", durationMs: "number" },
   tool_call: { turn: "number", name: "string", arguments: "string", result: "string", status: "string", pageAfter: "string" },
   run_end: { "end.kind": "string", path: "array", hops: "number", turns: "number", "totals.promptTokens": "number" },
 };

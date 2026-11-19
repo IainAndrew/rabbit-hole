@@ -4,6 +4,7 @@
 
 import { loadEval, type LoadedRun } from "../evals/report.ts";
 import { averagesOf, outcomeOf, scoreRuns, type Outcome, type Score } from "../evals/score.ts";
+import { reasoningLabel } from "../models/models.ts";
 
 const TIERS = ["easy", "medium", "hard"];
 const LETTERS: Record<Outcome, string> = { won: "W", lost: "L", crashed: "C", killed: "K" };
@@ -25,9 +26,9 @@ const spent = runs.reduce<number | null>((sum, run) => {
   return sum === null || cost === undefined || cost === null ? null : sum + cost;
 }, 0);
 
-console.log(`${model.id} on ${model.provider} (reasoning: ${model.reasoning})`);
+console.log(`${model.id} on ${model.provider} (reasoning: ${reasoningLabel(model.reasoning)})`);
 console.log(`commit ${manifest.gitCommit.slice(0, 7)} | prompt ${manifest.promptHash}`);
-console.log(`limits: ${limits.maxTurns} turns, ${limits.maxPromptTokens.toLocaleString()} prompt tokens, ${limits.maxOutputTokens.toLocaleString()} output tokens`);
+console.log(`limits: ${limits.maxTurns} turns, ${limits.maxContextChars.toLocaleString()} context chars, ${limits.maxOutputTokens.toLocaleString()} output tokens`);
 console.log(`stopped: ${manifest.stop ?? "never (killed, or still running)"}`);
 // A slot is one race and repeat; a crashed slot may have been re-run.
 const attempts = (raceId: string, repeat: number) => {

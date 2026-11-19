@@ -47,7 +47,7 @@ export type EvalOptions = {
   maxCost: number;
   callModel: CallModel;
   getLinks: LinkSource;
-  limits: { maxTurns: number; maxPromptTokens: number; maxOutputTokens: number };
+  limits: { maxTurns: number; maxContextChars: number; maxOutputTokens: number };
   /** Recorded in every trace; passed in so tests don't depend on the repo. */
   git: { gitCommit: string; gitDirty: boolean };
   /** One line per run as it ends, for the terminal. */
@@ -148,7 +148,7 @@ export async function runEval(options: EvalOptions): Promise<{ stop: EvalStop; s
       callModel: options.callModel,
       getLinks: options.getLinks,
       maxTurns: options.limits.maxTurns,
-      maxPromptTokens: options.limits.maxPromptTokens,
+      maxContextChars: options.limits.maxContextChars,
       record: trace.record,
     });
 

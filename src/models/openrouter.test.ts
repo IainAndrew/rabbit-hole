@@ -18,6 +18,12 @@ test("a model that caches by itself gets no cache_control field", () => {
   assert.equal("cache_control" in body, false);
 });
 
+test("reasoning is sent as an effort, a token cap, or not at all", () => {
+  assert.deepEqual(requestBody(request("anthropic/claude-haiku-5.5")).reasoning, { effort: "low" });
+  assert.deepEqual(requestBody(request("qwen/qwen3.8-flash")).reasoning, { max_tokens: 1000 });
+  assert.equal("reasoning" in requestBody(request("liquid/lfm-3-1.7b")), false);
+});
+
 test("every call is pinned to the model's endpoint, with no fallback", () => {
   const body = requestBody(request("deepseek/deepseek-v4.1-flash-1017"));
   assert.deepEqual(body.provider, { order: ["morph/fp8"], allow_fallbacks: false, require_parameters: true });

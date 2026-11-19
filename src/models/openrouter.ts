@@ -1,7 +1,7 @@
 // A thin client for OpenRouter's OpenAI-compatible chat API: one request, one
 // checked response. No streaming, no framework.
 
-import type { Model } from "./models.ts";
+import type { Model, ReasoningSetting } from "./models.ts";
 import { fetchWithRetry } from "../wikipedia/retry.ts";
 
 const CHAT_URL = "https://openrouter.ai/api/v1/chat/completions";
@@ -178,7 +178,7 @@ export function requestBody(request: ChatRequest): Record<string, unknown> {
     messages: request.messages,
     tools: request.tools,
     max_tokens: request.maxTokens,
-    ...(request.model.reasoning === "default" ? {} : { reasoning: { effort: request.model.reasoning } }),
+    ...reasoningField(request.model.reasoning),
     // Automatic caching: the provider puts the cache point after the last
     // message and moves it forward each turn, so every turn reads the whole
     // conversation so far from the cache and writes only what's new.
@@ -188,6 +188,14 @@ export function requestBody(request: ChatRequest): Record<string, unknown> {
     // would ignore a setting, such as tools or reasoning, refuse instead.
     provider: { order: [request.model.provider], allow_fallbacks: false, require_parameters: true },
   };
+}
+
+/** The request's reasoning field: nothing for "default", else an effort or a token cap. */
+function reasoningField(setting: ReasoningSetting): { reasoning?: { effort: string } | { max_tokens: number } } {
+  if (setting === "default") {
+    return {};
+  }
+  return typeof setting === "string" ? { reasoning: { effort: setting } } : { reasoning: { max_tokens: setting.maxTokens } };
 }
 
 /** The response is outside data: check every field we use. */

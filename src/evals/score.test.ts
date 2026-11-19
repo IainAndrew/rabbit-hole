@@ -30,7 +30,7 @@ function run(ending: Ending, numbers: { hops?: number; turns?: number; cost?: nu
       promptHash: "p",
       gitCommit: "c",
       gitDirty: false,
-      limits: { maxTurns: 30, maxPromptTokens: 100_000, maxOutputTokens: 2000 },
+      limits: { maxTurns: 30, maxContextChars: 330_000, maxOutputTokens: 2000 },
     },
     end:
       ending === "killed"

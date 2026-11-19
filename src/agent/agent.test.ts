@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { runAgent, type CallModel, type RunOptions } from "./agent.ts";
+import { contextChars, runAgent, type CallModel, type RunOptions } from "./agent.ts";
 import { fakeLinks } from "../wikipedia/fake-wikipedia.ts";
 import { OpenRouterError, type ChatResult, type Message } from "../models/openrouter.ts";
 import type { TraceEvent } from "./trace.ts";
 
 type Call = { name: string; args: unknown };
 // One scripted turn: a reply, or an error the model call throws.
-type Turn = { calls?: Call[]; finishReason?: string; promptTokens?: number; cost?: number | null } | Error;
+type Turn = { calls?: Call[]; finishReason?: string; cost?: number | null } | Error;
 
 // A model that replies from a script, one entry per turn, and records the
 // conversation it was shown each time. Past the end of the script it replies
@@ -24,23 +24,20 @@ function scriptedModel(turns: Turn[]) {
     return reply({
       toolCalls: calls.map(({ name, args }, i) => ({ id: `call_${seen.length}_${i}`, name, arguments: JSON.stringify(args) })),
       finishReason: turn.finishReason ?? (calls.length > 0 ? "tool_calls" : "stop"),
-      promptTokens: turn.promptTokens ?? 0,
       cost: turn.cost === undefined ? 0.001 : turn.cost,
     });
   };
   return { callModel, seen };
 }
 
-function reply(
-  fields: Pick<ChatResult, "toolCalls" | "finishReason"> & { promptTokens: number; cost: number | null },
-): ChatResult {
+function reply(fields: Pick<ChatResult, "toolCalls" | "finishReason"> & { cost: number | null }): ChatResult {
   return {
     content: fields.toolCalls.length > 0 ? null : "I think I'm done.",
     reasoning: null,
     reasoningDetails: null,
     toolCalls: fields.toolCalls,
     finishReason: fields.finishReason,
-    usage: { promptTokens: fields.promptTokens, cachedTokens: null, completionTokens: 0, reasoningTokens: null, cost: fields.cost },
+    usage: { promptTokens: 0, cachedTokens: null, completionTokens: 0, reasoningTokens: null, cost: fields.cost },
     provider: null,
     generationId: null,
     attempts: 1,
@@ -55,7 +52,7 @@ const race = (callModel: CallModel, options: Partial<RunOptions> = {}) =>
     callModel,
     getLinks: fakeLinks,
     maxTurns: 10,
-    maxPromptTokens: 100_000,
+    maxContextChars: 330_000,
     record: () => {},
     ...options,
   });
@@ -122,17 +119,29 @@ test("a reply cut off at the output cap ends the run without running its calls",
   assert.deepEqual(result.race.path, ["Guinness"]);
 });
 
-test("a prompt over the token limit ends the run after that turn's tools", async () => {
-  const model = scriptedModel([{ calls: [go("Republic of Ireland")], promptTokens: 150_000 }]);
-  const result = await race(model.callModel, { maxPromptTokens: 100_000 });
-  assert.deepEqual(result.end, finished("token_limit"));
+test("a conversation over the context limit ends the run after that turn's tools", async () => {
+  // 199 characters before the first move, 303 after it.
+  const model = scriptedModel([{ calls: [go("Republic of Ireland")] }, { calls: [go("Einstein")] }]);
+  const result = await race(model.callModel, { maxContextChars: 250 });
+  assert.deepEqual(result.end, finished("context_limit"));
   assert.deepEqual(result.race.path, ["Guinness", "Republic of Ireland"]);
 });
 
-test("a winning move still wins over the token limit", async () => {
-  const model = scriptedModel([{ calls: [go("Republic of Ireland")] }, { calls: [go("Einstein")], promptTokens: 150_000 }]);
-  const result = await race(model.callModel, { maxPromptTokens: 100_000 });
+test("a winning move still wins over the context limit", async () => {
+  const model = scriptedModel([{ calls: [go("Republic of Ireland")] }, { calls: [go("Einstein")] }]);
+  // 303 characters after the first move, 393 after the winning one.
+  const result = await race(model.callModel, { maxContextChars: 350 });
   assert.deepEqual(result.end, finished("won"));
+  assert.ok(contextChars(result.messages) > 350);
+});
+
+test("context is counted in characters: message text plus tool call names and arguments", () => {
+  const messages: Message[] = [
+    { role: "user", content: "abc" },
+    { role: "assistant", content: null, tool_calls: [{ id: "x", type: "function", function: { name: "go", arguments: "{}" } }] },
+    { role: "tool", tool_call_id: "x", content: "12345" },
+  ];
+  assert.equal(contextChars(messages), 3 + 2 + 2 + 5);
 });
 
 test("stops at the turn limit", async () => {

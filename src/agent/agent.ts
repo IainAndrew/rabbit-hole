@@ -19,12 +19,12 @@ export type CallModel = (messages: Message[]) => Promise<ChatResult>;
  * - `won`: reached the target.
  * - `gave_up`: called give_up.
  * - `turn_limit`: used every turn without finishing.
- * - `token_limit`: a call's prompt grew past maxPromptTokens.
+ * - `context_limit`: the conversation grew past maxContextChars.
  * - `output_limit`: a reply was cut off at the output cap, so its tool calls
  *   can't be trusted.
  * - `refused`: a reply with no tool call, or one the provider's filter blocked.
  */
-export type EndReason = "won" | "gave_up" | "turn_limit" | "token_limit" | "output_limit" | "refused";
+export type EndReason = "won" | "gave_up" | "turn_limit" | "context_limit" | "output_limit" | "refused";
 
 /**
  * Why a run couldn't finish. These say nothing about the agent, so they are
@@ -61,8 +61,12 @@ export type RunResult = {
 export const RACE_LIMITS = {
   /** Model calls allowed. */
   maxTurns: 30,
-  /** Context size, not cost: the run stops once a prompt passes this. */
-  maxPromptTokens: 100_000,
+  /**
+   * Context size, not cost, in characters rather than tokens: tokenizers
+   * differ (Claude counts a link list as ~1.6x the tokens DeepSeek does), so a
+   * token limit would give some models less room. About 100k DeepSeek tokens.
+   */
+  maxContextChars: 330_000,
   /** One reply, reasoning included. */
   maxOutputTokens: 2000,
 };
@@ -93,10 +97,11 @@ export type RunOptions = {
   /** Model calls allowed before the run ends as "turn_limit". */
   maxTurns: number;
   /**
-   * Context size, not cost: once a call's prompt is bigger than this, the run
-   * ends as "token_limit" after that turn's tools run.
+   * Context size in characters (see `contextChars`): once the conversation is
+   * bigger than this after a turn's tools run, the run ends as
+   * "context_limit" rather than send it.
    */
-  maxPromptTokens: number;
+  maxContextChars: number;
   /**
    * Receives each model call, tool call and the run's end, as they happen.
    * The caller writes run_start itself, since it knows the model and commit.
@@ -128,6 +133,7 @@ export async function runAgent(options: RunOptions): Promise<RunResult> {
   const finished = (reason: EndReason, turns: number) => finish({ kind: "finished", reason }, turns);
 
   for (let turn = 1; turn <= options.maxTurns; turn++) {
+    const promptChars = contextChars(messages);
     let reply: ChatResult;
     try {
       reply = await options.callModel(messages);
@@ -143,6 +149,7 @@ export async function runAgent(options: RunOptions): Promise<RunResult> {
     options.record({
       type: "model_call",
       turn,
+      contextChars: promptChars,
       provider: reply.provider,
       generationId: reply.generationId,
       attempts: reply.attempts,
@@ -194,14 +201,33 @@ export async function runAgent(options: RunOptions): Promise<RunResult> {
     if (end !== null) {
       return finished(end, turn);
     }
-    // Checked after the turn's tools run, so a winning move still counts. The
-    // next prompt would be bigger still.
-    if (reply.usage.promptTokens > options.maxPromptTokens) {
-      return finished("token_limit", turn);
+    // Checked after the turn's tools run, so a winning move still counts. This
+    // is the size of the next prompt.
+    if (contextChars(messages) > options.maxContextChars) {
+      return finished("context_limit", turn);
     }
   }
 
   return finished("turn_limit", options.maxTurns);
+}
+
+/**
+ * The size of the conversation in characters: every message's text, and the
+ * name and arguments of every tool call. Counted the same way for every model,
+ * unlike tokens. Opaque reasoning blocks are left out: their form differs by
+ * provider. The tool definitions are left out too: they're the same each turn.
+ */
+export function contextChars(messages: Message[]): number {
+  let chars = 0;
+  for (const message of messages) {
+    chars += message.content?.length ?? 0;
+    if (message.role === "assistant") {
+      for (const call of message.tool_calls ?? []) {
+        chars += call.function.name.length + call.function.arguments.length;
+      }
+    }
+  }
+  return chars;
 }
 
 /** Add one call's tokens and cost to the run's totals, in place. */

@@ -60,8 +60,9 @@ Needs Node 24 or later. Copy `.env.example` to `.env` before anything that calls
 - `npm run model-endpoints -- <model id>`: list every provider endpoint for one model:
   tier, precision, prices (and when they vary), uptime, caching, tools; marks the
   registry's pin (free)
-- `npm run race-agent -- "Start" "Target"`: the build model plays one race, printed turn
-  by turn, and writes a trace to `runs/` (billed, stops at 30 turns or $0.05)
+- `npm run race-agent -- "Start" "Target" [--model <id>] [--max-cost <dollars>]`: a
+  model (the build model by default) plays one race, printed turn by turn, and writes a
+  trace to `runs/` (billed, stops at 30 turns or the cap, $0.05 by default)
 - `npm run eval-model -- --model <id> --max-cost <dollars> [--repeats 3]`: run every race
   in `races.json` against one model, writing traces and `eval.json` to `results/<eval>/`.
   Refuses uncommitted code; stops starting runs at the cap (billed). With

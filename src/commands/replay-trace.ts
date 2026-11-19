@@ -5,6 +5,7 @@
 
 import { readFileSync } from "node:fs";
 import { parseTrace, type TraceLine } from "../agent/trace.ts";
+import { reasoningLabel } from "../models/models.ts";
 
 // Link lists run to hundreds of lines; show the start of each.
 const RESULT_LINES = 4;
@@ -23,9 +24,9 @@ if (first?.type !== "run_start") {
 
 const { model, limits } = first;
 console.log(`"${first.start}" → "${first.target}"`);
-console.log(`${model.id} (reasoning: ${model.reasoning}) | prompt ${first.promptHash}`);
+console.log(`${model.id} (reasoning: ${reasoningLabel(model.reasoning)}) | prompt ${first.promptHash}`);
 console.log(`commit ${first.gitCommit.slice(0, 7)}${first.gitDirty ? " with uncommitted changes" : ""}`);
-console.log(`limits: ${limits.maxTurns} turns, ${limits.maxPromptTokens.toLocaleString()} prompt tokens, ${limits.maxOutputTokens} output tokens`);
+console.log(`limits: ${limits.maxTurns} turns, ${limits.maxContextChars.toLocaleString()} context chars, ${limits.maxOutputTokens} output tokens`);
 
 // Null once any call's cost is unknown: a partial sum would read as a total.
 let cost: number | null = 0;
@@ -53,8 +54,8 @@ function print(event: TraceLine): void {
         console.log(indent(event.content, "  says:   "));
       }
       console.log(
-        `  context ${bar(usage.promptTokens, limits.maxPromptTokens)} ${usage.promptTokens.toLocaleString()} tokens` +
-          ` (${usage.cachedTokens ?? "?"} cached), ${usage.completionTokens} out`,
+        `  context ${bar(event.contextChars, limits.maxContextChars)} ${event.contextChars.toLocaleString()} chars,` +
+          ` ${usage.promptTokens.toLocaleString()} tokens (${usage.cachedTokens ?? "?"} cached), ${usage.completionTokens} out`,
       );
       console.log(`  ${money(usage.cost)} this turn, ${money(cost)} so far, ${event.durationMs} ms`);
       return;
@@ -89,9 +90,9 @@ function print(event: TraceLine): void {
   }
 }
 
-/** How full the context is, against the token limit, as a text bar. */
-function bar(tokens: number, limit: number): string {
-  const filled = Math.min(BAR_WIDTH, Math.round((tokens / limit) * BAR_WIDTH));
+/** How full the context is, against the context limit, as a text bar. */
+function bar(size: number, limit: number): string {
+  const filled = Math.min(BAR_WIDTH, Math.round((size / limit) * BAR_WIDTH));
   return `[${"█".repeat(filled)}${"·".repeat(BAR_WIDTH - filled)}]`;
 }
 

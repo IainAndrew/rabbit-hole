@@ -53,7 +53,7 @@ export function fakeEval(callModel: CallModel, options: Partial<EvalOptions> = {
     maxCost: 1,
     callModel,
     getLinks: fakeLinks,
-    limits: { maxTurns: 5, maxPromptTokens: 100_000, maxOutputTokens: 100 },
+    limits: { maxTurns: 5, maxContextChars: 330_000, maxOutputTokens: 100 },
     git: { gitCommit: "abc123", gitDirty: false },
     log: () => {},
     ...options,

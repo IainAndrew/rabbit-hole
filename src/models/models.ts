@@ -8,6 +8,17 @@
  */
 export type ReasoningEffort = "default" | "none" | "low" | "medium" | "high";
 
+/**
+ * An effort level, or a cap on reasoning tokens for a model that takes a cap
+ * but no effort level.
+ */
+export type ReasoningSetting = ReasoningEffort | { maxTokens: number };
+
+/** The setting in words, for reports and replays. */
+export function reasoningLabel(setting: ReasoningSetting): string {
+  return typeof setting === "string" ? setting : `up to ${setting.maxTokens} tokens`;
+}
+
 /** One model in the registry. */
 export type Model = {
   /**
@@ -21,7 +32,7 @@ export type Model = {
   lab: string;
   /** Tokens, as OpenRouter lists it. Null if unknown. */
   contextLength: number | null;
-  reasoning: ReasoningEffort;
+  reasoning: ReasoningSetting;
   /**
    * The OpenRouter endpoint tag every call goes to, with no fallback, such as
    * "morph/fp8". A bare slug ("morph") would match every endpoint that
@@ -94,14 +105,16 @@ const deepseekV41Flash: Model = {
 
 /**
  * Alibaba serves it from two endpoints; this one caches without being asked.
- * It takes no effort setting, so reasoning is left at its default (on).
+ * It takes no effort level, and at its default it spent a whole 2,000-token
+ * reply thinking in the smoke test. A cap of half the reply is its nearest
+ * equivalent to "low", and leaves room to act.
  */
 const qwen38Flash: Model = {
   id: "qwen/qwen3.8-flash",
   name: "Qwen3.8 Flash",
   lab: "Qwen",
   contextLength: 1_000_000,
-  reasoning: "default",
+  reasoning: { maxTokens: 1000 },
   provider: "alibaba/us-east-1",
   explicitCaching: false,
 };
