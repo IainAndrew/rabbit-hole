@@ -4,6 +4,7 @@
 // Usage: npm run compare-evals -- results/<eval> results/<eval> ...
 
 import { rankEvals, type Ranked } from "../evals/compare.ts";
+import { withinNoise } from "../evals/intervals.ts";
 import { loadEval } from "../evals/report.ts";
 
 const dirs = process.argv.slice(2);
@@ -23,10 +24,12 @@ console.log(
   `limits: ${limits.maxTurns} turns, ${limits.maxContextChars.toLocaleString()} context chars, ${limits.maxOutputTokens.toLocaleString()} output tokens\n`,
 );
 
-console.log("Ranked by success rate, then fewer hops on wins. The columns after hops are reported, not ranked on.\n");
+console.log("Ranked by success rate, then fewer hops on wins. The columns after hops are reported, not ranked on.");
+console.log("95%: the range the success rate could take by chance. vs next: the gap to the model below, in points,");
+console.log("with its 95% range; \"noise\" means the range includes 0, so the order may be chance.\n");
 console.log(
-  `${"#".padEnd(3)}${"model".padEnd(24)}${"runs".padEnd(10)}${"won".padEnd(12)}${"hops".padEnd(6)}` +
-    `${"cost/run".padEnd(10)}${"cost/win".padEnd(10)}${"tokens/run".padEnd(12)}${"turns".padEnd(7)}time/run`,
+  `${"#".padEnd(3)}${"model".padEnd(24)}${"runs".padEnd(10)}${"won".padEnd(12)}${"95%".padEnd(11)}${"hops".padEnd(6)}` +
+    `${"vs next".padEnd(22)}${"cost/run".padEnd(10)}${"cost/win".padEnd(10)}${"tokens/run".padEnd(12)}${"turns".padEnd(7)}time/run`,
 );
 for (const entry of ranked) {
   console.log(rankRow(entry));
@@ -51,13 +54,35 @@ function rankRow(entry: Ranked): string {
     loaded.manifest.model.name.padEnd(24) +
     repeats.padEnd(10) +
     `${score.won}/${score.decided} ${rate}`.padEnd(12) +
+    (entry.interval ? `${percent(entry.interval.low)}–${percent(entry.interval.high)}` : "-").padEnd(11) +
     hops.padEnd(6) +
+    gap(entry).padEnd(22) +
     money(averages?.cost ?? null).padEnd(10) +
     money(entry.costPerWin).padEnd(10) +
     (averages ? Math.round(averages.promptTokens).toLocaleString() : "-").padEnd(12) +
     (averages ? averages.turns.toFixed(1) : "-").padEnd(7) +
     (averages ? `${averages.seconds.toFixed(1)} s` : "-")
   );
+}
+
+/** The gap to the next model in points, its 95% range, and whether it's noise. */
+function gap(entry: Ranked): string {
+  const { vsNext, score } = entry;
+  const next = ranked[ranked.indexOf(entry) + 1];
+  if (vsNext === null || next === undefined || score.successRate === null || next.score.successRate === null) {
+    return "-";
+  }
+  const points = (rate: number) => {
+    const rounded = Math.round(rate * 100);
+    return rounded > 0 ? `+${rounded}` : String(rounded);
+  };
+  const range = `${points(score.successRate - next.score.successRate)} [${points(vsNext.low)}, ${points(vsNext.high)}]`;
+  return withinNoise(vsNext) ? `${range} noise` : range;
+}
+
+/** A rate from 0 to 1 as a whole percentage. */
+function percent(rate: number): string {
+  return `${Math.round(rate * 100)}%`;
 }
 
 /** Dollars to 4 places, or "-" when unknown or meaningless (no wins). */

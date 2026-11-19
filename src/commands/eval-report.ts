@@ -2,6 +2,7 @@
 // same by tier, by repeat and by race. Free: reads files.
 // Usage: npm run eval-report -- results/<eval>
 
+import { outcomesByRace, rateInterval } from "../evals/intervals.ts";
 import { loadEval, type LoadedRun } from "../evals/report.ts";
 import { averagesOf, outcomeOf, scoreRuns, type Outcome, type Score } from "../evals/score.ts";
 import { reasoningLabel } from "../models/models.ts";
@@ -45,7 +46,9 @@ console.log(
 );
 
 const overall = scoreRuns(runs);
-console.log(`Score: ${won(overall)}, ${hops(overall)} hops on wins${notCounted(overall)}`);
+const interval = rateInterval(outcomesByRace(runs));
+const range = interval ? ` (95%: ${Math.round(interval.low * 100)}–${Math.round(interval.high * 100)}%)` : "";
+console.log(`Score: ${won(overall)}${range}, ${hops(overall)} hops on wins${notCounted(overall)}`);
 if (unresolved / manifest.plannedRuns > UNRELIABLE_SHARE) {
   console.log(`UNRELIABLE: ${unresolved} of ${manifest.plannedRuns} planned runs have no result. Resume the eval, or read why they crash.`);
 } else if (unresolved > 0) {

@@ -28,6 +28,17 @@ test("success rate decides the ranking", async () => {
   assert.deepEqual(ranked.map((r) => [r.rank, r.eval.manifest.model.id]), [[1, modelB.id], [2, modelA.id]]);
 });
 
+test("each eval gets an interval, and a paired interval for its gap to the next", async () => {
+  const [winner, loser] = rankEvals([
+    await evalOf(winningModel(0.001), { model: modelA }),
+    await evalOf(givingUpModel(0.001), { model: modelB }),
+  ]);
+  assert.deepEqual(winner!.interval, { low: 1, high: 1 });
+  assert.deepEqual(winner!.vsNext, { low: 1, high: 1 });
+  assert.deepEqual(loser!.interval, { low: 0, high: 0 });
+  assert.equal(loser!.vsNext, null);
+});
+
 test("fewer hops on wins breaks a tie in success rate", async () => {
   const wanderer = await evalOf(wandering, { model: modelA });
   const direct = await evalOf(winningModel(0.001), { model: modelB });

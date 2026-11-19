@@ -3,6 +3,7 @@
 // everything else (cost, tokens, time, how runs ended) is shown, not ranked on.
 
 import type { EndReason } from "../agent/agent.ts";
+import { differenceInterval, outcomesByRace, rateInterval, type Interval } from "./intervals.ts";
 import type { LoadedEval } from "./report.ts";
 import { averagesOf, scoreRuns, type Averages, type Score } from "./score.ts";
 
@@ -21,6 +22,14 @@ export type Ranked = {
   costPerWin: number | null;
   /** How the decided runs ended, by reason. */
   endReasons: Record<EndReason, number>;
+  /** 95% interval of the success rate. Null with nothing decided. */
+  interval: Interval | null;
+  /**
+   * 95% interval of this success rate minus the next-ranked one, paired by
+   * race. Null for the last eval. If it includes 0, the gap could be chance:
+   * the order stands, but it isn't evidence that one model is better.
+   */
+  vsNext: Interval | null;
 };
 
 /**
@@ -62,20 +71,27 @@ export function checkComparable(evals: LoadedEval[]): void {
 /** Rank comparable evals by the scoring rule, best first. */
 export function rankEvals(evals: LoadedEval[]): Ranked[] {
   checkComparable(evals);
-  const entries = evals.map((loaded) => ({
-    eval: loaded,
-    score: scoreRuns(loaded.runs),
-    averages: averagesOf(loaded.runs),
-    costPerWin: costPerWin(loaded),
-    endReasons: endReasons(loaded),
-  }));
+  const entries = evals.map((loaded) => {
+    const outcomes = outcomesByRace(loaded.runs);
+    return {
+      eval: loaded,
+      outcomes,
+      score: scoreRuns(loaded.runs),
+      averages: averagesOf(loaded.runs),
+      costPerWin: costPerWin(loaded),
+      endReasons: endReasons(loaded),
+      interval: rateInterval(outcomes),
+    };
+  });
   entries.sort((a, b) => compareScores(a.score, b.score));
 
   const ranked: Ranked[] = [];
-  for (const [index, entry] of entries.entries()) {
+  for (const [index, { outcomes, ...entry }] of entries.entries()) {
     const previous = ranked[index - 1];
     const tied = previous !== undefined && compareScores(previous.score, entry.score) === 0;
-    ranked.push({ ...entry, rank: tied ? previous.rank : index + 1 });
+    const next = entries[index + 1];
+    const vsNext = next === undefined ? null : differenceInterval(outcomes, next.outcomes);
+    ranked.push({ ...entry, rank: tied ? previous.rank : index + 1, vsNext });
   }
   return ranked;
 }

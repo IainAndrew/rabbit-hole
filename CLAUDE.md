@@ -69,12 +69,13 @@ Needs Node 24 or later. Copy `.env.example` to `.env` before anything that calls
   `--resume results/<eval> --max-cost <dollars>`, re-runs crashed runs and starts unstarted
   ones, at the same commit (billed)
 - `npm run eval-report -- results/<eval>`: score one eval from its `eval.json` and traces
-  (success rate, then hops on wins), by tier, repeat and race; refuses runs from another
+  (success rate with its 95% interval, then hops on wins), by tier, repeat and race; refuses runs from another
   model, prompt or commit (free)
 - `npm run compare-evals -- results/<eval> results/<eval> ...`: rank evals of different
-  models by success rate, then hops on wins, with cost per run and per win, tokens, turns,
-  time and end reasons beside it; refuses evals with a different prompt, race set,
-  limits or commit (free)
+  models by success rate, then hops on wins, with a 95% interval on each success rate and
+  on each gap to the next model ("noise" if it could be chance), and cost per run and per
+  win, tokens, turns, time and end reasons beside it; refuses evals with a different
+  prompt, race set, repeats, limits or commit (free)
 - `npm run replay-trace -- <trace>.jsonl`: replay a run from its trace, turn by turn
   (free)
 - `npm run measure-races`: count each race's 2-hop routes on live Wikipedia and write the
