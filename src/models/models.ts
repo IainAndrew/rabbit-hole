@@ -34,6 +34,13 @@ export type Model = {
    * `npm run model-endpoints` on 17 Nov 2026.
    */
   provider: string;
+  /**
+   * True for models that cache only when the request asks (Anthropic's), so
+   * chat() sends a cache_control field. The rest cache repeated prompts
+   * without being asked. Without it, every turn pays full price for the
+   * whole conversation, which grows each turn.
+   */
+  explicitCaching: boolean;
 };
 
 // The field: one cheap, recent, tool-capable model per lab, at about
@@ -47,6 +54,7 @@ const claudeHaiku55: Model = {
   contextLength: 1_000_000,
   reasoning: "low",
   provider: "anthropic",
+  explicitCaching: true,
 };
 
 const gpt6Luna: Model = {
@@ -56,6 +64,7 @@ const gpt6Luna: Model = {
   contextLength: 1_050_000,
   reasoning: "low",
   provider: "openai",
+  explicitCaching: false,
 };
 
 const gemini31FlashLite: Model = {
@@ -65,6 +74,7 @@ const gemini31FlashLite: Model = {
   contextLength: 1_048_576,
   reasoning: "low",
   provider: "google-ai-studio",
+  explicitCaching: false,
 };
 
 /**
@@ -79,6 +89,7 @@ const deepseekV41Flash: Model = {
   contextLength: 1_048_576,
   reasoning: "low",
   provider: "morph/fp8",
+  explicitCaching: false,
 };
 
 /**
@@ -92,6 +103,7 @@ const qwen38Flash: Model = {
   contextLength: 1_000_000,
   reasoning: "default",
   provider: "alibaba/us-east-1",
+  explicitCaching: false,
 };
 
 /** Its only efforts are "high" and "none"; "none" is its default. */
@@ -102,6 +114,7 @@ const mistralSmall2603: Model = {
   contextLength: 262_144,
   reasoning: "none",
   provider: "mistral/zdr",
+  explicitCaching: false,
 };
 
 const glm53Flash: Model = {
@@ -111,6 +124,7 @@ const glm53Flash: Model = {
   contextLength: 1_048_576,
   reasoning: "low",
   provider: "z-ai/fp8",
+  explicitCaching: false,
 };
 
 /** MiniMax's own endpoint is priced by time of day, with 98.7% uptime. */
@@ -121,6 +135,7 @@ const minimaxM31Flash: Model = {
   contextLength: 1_048_576,
   reasoning: "low",
   provider: "parasail/fp8",
+  explicitCaching: false,
 };
 
 /**
@@ -134,6 +149,7 @@ const lfm3: Model = {
   contextLength: 262_144,
   reasoning: "default",
   provider: "liquid/fp8",
+  explicitCaching: false,
 };
 
 /**
@@ -147,6 +163,7 @@ const claudeOpus55: Model = {
   contextLength: 1_000_000,
   reasoning: "low",
   provider: "anthropic",
+  explicitCaching: true,
 };
 
 /** The model the race commands use while building. */

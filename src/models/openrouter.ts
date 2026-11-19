@@ -136,17 +136,7 @@ export async function chat(request: ChatRequest): Promise<ChatResult> {
     throw new Error("OPENROUTER_API_KEY is not set. Copy .env.example to .env and add your key.");
   }
 
-  const body = {
-    model: request.model.id,
-    messages: request.messages,
-    tools: request.tools,
-    max_tokens: request.maxTokens,
-    ...(request.model.reasoning === "default" ? {} : { reasoning: { effort: request.model.reasoning } }),
-    // One provider, no fallback: a different provider is a different setup
-    // (price, precision, cache). require_parameters makes a provider that
-    // would ignore a setting, such as tools or reasoning, refuse instead.
-    provider: { order: [request.model.provider], allow_fallbacks: false, require_parameters: true },
-  };
+  const body = requestBody(request);
 
   const started = performance.now();
   let attempts = 0;
@@ -179,6 +169,25 @@ export async function chat(request: ChatRequest): Promise<ChatResult> {
     throw new OpenRouterError(`OpenRouter returned HTTP ${response.status}: ${errorMessage(json)}`, response.status);
   }
   return { ...parseResponse(json), attempts, durationMs };
+}
+
+/** The JSON body for one call, built from the request and the model's settings. */
+export function requestBody(request: ChatRequest): Record<string, unknown> {
+  return {
+    model: request.model.id,
+    messages: request.messages,
+    tools: request.tools,
+    max_tokens: request.maxTokens,
+    ...(request.model.reasoning === "default" ? {} : { reasoning: { effort: request.model.reasoning } }),
+    // Automatic caching: the provider puts the cache point after the last
+    // message and moves it forward each turn, so every turn reads the whole
+    // conversation so far from the cache and writes only what's new.
+    ...(request.model.explicitCaching ? { cache_control: { type: "ephemeral" } } : {}),
+    // One provider, no fallback: a different provider is a different setup
+    // (price, precision, cache). require_parameters makes a provider that
+    // would ignore a setting, such as tools or reasoning, refuse instead.
+    provider: { order: [request.model.provider], allow_fallbacks: false, require_parameters: true },
+  };
 }
 
 /** The response is outside data: check every field we use. */
