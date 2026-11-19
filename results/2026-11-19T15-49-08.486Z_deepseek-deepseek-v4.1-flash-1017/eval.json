@@ -1,0 +1,489 @@
+{
+  "model": {
+    "id": "deepseek/deepseek-v4.1-flash-1017",
+    "name": "DeepSeek V4.1 Flash",
+    "lab": "DeepSeek",
+    "contextLength": 1048576,
+    "reasoning": "low",
+    "provider": "morph/fp8",
+    "explicitCaching": false
+  },
+  "promptHash": "09c5b008298d",
+  "gitCommit": "965433cf27af5134c827cafff6af4aec94790fca",
+  "gitDirty": false,
+  "limits": {
+    "maxTurns": 30,
+    "maxContextChars": 330000,
+    "maxOutputTokens": 2000
+  },
+  "repeats": 3,
+  "maxCost": 0.5,
+  "races": [
+    {
+      "id": "pizza-united-states",
+      "difficulty": "easy"
+    },
+    {
+      "id": "tennis-world-war-ii",
+      "difficulty": "easy"
+    },
+    {
+      "id": "banana-charles-darwin",
+      "difficulty": "easy"
+    },
+    {
+      "id": "volcano-isaac-newton",
+      "difficulty": "easy"
+    },
+    {
+      "id": "chocolate-france",
+      "difficulty": "easy"
+    },
+    {
+      "id": "dinosaur-moon",
+      "difficulty": "easy"
+    },
+    {
+      "id": "guinness-albert-einstein",
+      "difficulty": "medium"
+    },
+    {
+      "id": "chess-moon",
+      "difficulty": "medium"
+    },
+    {
+      "id": "lighthouse-william-shakespeare",
+      "difficulty": "medium"
+    },
+    {
+      "id": "sushi-napoleon",
+      "difficulty": "medium"
+    },
+    {
+      "id": "bicycle-ancient-egypt",
+      "difficulty": "medium"
+    },
+    {
+      "id": "coffee-mount-everest",
+      "difficulty": "medium"
+    },
+    {
+      "id": "honey-bee-jupiter",
+      "difficulty": "medium"
+    },
+    {
+      "id": "hedgehog-stock-exchange",
+      "difficulty": "medium"
+    },
+    {
+      "id": "kazoo-higgs-boson",
+      "difficulty": "hard"
+    },
+    {
+      "id": "tardigrade-cricket-world-cup",
+      "difficulty": "hard"
+    },
+    {
+      "id": "bagpipes-quantum-entanglement",
+      "difficulty": "hard"
+    },
+    {
+      "id": "haiku-fermats-last-theorem",
+      "difficulty": "hard"
+    },
+    {
+      "id": "origami-peace-of-westphalia",
+      "difficulty": "hard"
+    },
+    {
+      "id": "lichen-rubiks-cube",
+      "difficulty": "hard"
+    },
+    {
+      "id": "penguin-bauhaus",
+      "difficulty": "hard"
+    }
+  ],
+  "plannedRuns": 63,
+  "stop": "completed",
+  "runs": [
+    {
+      "raceId": "pizza-united-states",
+      "difficulty": "easy",
+      "repeat": 1,
+      "trace": "2026-11-19T15-49-08.488Z_pizza-united-states-r1.jsonl"
+    },
+    {
+      "raceId": "tennis-world-war-ii",
+      "difficulty": "easy",
+      "repeat": 1,
+      "trace": "2026-11-19T15-49-17.902Z_tennis-world-war-ii-r1.jsonl"
+    },
+    {
+      "raceId": "banana-charles-darwin",
+      "difficulty": "easy",
+      "repeat": 1,
+      "trace": "2026-11-19T15-49-22.543Z_banana-charles-darwin-r1.jsonl"
+    },
+    {
+      "raceId": "volcano-isaac-newton",
+      "difficulty": "easy",
+      "repeat": 1,
+      "trace": "2026-11-19T15-49-28.933Z_volcano-isaac-newton-r1.jsonl"
+    },
+    {
+      "raceId": "chocolate-france",
+      "difficulty": "easy",
+      "repeat": 1,
+      "trace": "2026-11-19T15-49-33.703Z_chocolate-france-r1.jsonl"
+    },
+    {
+      "raceId": "dinosaur-moon",
+      "difficulty": "easy",
+      "repeat": 1,
+      "trace": "2026-11-19T15-49-55.021Z_dinosaur-moon-r1.jsonl"
+    },
+    {
+      "raceId": "guinness-albert-einstein",
+      "difficulty": "medium",
+      "repeat": 1,
+      "trace": "2026-11-19T15-50-03.290Z_guinness-albert-einstein-r1.jsonl"
+    },
+    {
+      "raceId": "chess-moon",
+      "difficulty": "medium",
+      "repeat": 1,
+      "trace": "2026-11-19T15-50-10.553Z_chess-moon-r1.jsonl"
+    },
+    {
+      "raceId": "lighthouse-william-shakespeare",
+      "difficulty": "medium",
+      "repeat": 1,
+      "trace": "2026-11-19T15-50-49.745Z_lighthouse-william-shakespeare-r1.jsonl"
+    },
+    {
+      "raceId": "sushi-napoleon",
+      "difficulty": "medium",
+      "repeat": 1,
+      "trace": "2026-11-19T15-50-54.125Z_sushi-napoleon-r1.jsonl"
+    },
+    {
+      "raceId": "bicycle-ancient-egypt",
+      "difficulty": "medium",
+      "repeat": 1,
+      "trace": "2026-11-19T15-51-02.576Z_bicycle-ancient-egypt-r1.jsonl"
+    },
+    {
+      "raceId": "coffee-mount-everest",
+      "difficulty": "medium",
+      "repeat": 1,
+      "trace": "2026-11-19T15-51-24.471Z_coffee-mount-everest-r1.jsonl"
+    },
+    {
+      "raceId": "honey-bee-jupiter",
+      "difficulty": "medium",
+      "repeat": 1,
+      "trace": "2026-11-19T15-51-39.415Z_honey-bee-jupiter-r1.jsonl"
+    },
+    {
+      "raceId": "hedgehog-stock-exchange",
+      "difficulty": "medium",
+      "repeat": 1,
+      "trace": "2026-11-19T15-51-51.930Z_hedgehog-stock-exchange-r1.jsonl"
+    },
+    {
+      "raceId": "kazoo-higgs-boson",
+      "difficulty": "hard",
+      "repeat": 1,
+      "trace": "2026-11-19T15-52-11.701Z_kazoo-higgs-boson-r1.jsonl"
+    },
+    {
+      "raceId": "tardigrade-cricket-world-cup",
+      "difficulty": "hard",
+      "repeat": 1,
+      "trace": "2026-11-19T15-52-24.742Z_tardigrade-cricket-world-cup-r1.jsonl"
+    },
+    {
+      "raceId": "bagpipes-quantum-entanglement",
+      "difficulty": "hard",
+      "repeat": 1,
+      "trace": "2026-11-19T15-52-49.585Z_bagpipes-quantum-entanglement-r1.jsonl"
+    },
+    {
+      "raceId": "haiku-fermats-last-theorem",
+      "difficulty": "hard",
+      "repeat": 1,
+      "trace": "2026-11-19T15-53-16.956Z_haiku-fermats-last-theorem-r1.jsonl"
+    },
+    {
+      "raceId": "origami-peace-of-westphalia",
+      "difficulty": "hard",
+      "repeat": 1,
+      "trace": "2026-11-19T15-53-39.046Z_origami-peace-of-westphalia-r1.jsonl"
+    },
+    {
+      "raceId": "lichen-rubiks-cube",
+      "difficulty": "hard",
+      "repeat": 1,
+      "trace": "2026-11-19T15-53-57.868Z_lichen-rubiks-cube-r1.jsonl"
+    },
+    {
+      "raceId": "penguin-bauhaus",
+      "difficulty": "hard",
+      "repeat": 1,
+      "trace": "2026-11-19T15-54-29.838Z_penguin-bauhaus-r1.jsonl"
+    },
+    {
+      "raceId": "pizza-united-states",
+      "difficulty": "easy",
+      "repeat": 2,
+      "trace": "2026-11-19T15-54-44.789Z_pizza-united-states-r2.jsonl"
+    },
+    {
+      "raceId": "tennis-world-war-ii",
+      "difficulty": "easy",
+      "repeat": 2,
+      "trace": "2026-11-19T15-54-52.360Z_tennis-world-war-ii-r2.jsonl"
+    },
+    {
+      "raceId": "banana-charles-darwin",
+      "difficulty": "easy",
+      "repeat": 2,
+      "trace": "2026-11-19T15-54-57.432Z_banana-charles-darwin-r2.jsonl"
+    },
+    {
+      "raceId": "volcano-isaac-newton",
+      "difficulty": "easy",
+      "repeat": 2,
+      "trace": "2026-11-19T15-55-03.545Z_volcano-isaac-newton-r2.jsonl"
+    },
+    {
+      "raceId": "chocolate-france",
+      "difficulty": "easy",
+      "repeat": 2,
+      "trace": "2026-11-19T15-55-08.353Z_chocolate-france-r2.jsonl"
+    },
+    {
+      "raceId": "dinosaur-moon",
+      "difficulty": "easy",
+      "repeat": 2,
+      "trace": "2026-11-19T15-55-16.631Z_dinosaur-moon-r2.jsonl"
+    },
+    {
+      "raceId": "guinness-albert-einstein",
+      "difficulty": "medium",
+      "repeat": 2,
+      "trace": "2026-11-19T15-55-24.578Z_guinness-albert-einstein-r2.jsonl"
+    },
+    {
+      "raceId": "chess-moon",
+      "difficulty": "medium",
+      "repeat": 2,
+      "trace": "2026-11-19T15-55-36.288Z_chess-moon-r2.jsonl"
+    },
+    {
+      "raceId": "lighthouse-william-shakespeare",
+      "difficulty": "medium",
+      "repeat": 2,
+      "trace": "2026-11-19T15-56-04.885Z_lighthouse-william-shakespeare-r2.jsonl"
+    },
+    {
+      "raceId": "sushi-napoleon",
+      "difficulty": "medium",
+      "repeat": 2,
+      "trace": "2026-11-19T15-56-09.144Z_sushi-napoleon-r2.jsonl"
+    },
+    {
+      "raceId": "bicycle-ancient-egypt",
+      "difficulty": "medium",
+      "repeat": 2,
+      "trace": "2026-11-19T15-56-18.706Z_bicycle-ancient-egypt-r2.jsonl"
+    },
+    {
+      "raceId": "coffee-mount-everest",
+      "difficulty": "medium",
+      "repeat": 2,
+      "trace": "2026-11-19T15-56-39.470Z_coffee-mount-everest-r2.jsonl"
+    },
+    {
+      "raceId": "honey-bee-jupiter",
+      "difficulty": "medium",
+      "repeat": 2,
+      "trace": "2026-11-19T15-56-48.155Z_honey-bee-jupiter-r2.jsonl"
+    },
+    {
+      "raceId": "hedgehog-stock-exchange",
+      "difficulty": "medium",
+      "repeat": 2,
+      "trace": "2026-11-19T15-57-00.985Z_hedgehog-stock-exchange-r2.jsonl"
+    },
+    {
+      "raceId": "kazoo-higgs-boson",
+      "difficulty": "hard",
+      "repeat": 2,
+      "trace": "2026-11-19T15-57-08.465Z_kazoo-higgs-boson-r2.jsonl"
+    },
+    {
+      "raceId": "tardigrade-cricket-world-cup",
+      "difficulty": "hard",
+      "repeat": 2,
+      "trace": "2026-11-19T15-57-19.414Z_tardigrade-cricket-world-cup-r2.jsonl"
+    },
+    {
+      "raceId": "bagpipes-quantum-entanglement",
+      "difficulty": "hard",
+      "repeat": 2,
+      "trace": "2026-11-19T15-57-29.534Z_bagpipes-quantum-entanglement-r2.jsonl"
+    },
+    {
+      "raceId": "haiku-fermats-last-theorem",
+      "difficulty": "hard",
+      "repeat": 2,
+      "trace": "2026-11-19T15-57-43.939Z_haiku-fermats-last-theorem-r2.jsonl"
+    },
+    {
+      "raceId": "origami-peace-of-westphalia",
+      "difficulty": "hard",
+      "repeat": 2,
+      "trace": "2026-11-19T15-58-23.602Z_origami-peace-of-westphalia-r2.jsonl"
+    },
+    {
+      "raceId": "lichen-rubiks-cube",
+      "difficulty": "hard",
+      "repeat": 2,
+      "trace": "2026-11-19T15-59-16.741Z_lichen-rubiks-cube-r2.jsonl"
+    },
+    {
+      "raceId": "penguin-bauhaus",
+      "difficulty": "hard",
+      "repeat": 2,
+      "trace": "2026-11-19T16-00-01.404Z_penguin-bauhaus-r2.jsonl"
+    },
+    {
+      "raceId": "pizza-united-states",
+      "difficulty": "easy",
+      "repeat": 3,
+      "trace": "2026-11-19T16-00-53.243Z_pizza-united-states-r3.jsonl"
+    },
+    {
+      "raceId": "tennis-world-war-ii",
+      "difficulty": "easy",
+      "repeat": 3,
+      "trace": "2026-11-19T16-01-03.295Z_tennis-world-war-ii-r3.jsonl"
+    },
+    {
+      "raceId": "banana-charles-darwin",
+      "difficulty": "easy",
+      "repeat": 3,
+      "trace": "2026-11-19T16-01-07.120Z_banana-charles-darwin-r3.jsonl"
+    },
+    {
+      "raceId": "volcano-isaac-newton",
+      "difficulty": "easy",
+      "repeat": 3,
+      "trace": "2026-11-19T16-01-11.090Z_volcano-isaac-newton-r3.jsonl"
+    },
+    {
+      "raceId": "chocolate-france",
+      "difficulty": "easy",
+      "repeat": 3,
+      "trace": "2026-11-19T16-01-15.052Z_chocolate-france-r3.jsonl"
+    },
+    {
+      "raceId": "dinosaur-moon",
+      "difficulty": "easy",
+      "repeat": 3,
+      "trace": "2026-11-19T16-01-30.553Z_dinosaur-moon-r3.jsonl"
+    },
+    {
+      "raceId": "guinness-albert-einstein",
+      "difficulty": "medium",
+      "repeat": 3,
+      "trace": "2026-11-19T16-01-35.883Z_guinness-albert-einstein-r3.jsonl"
+    },
+    {
+      "raceId": "chess-moon",
+      "difficulty": "medium",
+      "repeat": 3,
+      "trace": "2026-11-19T16-01-52.639Z_chess-moon-r3.jsonl"
+    },
+    {
+      "raceId": "lighthouse-william-shakespeare",
+      "difficulty": "medium",
+      "repeat": 3,
+      "trace": "2026-11-19T16-02-05.515Z_lighthouse-william-shakespeare-r3.jsonl"
+    },
+    {
+      "raceId": "sushi-napoleon",
+      "difficulty": "medium",
+      "repeat": 3,
+      "trace": "2026-11-19T16-02-11.040Z_sushi-napoleon-r3.jsonl"
+    },
+    {
+      "raceId": "bicycle-ancient-egypt",
+      "difficulty": "medium",
+      "repeat": 3,
+      "trace": "2026-11-19T16-02-24.024Z_bicycle-ancient-egypt-r3.jsonl"
+    },
+    {
+      "raceId": "coffee-mount-everest",
+      "difficulty": "medium",
+      "repeat": 3,
+      "trace": "2026-11-19T16-02-55.281Z_coffee-mount-everest-r3.jsonl"
+    },
+    {
+      "raceId": "honey-bee-jupiter",
+      "difficulty": "medium",
+      "repeat": 3,
+      "trace": "2026-11-19T16-03-05.635Z_honey-bee-jupiter-r3.jsonl"
+    },
+    {
+      "raceId": "hedgehog-stock-exchange",
+      "difficulty": "medium",
+      "repeat": 3,
+      "trace": "2026-11-19T16-03-14.432Z_hedgehog-stock-exchange-r3.jsonl"
+    },
+    {
+      "raceId": "kazoo-higgs-boson",
+      "difficulty": "hard",
+      "repeat": 3,
+      "trace": "2026-11-19T16-03-21.254Z_kazoo-higgs-boson-r3.jsonl"
+    },
+    {
+      "raceId": "tardigrade-cricket-world-cup",
+      "difficulty": "hard",
+      "repeat": 3,
+      "trace": "2026-11-19T16-03-34.244Z_tardigrade-cricket-world-cup-r3.jsonl"
+    },
+    {
+      "raceId": "bagpipes-quantum-entanglement",
+      "difficulty": "hard",
+      "repeat": 3,
+      "trace": "2026-11-19T16-03-54.286Z_bagpipes-quantum-entanglement-r3.jsonl"
+    },
+    {
+      "raceId": "haiku-fermats-last-theorem",
+      "difficulty": "hard",
+      "repeat": 3,
+      "trace": "2026-11-19T16-04-07.593Z_haiku-fermats-last-theorem-r3.jsonl"
+    },
+    {
+      "raceId": "origami-peace-of-westphalia",
+      "difficulty": "hard",
+      "repeat": 3,
+      "trace": "2026-11-19T16-04-24.172Z_origami-peace-of-westphalia-r3.jsonl"
+    },
+    {
+      "raceId": "lichen-rubiks-cube",
+      "difficulty": "hard",
+      "repeat": 3,
+      "trace": "2026-11-19T16-04-39.267Z_lichen-rubiks-cube-r3.jsonl"
+    },
+    {
+      "raceId": "penguin-bauhaus",
+      "difficulty": "hard",
+      "repeat": 3,
+      "trace": "2026-11-19T16-05-08.969Z_penguin-bauhaus-r3.jsonl"
+    }
+  ]
+}
