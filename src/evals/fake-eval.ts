@@ -25,9 +25,21 @@ export function fakeRace(id: string): RaceSpec {
 
 /** Moves to Republic of Ireland, then Einstein, charging `cost` per call. */
 export function winningModel(cost: number | null): CallModel {
+  return pathModel(["Republic of Ireland", "Einstein"], cost);
+}
+
+/** Moves to each page in turn, one per call, charging `cost` per call. */
+export function pathModel(pages: string[], cost: number | null): CallModel {
   return async (messages) => {
     const moves = messages.filter((message) => message.role === "assistant").length;
-    return moveReply(moves === 0 ? "Republic of Ireland" : "Einstein", cost);
+    return moveReply(pages[moves] ?? pages.at(-1)!, cost);
+  };
+}
+
+/** Gives up on the first call. */
+export function givingUpModel(cost: number | null): CallModel {
+  return async () => {
+    return toolReply("give_up", { reason: "lost" }, cost);
   };
 }
 
@@ -64,11 +76,16 @@ export function fakeEval(callModel: CallModel, options: Partial<EvalOptions> = {
 
 /** A reply that calls move_to once. */
 function moveReply(page: string, cost: number | null): ChatResult {
+  return toolReply("move_to", { page }, cost);
+}
+
+/** A reply that makes one tool call. */
+function toolReply(name: string, args: Record<string, string>, cost: number | null): ChatResult {
   return {
     content: null,
     reasoning: null,
     reasoningDetails: null,
-    toolCalls: [{ id: `call_${page}`, name: "move_to", arguments: JSON.stringify({ page }) }],
+    toolCalls: [{ id: `call_${name}_${Object.values(args).join("_")}`, name, arguments: JSON.stringify(args) }],
     finishReason: "tool_calls",
     usage: { promptTokens: 100, cachedTokens: 0, completionTokens: 10, reasoningTokens: 0, cost },
     provider: "fake",

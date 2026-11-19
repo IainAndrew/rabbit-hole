@@ -166,8 +166,8 @@ const lfm3: Model = {
 };
 
 /**
- * The ceiling: a strong model, run once per race rather than three times,
- * to show how far the cheap field is from the best.
+ * The ceiling: a strong model, to show how far the cheap field is from the
+ * best. It runs under the same rules and repeats as every other model.
  */
 const claudeOpus55: Model = {
   id: "anthropic/claude-opus-5.5",
