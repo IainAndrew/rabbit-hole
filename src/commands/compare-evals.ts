@@ -1,7 +1,7 @@
 // Rank evals of different models against each other, from their manifests
 // and traces only. Refuses evals run with a different prompt, race set,
 // limits or commit. Free: reads files.
-// Usage: npm run compare-evals -- results/<eval> results/<eval> ...
+// Usage: npm run compare-evals -- results/<sweep>/*
 
 import { rankEvals, type Ranked } from "../evals/compare.ts";
 import { withinNoise } from "../evals/intervals.ts";
@@ -9,7 +9,7 @@ import { loadEval } from "../evals/report.ts";
 
 const dirs = process.argv.slice(2);
 if (dirs.length < 2) {
-  console.error("Usage: npm run compare-evals -- results/<eval> results/<eval> ...");
+  console.error("Usage: npm run compare-evals -- results/<sweep>/*");
   process.exit(1);
 }
 

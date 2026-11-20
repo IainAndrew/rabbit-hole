@@ -3,8 +3,8 @@
 // result points at a commit that describes it.
 // With --resume, picks up an unfinished eval instead: crashed, killed and
 // never-started runs, at the same commit.
-// Usage: npm run eval-model -- --model <id> --max-cost <dollars> [--repeats 3]
-//        npm run eval-model -- --resume results/<eval> --max-cost <dollars>
+// Usage: npm run eval-model -- --model <id> --sweep <name> --max-cost <dollars> [--repeats 3]
+//        npm run eval-model -- --resume results/<sweep>/<eval> --max-cost <dollars>
 
 import { readFileSync } from "node:fs";
 import { parseArgs } from "node:util";
@@ -19,22 +19,27 @@ import { chat } from "../models/openrouter.ts";
 import { snapshotLinks } from "../wikipedia/snapshot.ts";
 import { fetchLinks } from "../wikipedia/wikipedia.ts";
 
-const USAGE = `Usage: npm run eval-model -- --model <id> --max-cost <dollars> [--repeats 3]
-       npm run eval-model -- --resume results/<eval> --max-cost <dollars>`;
+const USAGE = `Usage: npm run eval-model -- --model <id> --sweep <name> --max-cost <dollars> [--repeats 3]
+       npm run eval-model -- --resume results/<sweep>/<eval> --max-cost <dollars>`;
 
 const { values } = parseArgs({
   options: {
     model: { type: "string" },
     "max-cost": { type: "string" },
     repeats: { type: "string" },
+    sweep: { type: "string" },
     resume: { type: "string" },
   },
 });
 
-// A resumed eval keeps its own model and repeats.
+// A resumed eval keeps its own model, repeats and folder.
 const previous = values.resume ? loadEval(values.resume) : undefined;
-if (previous && (values.model || values.repeats)) {
-  fail("--resume takes the model and repeats from the eval: leave out --model and --repeats");
+if (previous && (values.model || values.repeats || values.sweep)) {
+  fail("--resume takes the model, repeats and sweep from the eval: leave out --model, --repeats and --sweep");
+}
+// Evals that belong together share a folder, so a reader can find a sweep.
+if (!previous && !/^[a-z0-9][a-z0-9-]*$/.test(values.sweep ?? "")) {
+  fail("--sweep must name the folder in results/ to write into, e.g. 2026-11-21-strategies");
 }
 const model = models.find((candidate) => candidate.id === (previous?.manifest.model.id ?? values.model));
 const maxCost = Number(values["max-cost"]);
@@ -57,8 +62,9 @@ if (git.gitDirty) {
 }
 
 const races = parseRaceSet(JSON.parse(readFileSync("races.json", "utf8")));
-// Evals live in results/, committed by name when kept; runs/ is for dev races.
-const dir = values.resume ?? `results/${new Date().toISOString().replaceAll(":", "-")}_${model.id.replaceAll("/", "-")}`;
+// Evals live in results/<sweep>/, committed by name when kept; runs/ is for dev races.
+const dir =
+  values.resume ?? `results/${values.sweep}/${new Date().toISOString().replaceAll(":", "-")}_${model.id.replaceAll("/", "-")}`;
 const todo = runsToDo(races, repeats, previous?.runs ?? []).length;
 
 console.log(`${model.id} on ${model.provider}: ${todo} runs to do (${races.length} races × ${repeats}), cap $${maxCost}`);

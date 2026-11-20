@@ -63,15 +63,16 @@ Needs Node 24 or later. Copy `.env.example` to `.env` before anything that calls
 - `npm run race-agent -- "Start" "Target" [--model <id>] [--max-cost <dollars>]`: a
   model (the build model by default) plays one race, printed turn by turn, and writes a
   trace to `runs/` (billed, stops at 30 turns or the cap, $0.05 by default)
-- `npm run eval-model -- --model <id> --max-cost <dollars> [--repeats 3]`: run every race
-  in `races.json` against one model, writing traces and `eval.json` to `results/<eval>/`.
-  Refuses uncommitted code; stops starting runs at the cap (billed). With
-  `--resume results/<eval> --max-cost <dollars>`, re-runs crashed runs and starts unstarted
-  ones, at the same commit (billed)
-- `npm run eval-report -- results/<eval>`: score one eval from its `eval.json` and traces
+- `npm run eval-model -- --model <id> --sweep <name> --max-cost <dollars> [--repeats 3]`:
+  run every race in `races.json` against one model, writing traces and `eval.json` to
+  `results/<sweep>/<eval>/`. Refuses uncommitted code; stops starting runs at the cap
+  (billed). With `--resume results/<sweep>/<eval> --max-cost <dollars>`, re-runs crashed
+  runs and starts unstarted ones, at the same commit (billed). `results/README.md` lists
+  the sweeps
+- `npm run eval-report -- results/<sweep>/<eval>`: score one eval from its `eval.json` and traces
   (success rate with its 95% interval, then hops on wins), by tier, repeat and race; refuses runs from another
   model, prompt or commit (free)
-- `npm run compare-evals -- results/<eval> results/<eval> ...`: rank evals of different
+- `npm run compare-evals -- results/<sweep>/*`: rank evals of different
   models by success rate, then hops on wins, with a 95% interval on each success rate and
   on each gap to the next model ("noise" if it could be chance), and cost per run and per
   win, tokens, turns, time and end reasons beside it; refuses evals with a different
