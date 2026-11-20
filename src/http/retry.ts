@@ -14,9 +14,15 @@ export type RetryOptions = {
   sleep: (ms: number) => Promise<void>;
 };
 
-/** Up to 5 tries over about 15 seconds, honouring Retry-After. */
+/**
+ * Up to 7 tries over about a minute (waits of 1, 2, 4, 8, 16 and 32 s),
+ * honouring Retry-After. A minute because rate limits are often per minute
+ * and don't say when they reset: OpenRouter's limit on new accounts (20
+ * requests a minute per model) sends no Retry-After, and 15 s of waiting
+ * gave up before the window could pass.
+ */
 export const defaultRetryOptions: RetryOptions = {
-  maxAttempts: 5,
+  maxAttempts: 7,
   baseDelayMs: 1000,
   maxDelayMs: 60_000,
   sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),

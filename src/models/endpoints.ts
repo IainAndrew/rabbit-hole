@@ -2,7 +2,7 @@
 // served by many providers at different prices, precisions and reliability,
 // so choosing a model is also choosing an endpoint. Free to call: no key.
 
-import { fetchWithRetry } from "../wikipedia/retry.ts";
+import { fetchWithRetry } from "../http/retry.ts";
 import { isRecord, perMillion } from "./model-list.ts";
 
 /** One provider's endpoint for a model. Prices are dollars per million tokens. */

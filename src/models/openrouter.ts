@@ -2,7 +2,7 @@
 // checked response. No streaming, no framework.
 
 import type { Model, ReasoningSetting } from "./models.ts";
-import { fetchWithRetry } from "../wikipedia/retry.ts";
+import { fetchWithRetry } from "../http/retry.ts";
 
 const CHAT_URL = "https://openrouter.ai/api/v1/chat/completions";
 

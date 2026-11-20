@@ -1,6 +1,6 @@
 // Client for the English Wikipedia Action API.
 
-import { fetchWithRetry } from "./retry.ts";
+import { fetchWithRetry } from "../http/retry.ts";
 
 const API_URL = "https://en.wikipedia.org/w/api.php";
 

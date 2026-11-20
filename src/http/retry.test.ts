@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { fetchWithRetry, type RetryOptions } from "./retry.ts";
+import { defaultRetryOptions, fetchWithRetry, type RetryOptions } from "./retry.ts";
 
 // Hands out the given responses in order and records every wait. An Error is
 // thrown instead, the way fetch fails when no response arrives.
@@ -52,6 +52,19 @@ test("waits as long as Retry-After says, capped", async () => {
   const server = fakeServer(tooMany({ "Retry-After": "2" }), tooMany({ "Retry-After": "600" }), ok());
   await fetchWithRetry(server.request, server.options);
   assert.deepEqual(server.waits, [2000, 5000]);
+});
+
+test("by default, waits out a per-minute rate limit that gives no Retry-After", async () => {
+  const waits: number[] = [];
+  const sleep = async (ms: number) => {
+    waits.push(ms);
+  };
+  const responses = Array.from({ length: defaultRetryOptions.maxAttempts }, () => tooMany());
+  const request = async () => responses.shift()!;
+  const response = await fetchWithRetry(request, { ...defaultRetryOptions, sleep });
+  assert.equal(response.status, 429);
+  const waited = waits.reduce((sum, ms) => sum + ms, 0);
+  assert.ok(waited > 60_000, `waited only ${waited} ms`);
 });
 
 test("gives up after maxAttempts and returns the last response", async () => {
