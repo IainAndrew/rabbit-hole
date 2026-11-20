@@ -78,8 +78,8 @@ Needs Node 24 or later. Copy `.env.example` to `.env` before anything that calls
   prompt, race set, repeats, limits or commit (free)
 - `npm run replay-trace -- <trace>.jsonl`: replay a run from its trace, turn by turn
   (free)
-- `npm run measure-races`: count each race's 2-hop routes and its target's backlinks on
-  live Wikipedia and write the counts and difficulty into `races.json` (free, about 2
+- `npm run measure-races`: measure each race's distance and its target's backlinks on
+  live Wikipedia and write them and the difficulty into `races.json` (free, about 30
   minutes)
 - `npm run race-distance -- "Start" "Target"`: the fewest hops between two pages (up to
   4) and one path that takes them, by searching live Wikipedia from both ends (free,

@@ -1,27 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { shortestPath } from "./distance.ts";
-import type { GraphSource } from "./race-set.ts";
-
-/**
- * A fake graph from each page's links, counting lookups each way. Backlinks
- * of pages in `cutOff` come back incomplete.
- */
-function fakeGraph(links: Record<string, string[]>, cutOff: string[] = []) {
-  const calls = { neighbours: 0, backlinks: 0 };
-  const graph: GraphSource = {
-    neighbours: async (title) => {
-      calls.neighbours++;
-      return new Set(links[title] ?? []);
-    },
-    backlinks: async (title) => {
-      calls.backlinks++;
-      const pages = Object.keys(links).filter((page) => links[page]!.includes(title));
-      return { pages: new Set(pages), complete: !cutOff.includes(title) };
-    },
-  };
-  return { graph, calls };
-}
+import { fakeGraph } from "./fake-graph.ts";
 
 const limits = { maxHops: 4, maxLookups: 100 };
 const quiet = () => {};
@@ -52,10 +32,18 @@ test("a target few pages link to is searched from its own end", async () => {
   assert.deepEqual(calls, { neighbours: 1, backlinks: 2 });
 });
 
-test("stops before a level it can't finish, and flags cut-off backlinks", async () => {
-  const { graph } = fakeGraph(withShortcut, ["T"]);
+test("stops before a level it can't finish", async () => {
+  const { graph } = fakeGraph(withShortcut);
   const capped = await shortestPath("A", "T", graph, { maxHops: 4, maxLookups: 1 }, quiet);
   assert.deepEqual(capped, { hops: null, path: [], searchedHops: 1, exact: true, lookups: 1 });
-  const cutOff = await shortestPath("A", "T", graph, limits, quiet);
-  assert.equal(cutOff.exact, false);
+});
+
+test("cut-off backlinks make a result inexact, unless they're in the level where the sides met", async () => {
+  // T's backlinks are cut off in the level that finds E: shorter paths were already ruled out.
+  const met = await shortestPath("A", "T", fakeGraph(withShortcut, ["T"]).graph, limits, quiet);
+  assert.equal(met.exact, true);
+  // Here they're cut off and the search goes on, so a missed backlink could be a shortcut.
+  const chain = { A: ["B", "X", "Y"], B: ["C"], C: ["D"], D: ["E"], E: ["T"] };
+  const missed = await shortestPath("A", "T", fakeGraph(chain, ["T"]).graph, limits, quiet);
+  assert.equal(missed.exact, false);
 });

@@ -1,11 +1,12 @@
 // Measure every race in races.json on live Wikipedia and write each one's
-// 2-hop route count, target backlinks and difficulty back into the file. The
+// distance, target backlinks and difficulty back into the file. The
 // hand-written parts (id, start, target, known path) are kept as they are.
-// Free: Wikipedia only. Writes nothing if any race can't be measured.
+// Free: Wikipedia only, but far-apart races take minutes each. Writes nothing
+// if any race can't be measured.
 // Usage: npm run measure-races
 
 import { readFileSync, writeFileSync } from "node:fs";
-import { measureRace, parseRaceDrafts, type RaceSpec } from "../evals/race-set.ts";
+import { BACKLINKS_COUNTED, measureRace, parseRaceDrafts, type RaceSpec } from "../evals/race-set.ts";
 import { fetchBacklinks, fetchNeighbours } from "../wikipedia/wikipedia.ts";
 
 const FILE = "races.json";
@@ -23,12 +24,9 @@ for (const draft of drafts) {
     continue;
   }
   const { difficulty } = result;
-  const { twoHopRoutes, targetBacklinks, complete, examples } = result.measured;
-  const more = complete ? "" : "+";
-  console.log(
-    `${difficulty.padEnd(6)} ${draft.id.padEnd(34)} ${`${twoHopRoutes}${more}`.padStart(4)} routes ` +
-      `${`${targetBacklinks.toLocaleString()}${more}`.padStart(7)} backlinks  ${examples.join(", ")}`,
-  );
+  const { distance, targetBacklinks } = result.measured;
+  const backlinks = `${targetBacklinks.toLocaleString()}${targetBacklinks === BACKLINKS_COUNTED ? "+" : ""}`;
+  console.log(`${difficulty.padEnd(6)} ${draft.id.padEnd(34)} ${distance} hops  ${backlinks.padStart(6)} backlinks`);
   // Key order kept fixed so the file reads the same way every time.
   measured.push({
     id: draft.id,

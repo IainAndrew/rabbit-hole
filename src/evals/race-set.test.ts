@@ -1,22 +1,17 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { BACKLINKS_COUNTED, checkRace, measureRace, parseRaceSet, tierFor, type GraphSource, type RaceSpec } from "./race-set.ts";
+import { fakeGraph } from "./fake-graph.ts";
+import { checkRace, measureRace, parseRaceSet, tierFor, type RaceSpec } from "./race-set.ts";
 import { fakeLinks } from "../wikipedia/fake-wikipedia.ts";
 
 // Wins in 2 hops on the fake Wikipedia, moving to "Einstein" as the link is written.
 const valid: RaceSpec = {
   id: "guinness-einstein",
-  difficulty: "medium",
+  difficulty: "easy",
   start: "Guinness",
   target: "Albert Einstein",
   knownPath: ["Guinness", "Republic of Ireland", "Einstein"],
-  measured: {
-    twoHopRoutes: 1,
-    targetBacklinks: 3,
-    complete: true,
-    examples: ["Republic of Ireland"],
-    measuredOn: "2026-11-16",
-  },
+  measured: { distance: 2, targetBacklinks: 3, measuredOn: "2026-11-16" },
 };
 
 test("a race whose known path wins passes", async () => {
@@ -53,13 +48,14 @@ test("a start that links the target directly fails", async () => {
 });
 
 test("a difficulty that doesn't match the measurement fails", async () => {
-  const problems = await checkRace({ ...valid, difficulty: "easy" }, fakeLinks);
-  assert.match(problems.join(), /marked easy, but its measurement says medium/);
+  const problems = await checkRace({ ...valid, difficulty: "hard" }, fakeLinks);
+  assert.match(problems.join(), /marked hard, but its measurement says easy/);
 });
 
-test("a hard race needs a known path of 3 or more hops", async () => {
-  const problems = await checkRace({ ...valid, difficulty: "hard" }, fakeLinks);
-  assert.match(problems.join(), /should be 3\+ hops/);
+test("a known path that doesn't take the measured distance fails", async () => {
+  const race: RaceSpec = { ...valid, difficulty: "hard", measured: { ...valid.measured, distance: 3 } };
+  const problems = await checkRace(race, fakeLinks);
+  assert.match(problems.join(), /takes 2 hops, but the race was measured at 3/);
 });
 
 test("the race file is checked: repeated ids and unknown difficulties are refused", () => {
@@ -69,77 +65,38 @@ test("the race file is checked: repeated ids and unknown difficulties are refuse
   assert.throws(() => parseRaceSet([{ ...valid, measured: undefined }]), /run measure-races/);
 });
 
-test("tiers follow the route count, and an incomplete count under 10 decides nothing", () => {
-  const at = (twoHopRoutes: number, complete: boolean) => tierFor({ twoHopRoutes, targetBacklinks: 0, complete, examples: [], measuredOn: "" });
-  assert.equal(at(10, false), "easy");
-  assert.equal(at(9, true), "medium");
-  assert.equal(at(0, true), "hard");
-  assert.equal(at(9, false), null);
+test("tiers follow the distance, and a rarely linked target makes 3 hops hard", () => {
+  const at = (distance: number, targetBacklinks: number) => tierFor({ distance, targetBacklinks, measuredOn: "" });
+  assert.equal(at(2, 5), "easy");
+  assert.equal(at(3, 100), "medium");
+  assert.equal(at(3, 99), "hard");
+  assert.equal(at(4, 1000), "hard");
 });
 
-// A fake graph: the start's neighbours, and backlinks served 500 at a time
-// (the most Wikipedia sends in one batch).
-function fakeGraph(neighbours: string[], backlinks: string[]): GraphSource & { batches: number } {
-  const graph = {
-    batches: 0,
-    neighbours: async () => new Set(neighbours),
-    backlinks: async (_title: string, enough: (found: Set<string>) => boolean) => {
-      const found = new Set<string>();
-      for (let i = 0; i < backlinks.length; i += 500) {
-        graph.batches++;
-        for (const page of backlinks.slice(i, i + 500)) {
-          found.add(page);
-        }
-        if (enough(found) && i + 500 < backlinks.length) {
-          return { pages: found, complete: false };
-        }
-      }
-      return { pages: found, complete: true };
-    },
-  };
-  return graph;
-}
-
-test("measuring counts the pages the start reaches that link the target", async () => {
-  const graph = fakeGraph(["A", "B", "C"], ["B", "C", "Z"]);
+test("measuring finds the distance and counts the target's backlinks", async () => {
+  const { graph } = fakeGraph({
+    Guinness: ["Republic of Ireland", "Stout"],
+    "Republic of Ireland": ["Albert Einstein"],
+    Physics: ["Albert Einstein"],
+    Bern: ["Albert Einstein"],
+  });
   const result = await measureRace(valid, graph, "2026-11-16");
-  assert.ok(result.ok);
-  assert.equal(result.difficulty, "medium");
-  assert.deepEqual(result.measured, {
-    twoHopRoutes: 2,
-    targetBacklinks: 3,
-    complete: true,
-    examples: ["B", "C"],
-    measuredOn: "2026-11-16",
+  assert.deepEqual(result, {
+    ok: true,
+    measured: { distance: 2, targetBacklinks: 3, measuredOn: "2026-11-16" },
+    difficulty: "easy",
   });
 });
 
-/** Page names P0, P1, ... for a fake graph. */
-function pages(count: number): string[] {
-  return Array.from({ length: count }, (_, i) => `P${i}`);
-}
-
-test("measuring stops once a race is certainly easy and its target a hub", async () => {
-  const graph = fakeGraph(pages(30), pages(1500));
-  const result = await measureRace(valid, graph, "2026-11-16");
-  assert.ok(result.ok);
-  assert.equal(result.difficulty, "easy");
-  assert.equal(result.measured.targetBacklinks, BACKLINKS_COUNTED);
-  assert.equal(result.measured.complete, false);
-  assert.equal(graph.batches, 2);
-});
-
-test("measuring an easy race goes on counting a target's backlinks", async () => {
-  const graph = fakeGraph(pages(30), pages(800));
-  const result = await measureRace(valid, graph, "2026-11-16");
-  assert.ok(result.ok);
-  assert.equal(result.difficulty, "easy");
-  assert.equal(result.measured.targetBacklinks, 800);
-  assert.equal(result.measured.complete, true);
-});
-
-test("a start that links the target, even through a redirect, can't be measured", async () => {
-  // Neighbours have redirects followed, so a link written "Einstein" shows up as the target.
-  const result = await measureRace(valid, fakeGraph(["Albert Einstein"], []), "2026-11-16");
-  assert.deepEqual(result, { ok: false, problem: "the start links the target directly: a 1-hop race measures nothing" });
+test("a race too far, too near or not certain can't be measured", async () => {
+  const measure = async (links: Record<string, string[]>, cutOff: string[] = []) => {
+    const result = await measureRace(valid, fakeGraph(links, cutOff).graph, "2026-11-16");
+    return result.ok ? "ok" : result.problem;
+  };
+  const tooFar = { Guinness: ["A"], A: ["B"], B: ["C"], C: ["D"], D: ["Albert Einstein"] };
+  assert.match(await measure(tooFar), /no path of 4 hops or fewer/);
+  assert.match(await measure({ Guinness: ["Albert Einstein"] }), /links the target directly/);
+  // The target's backlinks are cut off and the sides don't meet there, so a 2-hop path could be hiding.
+  const hidden = { Guinness: ["X", "Y", "Z"], X: ["M"], M: ["Albert Einstein"] };
+  assert.match(await measure(hidden, ["Albert Einstein"]), /a shorter path may exist/);
 });

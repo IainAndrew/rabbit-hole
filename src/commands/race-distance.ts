@@ -3,11 +3,8 @@
 // a far-apart pair can take several minutes.
 // Usage: npm run race-distance -- "Start" "Target"
 
-import { shortestPath } from "../evals/distance.ts";
+import { DISTANCE_LIMITS, shortestPath } from "../evals/distance.ts";
 import { fetchBacklinks, fetchLinks, fetchNeighbours } from "../wikipedia/wikipedia.ts";
-
-// 4 hops is as far as a race should need; past it, the search grows too big.
-const LIMITS = { maxHops: 4, maxLookups: 5000 };
 
 const [startInput, targetInput] = process.argv.slice(2);
 if (!startInput || !targetInput) {
@@ -20,14 +17,15 @@ const start = (await fetchLinks(startInput)).title;
 const target = (await fetchLinks(targetInput)).title;
 const began = performance.now();
 const graph = { neighbours: fetchNeighbours, backlinks: fetchBacklinks };
-const result = await shortestPath(start, target, graph, LIMITS, (direction, depth, reached) => {
+const result = await shortestPath(start, target, graph, DISTANCE_LIMITS, (direction, depth, reached) => {
   const from = direction === "forward" ? start : target;
   console.log(`  ${direction} ${depth} from ${from}: ${reached.toLocaleString()} pages reached`);
 });
 const seconds = Math.round((performance.now() - began) / 1000);
 
 if (result.hops === null) {
-  const why = result.searchedHops < LIMITS.maxHops ? `the search stopped at ${LIMITS.maxLookups} lookups` : "the limit";
+  const { maxHops, maxLookups } = DISTANCE_LIMITS;
+  const why = result.searchedHops < maxHops ? `the search stopped at ${maxLookups} lookups` : "the limit";
   console.log(`\n${start} > ${target}: no path of ${result.searchedHops} hops or fewer (${why})`);
 } else {
   console.log(`\n${start} > ${target}: ${result.hops} hops`);

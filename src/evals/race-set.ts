@@ -1,18 +1,21 @@
 // The fixed set of races evals run on, and the checks that keep it honest.
 
+import { DISTANCE_LIMITS, shortestPath } from "./distance.ts";
 import { PageNotFoundError } from "../wikipedia/wikipedia.ts";
 import { hasWon, hops, move, normalizeTitle, startRace, type LinkSource } from "../race/race.ts";
 
 /**
- * How hard a race is, judged by how many 2-hop routes exist (see `tierFor`):
- * - `easy`: 10 or more, so most sensible first moves work.
- * - `medium`: 1 to 9, so the right first move has to be found.
- * - `hard`: none, so the shortest path is at least 3 hops.
+ * How hard a race is, from two facts about the map (see `tierFor`): how far
+ * the target is, and how many pages link to it.
+ * - `easy`: 2 hops.
+ * - `medium`: 3 hops, to a target many pages link to.
+ * - `hard`: 4 hops, or 3 hops to a target few pages link to, so few routes
+ *   lead in and one has to be planned.
  */
 export type Difficulty = "easy" | "medium" | "hard";
 
-/** Routes needed for a race to be easy. Counting can stop once it has this many. */
-export const EASY_ROUTES = 10;
+/** Fewer backlinks than this makes a target rare: few ways in. */
+export const RARE_TARGET = 100;
 
 /**
  * Backlinks worth counting. Past this many, a target is a hub that most
@@ -22,17 +25,14 @@ export const BACKLINKS_COUNTED = 1000;
 
 /** The evidence for a race's difficulty, measured on live Wikipedia by measure-races. */
 export type Measurement = {
-  /** Pages the start links to that link to the target: each is a 2-hop win. */
-  twoHopRoutes: number;
+  /** The fewest hops from start to target. */
+  distance: number;
   /**
    * Articles that link to the target, directly or through a redirect: how
-   * findable it is. A target few pages link to has few ways in.
+   * findable it is. Counted up to BACKLINKS_COUNTED, which means "that many
+   * or more".
    */
   targetBacklinks: number;
-  /** False when counting stopped early, so the true counts may be higher. */
-  complete: boolean;
-  /** A few of the routes, for readers. */
-  examples: string[];
   /** The day it was measured (YYYY-MM-DD): Wikipedia keeps changing. */
   measuredOn: string;
 };
@@ -55,18 +55,15 @@ export type RaceDraft = {
 /** One race in the set: the hand-written parts plus what measure-races wrote. */
 export type RaceSpec = RaceDraft & { difficulty: Difficulty; measured: Measurement };
 
-/**
- * The tier a measurement puts a race in, or null if it can't tell: fewer than
- * EASY_ROUTES routes found, but counting stopped before the end.
- */
-export function tierFor(measured: Measurement): Difficulty | null {
-  if (measured.twoHopRoutes >= EASY_ROUTES) {
+/** The tier a measurement puts a race in. */
+export function tierFor(measured: Measurement): Difficulty {
+  if (measured.distance <= 2) {
     return "easy";
   }
-  if (!measured.complete) {
-    return null;
+  if (measured.distance === 3 && measured.targetBacklinks >= RARE_TARGET) {
+    return "medium";
   }
-  return measured.twoHopRoutes === 0 ? "hard" : "medium";
+  return "hard";
 }
 
 /**
@@ -121,17 +118,14 @@ export function parseRaceSet(value: unknown): RaceSpec[] {
     }
     if (
       !isRecord(measured) ||
-      typeof measured.twoHopRoutes !== "number" ||
+      typeof measured.distance !== "number" ||
       typeof measured.targetBacklinks !== "number" ||
-      typeof measured.complete !== "boolean" ||
-      !Array.isArray(measured.examples) ||
-      !measured.examples.every((example) => typeof example === "string") ||
       typeof measured.measuredOn !== "string"
     ) {
       throw bad('"measured" is missing or malformed: run measure-races');
     }
-    const { twoHopRoutes, targetBacklinks, complete, examples, measuredOn } = measured;
-    return { ...draft, difficulty, measured: { twoHopRoutes, targetBacklinks, complete, examples, measuredOn } };
+    const { distance, targetBacklinks, measuredOn } = measured;
+    return { ...draft, difficulty, measured: { distance, targetBacklinks, measuredOn } };
   });
 }
 
@@ -145,9 +139,8 @@ export type GraphSource = {
 };
 
 /**
- * Count a race's 2-hop routes (pages the start can move to that link to the
- * target) and the target's backlinks. Counting stops once there are enough
- * routes to call it easy and BACKLINKS_COUNTED backlinks.
+ * Measure a race: the fewest hops from start to target, and how many pages
+ * link to the target.
  *
  * @param today The date to record, YYYY-MM-DD.
  * @returns The measurement and the tier it puts the race in, or why the race
@@ -158,37 +151,30 @@ export async function measureRace(
   graph: GraphSource,
   today: string,
 ): Promise<{ ok: true; measured: Measurement; difficulty: Difficulty } | { ok: false; problem: string }> {
-  const neighbours = await graph.neighbours(draft.start);
-  // Neighbours have redirects followed, so this also catches a link to the
-  // target under another name.
-  if (neighbours.has(draft.target)) {
+  const backlinks = await graph.backlinks(draft.target, (found) => found.size >= BACKLINKS_COUNTED);
+  const found = await shortestPath(draft.start, draft.target, graph, DISTANCE_LIMITS, () => {});
+  if (found.hops === null) {
+    return { ok: false, problem: `no path of ${found.searchedHops} hops or fewer: too far to be a fair race` };
+  }
+  if (!found.exact) {
+    return { ok: false, problem: "a hub's backlinks were cut off, so a shorter path may exist: can't tell its tier" };
+  }
+  if (found.hops === 1) {
     return { ok: false, problem: "the start links the target directly: a 1-hop race measures nothing" };
   }
-  const routesIn = (pages: Set<string>) => [...neighbours].filter((page) => pages.has(page));
-  const enough = (found: Set<string>) => {
-    return routesIn(found).length >= EASY_ROUTES && found.size >= BACKLINKS_COUNTED;
-  };
-  const backlinks = await graph.backlinks(draft.target, enough);
-  const routes = routesIn(backlinks.pages);
   const measured = {
-    twoHopRoutes: routes.length,
-    targetBacklinks: backlinks.pages.size,
-    complete: backlinks.complete,
-    examples: routes.slice(0, 3),
+    distance: found.hops,
+    targetBacklinks: Math.min(backlinks.pages.size, BACKLINKS_COUNTED),
     measuredOn: today,
   };
-  const difficulty = tierFor(measured);
-  if (difficulty === null) {
-    return { ok: false, problem: `only ${routes.length} routes found before counting stopped: can't tell its tier` };
-  }
-  return { ok: true, measured, difficulty };
+  return { ok: true, measured, difficulty: tierFor(measured) };
 }
 
 /**
  * Check a race against the pages, using the race's own rules: both pages
  * exist under the titles given, the start doesn't link the target directly,
- * the difficulty matches the measurement, and the known path wins in the hops
- * that difficulty says.
+ * the difficulty matches the measurement, and the known path wins in the
+ * measured distance.
  *
  * @returns What's wrong with the race; empty if nothing.
  * @throws Only for failures that aren't the race's fault, such as the network.
@@ -213,7 +199,7 @@ export async function checkRace(spec: RaceSpec, getLinks: LinkSource): Promise<s
   }
 
   if (tierFor(spec.measured) !== spec.difficulty) {
-    problems.push(`marked ${spec.difficulty}, but its measurement says ${tierFor(spec.measured) ?? "nothing certain"}`);
+    problems.push(`marked ${spec.difficulty}, but its measurement says ${tierFor(spec.measured)}`);
   }
 
   const startLinks = await getLinks(spec.start);
@@ -247,9 +233,10 @@ export async function checkRace(spec: RaceSpec, getLinks: LinkSource): Promise<s
     return [...problems, "the known path doesn't reach the target"];
   }
 
-  const wrongLength = spec.difficulty === "hard" ? hops(race) < 3 : hops(race) !== 2;
-  if (wrongLength) {
-    problems.push(`a ${spec.difficulty} race's known path should be ${spec.difficulty === "hard" ? "3+" : "2"} hops`);
+  // The distance was measured live and the path walked on the snapshot: if
+  // they disagree, a page has changed between them.
+  if (hops(race) !== spec.measured.distance) {
+    problems.push(`the known path takes ${hops(race)} hops, but the race was measured at ${spec.measured.distance}`);
   }
   return problems;
 }

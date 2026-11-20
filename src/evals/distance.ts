@@ -17,6 +17,9 @@ export type SearchLimits = {
   maxLookups: number;
 };
 
+/** 4 hops is as far as a race should need; past it, the search grows too big. */
+export const DISTANCE_LIMITS: SearchLimits = { maxHops: 4, maxLookups: 5000 };
+
 /** What a search found. */
 export type Distance = {
   /** The fewest hops, or null if no path was found. */
@@ -28,6 +31,8 @@ export type Distance = {
   /**
    * False if some page's backlinks were cut off (a page linked from more
    * places than fetchBacklinks reads), so a shorter path may have been missed.
+   * Cut-offs in the level where the sides met don't count: every shorter
+   * path was already ruled out by the levels before it.
    */
   exact: boolean;
   /** Pages looked up. */
@@ -67,6 +72,7 @@ export async function shortestPath(
       break;
     }
     const next: string[] = [];
+    let levelComplete = true;
     for (const page of side.edge) {
       lookups++;
       let found: Set<string>;
@@ -74,7 +80,7 @@ export async function shortestPath(
         found = await graph.neighbours(page);
       } else {
         const backlinks = await graph.backlinks(page, () => false);
-        exact &&= backlinks.complete;
+        levelComplete &&= backlinks.complete;
         found = backlinks.pages;
       }
       for (const other of found) {
@@ -88,6 +94,9 @@ export async function shortestPath(
     side.depth++;
     onLevel(goForward ? "forward" : "back", side.depth, side.reached.size);
     meeting = closestMeeting(forward, back);
+    if (meeting === null) {
+      exact &&= levelComplete;
+    }
   }
 
   const searchedHops = forward.depth + back.depth;

@@ -10,14 +10,8 @@
       "United States"
     ],
     "measured": {
-      "twoHopRoutes": 11,
-      "targetBacklinks": 2248,
-      "complete": false,
-      "examples": [
-        "Buffalo, New York",
-        "Chicago",
-        "Detroit"
-      ],
+      "distance": 2,
+      "targetBacklinks": 1000,
       "measuredOn": "2026-11-20"
     }
   },
@@ -32,14 +26,8 @@
       "World War II"
     ],
     "measured": {
-      "twoHopRoutes": 14,
+      "distance": 2,
       "targetBacklinks": 1000,
-      "complete": false,
-      "examples": [
-        "Belgium",
-        "Brazil",
-        "Bermuda"
-      ],
       "measuredOn": "2026-11-20"
     }
   },
@@ -54,14 +42,8 @@
       "Charles Darwin"
     ],
     "measured": {
-      "twoHopRoutes": 10,
-      "targetBacklinks": 1010,
-      "complete": false,
-      "examples": [
-        "Botany",
-        "Carl Linnaeus",
-        "Flowering plant"
-      ],
+      "distance": 2,
+      "targetBacklinks": 1000,
       "measuredOn": "2026-11-20"
     }
   },
@@ -76,14 +58,8 @@
       "Isaac Newton"
     ],
     "measured": {
-      "twoHopRoutes": 10,
-      "targetBacklinks": 1166,
-      "complete": false,
-      "examples": [
-        "Exoplanet",
-        "Johannes Kepler",
-        "James Hutton"
-      ],
+      "distance": 2,
+      "targetBacklinks": 1000,
       "measuredOn": "2026-11-20"
     }
   },
@@ -98,14 +74,8 @@
       "France"
     ],
     "measured": {
-      "twoHopRoutes": 10,
-      "targetBacklinks": 1499,
-      "complete": false,
-      "examples": [
-        "Benzodiazepine",
-        "Calcium",
-        "Easter egg"
-      ],
+      "distance": 2,
+      "targetBacklinks": 1000,
       "measuredOn": "2026-11-20"
     }
   },
@@ -120,191 +90,14 @@
       "Moon"
     ],
     "measured": {
-      "twoHopRoutes": 10,
-      "targetBacklinks": 2252,
-      "complete": false,
-      "examples": [
-        "Biome",
-        "Ecology",
-        "Geologic time scale"
-      ],
-      "measuredOn": "2026-11-20"
-    }
-  },
-  {
-    "id": "guinness-albert-einstein",
-    "difficulty": "medium",
-    "start": "Guinness",
-    "target": "Albert Einstein",
-    "knownPath": [
-      "Guinness",
-      "The New York Times",
-      "Albert Einstein"
-    ],
-    "measured": {
-      "twoHopRoutes": 3,
-      "targetBacklinks": 5326,
-      "complete": true,
-      "examples": [
-        "Mary Coughlan (politician)",
-        "The New York Times",
-        "University of Nottingham"
-      ],
-      "measuredOn": "2026-11-20"
-    }
-  },
-  {
-    "id": "chess-moon",
-    "difficulty": "medium",
-    "start": "Chess",
-    "target": "Moon",
-    "knownPath": [
-      "Chess",
-      "Adrien-Marie Legendre",
-      "Moon"
-    ],
-    "measured": {
-      "twoHopRoutes": 5,
-      "targetBacklinks": 8126,
-      "complete": true,
-      "examples": [
-        "Leonhard Euler",
-        "Adrien-Marie Legendre",
-        "Howard Staunton"
-      ],
-      "measuredOn": "2026-11-20"
-    }
-  },
-  {
-    "id": "lighthouse-william-shakespeare",
-    "difficulty": "medium",
-    "start": "Lighthouse",
-    "target": "William Shakespeare",
-    "knownPath": [
-      "Lighthouse",
-      "United Kingdom",
-      "William Shakespeare"
-    ],
-    "measured": {
-      "twoHopRoutes": 6,
-      "targetBacklinks": 15662,
-      "complete": true,
-      "examples": [
-        "English Channel",
-        "United Kingdom",
-        "William Tecumseh Sherman"
-      ],
-      "measuredOn": "2026-11-20"
-    }
-  },
-  {
-    "id": "sushi-napoleon",
-    "difficulty": "medium",
-    "start": "Sushi",
-    "target": "Napoleon",
-    "knownPath": [
-      "Sushi",
-      "Catalonia",
-      "Napoleon"
-    ],
-    "measured": {
-      "twoHopRoutes": 7,
-      "targetBacklinks": 14904,
-      "complete": true,
-      "examples": [
-        "Catalonia",
-        "Salt",
-        "The New York Times"
-      ],
-      "measuredOn": "2026-11-20"
-    }
-  },
-  {
-    "id": "bicycle-ancient-egypt",
-    "difficulty": "medium",
-    "start": "Bicycle",
-    "target": "Ancient Egypt",
-    "knownPath": [
-      "Bicycle",
-      "Toy",
-      "Ancient Egypt"
-    ],
-    "measured": {
-      "twoHopRoutes": 7,
-      "targetBacklinks": 7591,
-      "complete": true,
-      "examples": [
-        "Copenhagen",
-        "Hydraulics",
-        "Toy"
-      ],
-      "measuredOn": "2026-11-20"
-    }
-  },
-  {
-    "id": "coffee-mount-everest",
-    "difficulty": "medium",
-    "start": "Coffee",
-    "target": "Mount Everest",
-    "knownPath": [
-      "Coffee",
-      "National Geographic",
-      "Mount Everest"
-    ],
-    "measured": {
-      "twoHopRoutes": 2,
-      "targetBacklinks": 2799,
-      "complete": true,
-      "examples": [
-        "Oxford English Dictionary",
-        "National Geographic"
-      ],
-      "measuredOn": "2026-11-20"
-    }
-  },
-  {
-    "id": "honey-bee-jupiter",
-    "difficulty": "medium",
-    "start": "Honey bee",
-    "target": "Jupiter",
-    "knownPath": [
-      "Honey bee",
-      "Antarctica",
-      "Jupiter"
-    ],
-    "measured": {
-      "twoHopRoutes": 1,
-      "targetBacklinks": 3712,
-      "complete": true,
-      "examples": [
-        "Antarctica"
-      ],
-      "measuredOn": "2026-11-20"
-    }
-  },
-  {
-    "id": "hedgehog-stock-exchange",
-    "difficulty": "medium",
-    "start": "Hedgehog",
-    "target": "Stock exchange",
-    "knownPath": [
-      "Hedgehog",
-      "New York City",
-      "Stock exchange"
-    ],
-    "measured": {
-      "twoHopRoutes": 1,
-      "targetBacklinks": 2306,
-      "complete": true,
-      "examples": [
-        "New York City"
-      ],
+      "distance": 2,
+      "targetBacklinks": 1000,
       "measuredOn": "2026-11-20"
     }
   },
   {
     "id": "kazoo-higgs-boson",
-    "difficulty": "hard",
+    "difficulty": "medium",
     "start": "Kazoo",
     "target": "Higgs boson",
     "knownPath": [
@@ -314,16 +107,14 @@
       "Higgs boson"
     ],
     "measured": {
-      "twoHopRoutes": 0,
+      "distance": 3,
       "targetBacklinks": 795,
-      "complete": true,
-      "examples": [],
       "measuredOn": "2026-11-20"
     }
   },
   {
     "id": "tardigrade-cricket-world-cup",
-    "difficulty": "hard",
+    "difficulty": "medium",
     "start": "Tardigrade",
     "target": "Cricket World Cup",
     "knownPath": [
@@ -333,16 +124,14 @@
       "Cricket World Cup"
     ],
     "measured": {
-      "twoHopRoutes": 0,
-      "targetBacklinks": 2165,
-      "complete": true,
-      "examples": [],
+      "distance": 3,
+      "targetBacklinks": 1000,
       "measuredOn": "2026-11-20"
     }
   },
   {
     "id": "bagpipes-quantum-entanglement",
-    "difficulty": "hard",
+    "difficulty": "medium",
     "start": "Bagpipes",
     "target": "Quantum entanglement",
     "knownPath": [
@@ -352,16 +141,14 @@
       "Quantum entanglement"
     ],
     "measured": {
-      "twoHopRoutes": 0,
+      "distance": 3,
       "targetBacklinks": 712,
-      "complete": true,
-      "examples": [],
       "measuredOn": "2026-11-20"
     }
   },
   {
     "id": "haiku-fermats-last-theorem",
-    "difficulty": "hard",
+    "difficulty": "medium",
     "start": "Haiku",
     "target": "Fermat's Last Theorem",
     "knownPath": [
@@ -371,16 +158,14 @@
       "Fermat's Last Theorem"
     ],
     "measured": {
-      "twoHopRoutes": 0,
+      "distance": 3,
       "targetBacklinks": 316,
-      "complete": true,
-      "examples": [],
       "measuredOn": "2026-11-20"
     }
   },
   {
     "id": "origami-peace-of-westphalia",
-    "difficulty": "hard",
+    "difficulty": "medium",
     "start": "Origami",
     "target": "Peace of Westphalia",
     "knownPath": [
@@ -390,16 +175,14 @@
       "Peace of Westphalia"
     ],
     "measured": {
-      "twoHopRoutes": 0,
-      "targetBacklinks": 1571,
-      "complete": true,
-      "examples": [],
+      "distance": 3,
+      "targetBacklinks": 1000,
       "measuredOn": "2026-11-20"
     }
   },
   {
     "id": "lichen-rubiks-cube",
-    "difficulty": "hard",
+    "difficulty": "medium",
     "start": "Lichen",
     "target": "Rubik's Cube",
     "knownPath": [
@@ -409,16 +192,14 @@
       "Rubik's Cube"
     ],
     "measured": {
-      "twoHopRoutes": 0,
+      "distance": 3,
       "targetBacklinks": 548,
-      "complete": true,
-      "examples": [],
       "measuredOn": "2026-11-20"
     }
   },
   {
     "id": "penguin-bauhaus",
-    "difficulty": "hard",
+    "difficulty": "medium",
     "start": "Penguin",
     "target": "Bauhaus",
     "knownPath": [
@@ -428,10 +209,216 @@
       "Bauhaus"
     ],
     "measured": {
-      "twoHopRoutes": 0,
-      "targetBacklinks": 2457,
-      "complete": true,
-      "examples": [],
+      "distance": 3,
+      "targetBacklinks": 1000,
+      "measuredOn": "2026-11-20"
+    }
+  },
+  {
+    "id": "kazoo-hapalopilus-rutilans",
+    "difficulty": "hard",
+    "start": "Kazoo",
+    "target": "Hapalopilus rutilans",
+    "knownPath": [
+      "Kazoo",
+      "Guinness World Record",
+      "Mushroom poisoning",
+      "List of poisonous fungus species",
+      "Hapalopilus nidulans"
+    ],
+    "measured": {
+      "distance": 4,
+      "targetBacklinks": 8,
+      "measuredOn": "2026-11-20"
+    }
+  },
+  {
+    "id": "cheese-codex-seraphinianus",
+    "difficulty": "hard",
+    "start": "Cheese",
+    "target": "Codex Seraphinianus",
+    "knownPath": [
+      "Cheese",
+      "Ancient Egypt",
+      "Canaan",
+      "Undeciphered writing systems",
+      "Codex Seraphinianus"
+    ],
+    "measured": {
+      "distance": 4,
+      "targetBacklinks": 10,
+      "measuredOn": "2026-11-20"
+    }
+  },
+  {
+    "id": "jazz-toynbee-tiles",
+    "difficulty": "hard",
+    "start": "Jazz",
+    "target": "Toynbee tiles",
+    "knownPath": [
+      "Jazz",
+      "African Americans",
+      "Euro-centric",
+      "Arnold J. Toynbee",
+      "Toynbee tiles"
+    ],
+    "measured": {
+      "distance": 4,
+      "targetBacklinks": 11,
+      "measuredOn": "2026-11-20"
+    }
+  },
+  {
+    "id": "toothbrush-emu-war",
+    "difficulty": "hard",
+    "start": "Toothbrush",
+    "target": "Emu War",
+    "knownPath": [
+      "Toothbrush",
+      "Bone",
+      "Bird",
+      "Emu",
+      "Emu War"
+    ],
+    "measured": {
+      "distance": 4,
+      "targetBacklinks": 25,
+      "measuredOn": "2026-11-20"
+    }
+  },
+  {
+    "id": "basketball-baghdad-battery",
+    "difficulty": "hard",
+    "start": "Basketball",
+    "target": "Baghdad Battery",
+    "knownPath": [
+      "Basketball",
+      "Boxing",
+      "Mesopotamia",
+      "Baghdad Battery"
+    ],
+    "measured": {
+      "distance": 3,
+      "targetBacklinks": 24,
+      "measuredOn": "2026-11-20"
+    }
+  },
+  {
+    "id": "lego-lake-nyos-disaster",
+    "difficulty": "hard",
+    "start": "Lego",
+    "target": "Lake Nyos disaster",
+    "knownPath": [
+      "Lego",
+      "Carbon dioxide",
+      "Lake Nyos",
+      "Lake Nyos disaster"
+    ],
+    "measured": {
+      "distance": 3,
+      "targetBacklinks": 25,
+      "measuredOn": "2026-11-20"
+    }
+  },
+  {
+    "id": "umbrella-dancing-plague-of-1518",
+    "difficulty": "hard",
+    "start": "Umbrella",
+    "target": "Dancing plague of 1518",
+    "knownPath": [
+      "Umbrella",
+      "Fashion",
+      "16th century",
+      "Dancing plague of 1518"
+    ],
+    "measured": {
+      "distance": 3,
+      "targetBacklinks": 25,
+      "measuredOn": "2026-11-20"
+    }
+  },
+  {
+    "id": "ballet-pitch-drop-experiment",
+    "difficulty": "hard",
+    "start": "Ballet",
+    "target": "Pitch drop experiment",
+    "knownPath": [
+      "Ballet",
+      "Lap dance",
+      "List of Ig Nobel Prize winners",
+      "Pitch drop experiment"
+    ],
+    "measured": {
+      "distance": 3,
+      "targetBacklinks": 31,
+      "measuredOn": "2026-11-20"
+    }
+  },
+  {
+    "id": "kite-cottingley-fairies",
+    "difficulty": "hard",
+    "start": "Kite",
+    "target": "Cottingley Fairies",
+    "knownPath": [
+      "Kite",
+      "Kite aerial photography",
+      "List of photographs considered the most important",
+      "Cottingley Fairies"
+    ],
+    "measured": {
+      "distance": 3,
+      "targetBacklinks": 62,
+      "measuredOn": "2026-11-20"
+    }
+  },
+  {
+    "id": "saxophone-great-molasses-flood",
+    "difficulty": "hard",
+    "start": "Saxophone",
+    "target": "Great Molasses Flood",
+    "knownPath": [
+      "Saxophone",
+      "Steve Lacy (saxophonist)",
+      "Boston",
+      "Great Molasses Flood"
+    ],
+    "measured": {
+      "distance": 3,
+      "targetBacklinks": 62,
+      "measuredOn": "2026-11-20"
+    }
+  },
+  {
+    "id": "violin-pinus-longaeva",
+    "difficulty": "hard",
+    "start": "Violin",
+    "target": "Pinus longaeva",
+    "knownPath": [
+      "Violin",
+      "Cello",
+      "Pinophyta",
+      "Pinus longaeva"
+    ],
+    "measured": {
+      "distance": 3,
+      "targetBacklinks": 73,
+      "measuredOn": "2026-11-20"
+    }
+  },
+  {
+    "id": "bowling-mpemba-effect",
+    "difficulty": "hard",
+    "start": "Bowling",
+    "target": "Mpemba effect",
+    "knownPath": [
+      "Bowling",
+      "Bandy",
+      "Water",
+      "Mpemba effect"
+    ],
+    "measured": {
+      "distance": 3,
+      "targetBacklinks": 90,
       "measuredOn": "2026-11-20"
     }
   }

@@ -15,11 +15,11 @@ import { fakeLinks } from "../wikipedia/fake-wikipedia.ts";
 export function fakeRace(id: string): RaceSpec {
   return {
     id,
-    difficulty: "medium",
+    difficulty: "easy",
     start: "Guinness",
     target: "Albert Einstein",
     knownPath: ["Guinness", "Republic of Ireland", "Einstein"],
-    measured: { twoHopRoutes: 1, targetBacklinks: 3, complete: true, examples: [], measuredOn: "2026-11-16" },
+    measured: { distance: 2, targetBacklinks: 3, measuredOn: "2026-11-16" },
   };
 }
 
