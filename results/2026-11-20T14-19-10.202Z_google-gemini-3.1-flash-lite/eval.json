@@ -1,0 +1,583 @@
+{
+  "model": {
+    "id": "google/gemini-3.1-flash-lite",
+    "name": "Gemini 3.1 Flash Lite",
+    "lab": "Google",
+    "contextLength": 1048576,
+    "reasoning": "low",
+    "provider": "google-ai-studio",
+    "explicitCaching": false
+  },
+  "promptHash": "09c5b008298d",
+  "gitCommit": "f45aba7d099c2f5236dd62105aca7359f71a52c4",
+  "gitDirty": false,
+  "limits": {
+    "maxTurns": 30,
+    "maxContextChars": 330000,
+    "maxOutputTokens": 2000
+  },
+  "repeats": 3,
+  "maxCost": 2.8,
+  "races": [
+    {
+      "id": "pizza-united-states",
+      "difficulty": "easy"
+    },
+    {
+      "id": "tennis-world-war-ii",
+      "difficulty": "easy"
+    },
+    {
+      "id": "banana-charles-darwin",
+      "difficulty": "easy"
+    },
+    {
+      "id": "volcano-isaac-newton",
+      "difficulty": "easy"
+    },
+    {
+      "id": "chocolate-france",
+      "difficulty": "easy"
+    },
+    {
+      "id": "dinosaur-moon",
+      "difficulty": "easy"
+    },
+    {
+      "id": "kazoo-higgs-boson",
+      "difficulty": "medium"
+    },
+    {
+      "id": "tardigrade-cricket-world-cup",
+      "difficulty": "medium"
+    },
+    {
+      "id": "bagpipes-quantum-entanglement",
+      "difficulty": "medium"
+    },
+    {
+      "id": "haiku-fermats-last-theorem",
+      "difficulty": "medium"
+    },
+    {
+      "id": "origami-peace-of-westphalia",
+      "difficulty": "medium"
+    },
+    {
+      "id": "lichen-rubiks-cube",
+      "difficulty": "medium"
+    },
+    {
+      "id": "penguin-bauhaus",
+      "difficulty": "medium"
+    },
+    {
+      "id": "kazoo-hapalopilus-rutilans",
+      "difficulty": "hard"
+    },
+    {
+      "id": "cheese-codex-seraphinianus",
+      "difficulty": "hard"
+    },
+    {
+      "id": "jazz-toynbee-tiles",
+      "difficulty": "hard"
+    },
+    {
+      "id": "toothbrush-emu-war",
+      "difficulty": "hard"
+    },
+    {
+      "id": "basketball-baghdad-battery",
+      "difficulty": "hard"
+    },
+    {
+      "id": "lego-lake-nyos-disaster",
+      "difficulty": "hard"
+    },
+    {
+      "id": "umbrella-dancing-plague-of-1518",
+      "difficulty": "hard"
+    },
+    {
+      "id": "ballet-pitch-drop-experiment",
+      "difficulty": "hard"
+    },
+    {
+      "id": "kite-cottingley-fairies",
+      "difficulty": "hard"
+    },
+    {
+      "id": "saxophone-great-molasses-flood",
+      "difficulty": "hard"
+    },
+    {
+      "id": "violin-pinus-longaeva",
+      "difficulty": "hard"
+    },
+    {
+      "id": "bowling-mpemba-effect",
+      "difficulty": "hard"
+    }
+  ],
+  "plannedRuns": 75,
+  "stop": "completed",
+  "runs": [
+    {
+      "raceId": "pizza-united-states",
+      "difficulty": "easy",
+      "repeat": 1,
+      "trace": "2026-11-20T14-19-10.204Z_pizza-united-states-r1.jsonl"
+    },
+    {
+      "raceId": "tennis-world-war-ii",
+      "difficulty": "easy",
+      "repeat": 1,
+      "trace": "2026-11-20T14-19-16.059Z_tennis-world-war-ii-r1.jsonl"
+    },
+    {
+      "raceId": "banana-charles-darwin",
+      "difficulty": "easy",
+      "repeat": 1,
+      "trace": "2026-11-20T14-19-19.848Z_banana-charles-darwin-r1.jsonl"
+    },
+    {
+      "raceId": "volcano-isaac-newton",
+      "difficulty": "easy",
+      "repeat": 1,
+      "trace": "2026-11-20T14-19-22.669Z_volcano-isaac-newton-r1.jsonl"
+    },
+    {
+      "raceId": "chocolate-france",
+      "difficulty": "easy",
+      "repeat": 1,
+      "trace": "2026-11-20T14-19-25.369Z_chocolate-france-r1.jsonl"
+    },
+    {
+      "raceId": "dinosaur-moon",
+      "difficulty": "easy",
+      "repeat": 1,
+      "trace": "2026-11-20T14-19-30.471Z_dinosaur-moon-r1.jsonl"
+    },
+    {
+      "raceId": "kazoo-higgs-boson",
+      "difficulty": "medium",
+      "repeat": 1,
+      "trace": "2026-11-20T14-19-33.897Z_kazoo-higgs-boson-r1.jsonl"
+    },
+    {
+      "raceId": "tardigrade-cricket-world-cup",
+      "difficulty": "medium",
+      "repeat": 1,
+      "trace": "2026-11-20T14-19-40.828Z_tardigrade-cricket-world-cup-r1.jsonl"
+    },
+    {
+      "raceId": "bagpipes-quantum-entanglement",
+      "difficulty": "medium",
+      "repeat": 1,
+      "trace": "2026-11-20T14-19-48.639Z_bagpipes-quantum-entanglement-r1.jsonl"
+    },
+    {
+      "raceId": "haiku-fermats-last-theorem",
+      "difficulty": "medium",
+      "repeat": 1,
+      "trace": "2026-11-20T14-19-55.625Z_haiku-fermats-last-theorem-r1.jsonl"
+    },
+    {
+      "raceId": "origami-peace-of-westphalia",
+      "difficulty": "medium",
+      "repeat": 1,
+      "trace": "2026-11-20T14-20-00.290Z_origami-peace-of-westphalia-r1.jsonl"
+    },
+    {
+      "raceId": "lichen-rubiks-cube",
+      "difficulty": "medium",
+      "repeat": 1,
+      "trace": "2026-11-20T14-20-04.936Z_lichen-rubiks-cube-r1.jsonl"
+    },
+    {
+      "raceId": "penguin-bauhaus",
+      "difficulty": "medium",
+      "repeat": 1,
+      "trace": "2026-11-20T14-20-15.069Z_penguin-bauhaus-r1.jsonl"
+    },
+    {
+      "raceId": "kazoo-hapalopilus-rutilans",
+      "difficulty": "hard",
+      "repeat": 1,
+      "trace": "2026-11-20T14-20-28.914Z_kazoo-hapalopilus-rutilans-r1.jsonl"
+    },
+    {
+      "raceId": "cheese-codex-seraphinianus",
+      "difficulty": "hard",
+      "repeat": 1,
+      "trace": "2026-11-20T14-20-42.260Z_cheese-codex-seraphinianus-r1.jsonl"
+    },
+    {
+      "raceId": "jazz-toynbee-tiles",
+      "difficulty": "hard",
+      "repeat": 1,
+      "trace": "2026-11-20T14-21-06.206Z_jazz-toynbee-tiles-r1.jsonl"
+    },
+    {
+      "raceId": "toothbrush-emu-war",
+      "difficulty": "hard",
+      "repeat": 1,
+      "trace": "2026-11-20T14-21-43.305Z_toothbrush-emu-war-r1.jsonl"
+    },
+    {
+      "raceId": "basketball-baghdad-battery",
+      "difficulty": "hard",
+      "repeat": 1,
+      "trace": "2026-11-20T14-21-54.040Z_basketball-baghdad-battery-r1.jsonl"
+    },
+    {
+      "raceId": "lego-lake-nyos-disaster",
+      "difficulty": "hard",
+      "repeat": 1,
+      "trace": "2026-11-20T14-22-16.305Z_lego-lake-nyos-disaster-r1.jsonl"
+    },
+    {
+      "raceId": "umbrella-dancing-plague-of-1518",
+      "difficulty": "hard",
+      "repeat": 1,
+      "trace": "2026-11-20T14-22-20.578Z_umbrella-dancing-plague-of-1518-r1.jsonl"
+    },
+    {
+      "raceId": "ballet-pitch-drop-experiment",
+      "difficulty": "hard",
+      "repeat": 1,
+      "trace": "2026-11-20T14-22-37.501Z_ballet-pitch-drop-experiment-r1.jsonl"
+    },
+    {
+      "raceId": "kite-cottingley-fairies",
+      "difficulty": "hard",
+      "repeat": 1,
+      "trace": "2026-11-20T14-22-58.299Z_kite-cottingley-fairies-r1.jsonl"
+    },
+    {
+      "raceId": "saxophone-great-molasses-flood",
+      "difficulty": "hard",
+      "repeat": 1,
+      "trace": "2026-11-20T14-23-10.053Z_saxophone-great-molasses-flood-r1.jsonl"
+    },
+    {
+      "raceId": "violin-pinus-longaeva",
+      "difficulty": "hard",
+      "repeat": 1,
+      "trace": "2026-11-20T14-23-19.399Z_violin-pinus-longaeva-r1.jsonl"
+    },
+    {
+      "raceId": "bowling-mpemba-effect",
+      "difficulty": "hard",
+      "repeat": 1,
+      "trace": "2026-11-20T14-23-25.091Z_bowling-mpemba-effect-r1.jsonl"
+    },
+    {
+      "raceId": "pizza-united-states",
+      "difficulty": "easy",
+      "repeat": 2,
+      "trace": "2026-11-20T14-23-39.228Z_pizza-united-states-r2.jsonl"
+    },
+    {
+      "raceId": "tennis-world-war-ii",
+      "difficulty": "easy",
+      "repeat": 2,
+      "trace": "2026-11-20T14-23-46.434Z_tennis-world-war-ii-r2.jsonl"
+    },
+    {
+      "raceId": "banana-charles-darwin",
+      "difficulty": "easy",
+      "repeat": 2,
+      "trace": "2026-11-20T14-23-50.296Z_banana-charles-darwin-r2.jsonl"
+    },
+    {
+      "raceId": "volcano-isaac-newton",
+      "difficulty": "easy",
+      "repeat": 2,
+      "trace": "2026-11-20T14-23-53.965Z_volcano-isaac-newton-r2.jsonl"
+    },
+    {
+      "raceId": "chocolate-france",
+      "difficulty": "easy",
+      "repeat": 2,
+      "trace": "2026-11-20T14-23-57.500Z_chocolate-france-r2.jsonl"
+    },
+    {
+      "raceId": "chocolate-france",
+      "difficulty": "easy",
+      "repeat": 2,
+      "trace": "2026-11-20T14-39-22.739Z_chocolate-france-r2.jsonl"
+    },
+    {
+      "raceId": "dinosaur-moon",
+      "difficulty": "easy",
+      "repeat": 2,
+      "trace": "2026-11-20T14-39-27.327Z_dinosaur-moon-r2.jsonl"
+    },
+    {
+      "raceId": "kazoo-higgs-boson",
+      "difficulty": "medium",
+      "repeat": 2,
+      "trace": "2026-11-20T14-39-32.031Z_kazoo-higgs-boson-r2.jsonl"
+    },
+    {
+      "raceId": "tardigrade-cricket-world-cup",
+      "difficulty": "medium",
+      "repeat": 2,
+      "trace": "2026-11-20T14-39-39.526Z_tardigrade-cricket-world-cup-r2.jsonl"
+    },
+    {
+      "raceId": "bagpipes-quantum-entanglement",
+      "difficulty": "medium",
+      "repeat": 2,
+      "trace": "2026-11-20T14-39-45.034Z_bagpipes-quantum-entanglement-r2.jsonl"
+    },
+    {
+      "raceId": "haiku-fermats-last-theorem",
+      "difficulty": "medium",
+      "repeat": 2,
+      "trace": "2026-11-20T14-39-52.829Z_haiku-fermats-last-theorem-r2.jsonl"
+    },
+    {
+      "raceId": "origami-peace-of-westphalia",
+      "difficulty": "medium",
+      "repeat": 2,
+      "trace": "2026-11-20T14-39-57.455Z_origami-peace-of-westphalia-r2.jsonl"
+    },
+    {
+      "raceId": "lichen-rubiks-cube",
+      "difficulty": "medium",
+      "repeat": 2,
+      "trace": "2026-11-20T14-40-01.745Z_lichen-rubiks-cube-r2.jsonl"
+    },
+    {
+      "raceId": "penguin-bauhaus",
+      "difficulty": "medium",
+      "repeat": 2,
+      "trace": "2026-11-20T14-40-11.824Z_penguin-bauhaus-r2.jsonl"
+    },
+    {
+      "raceId": "kazoo-hapalopilus-rutilans",
+      "difficulty": "hard",
+      "repeat": 2,
+      "trace": "2026-11-20T14-40-21.656Z_kazoo-hapalopilus-rutilans-r2.jsonl"
+    },
+    {
+      "raceId": "cheese-codex-seraphinianus",
+      "difficulty": "hard",
+      "repeat": 2,
+      "trace": "2026-11-20T14-40-34.180Z_cheese-codex-seraphinianus-r2.jsonl"
+    },
+    {
+      "raceId": "jazz-toynbee-tiles",
+      "difficulty": "hard",
+      "repeat": 2,
+      "trace": "2026-11-20T14-41-00.680Z_jazz-toynbee-tiles-r2.jsonl"
+    },
+    {
+      "raceId": "toothbrush-emu-war",
+      "difficulty": "hard",
+      "repeat": 2,
+      "trace": "2026-11-20T14-41-11.127Z_toothbrush-emu-war-r2.jsonl"
+    },
+    {
+      "raceId": "basketball-baghdad-battery",
+      "difficulty": "hard",
+      "repeat": 2,
+      "trace": "2026-11-20T14-41-22.315Z_basketball-baghdad-battery-r2.jsonl"
+    },
+    {
+      "raceId": "lego-lake-nyos-disaster",
+      "difficulty": "hard",
+      "repeat": 2,
+      "trace": "2026-11-20T14-41-49.673Z_lego-lake-nyos-disaster-r2.jsonl"
+    },
+    {
+      "raceId": "umbrella-dancing-plague-of-1518",
+      "difficulty": "hard",
+      "repeat": 2,
+      "trace": "2026-11-20T14-41-54.082Z_umbrella-dancing-plague-of-1518-r2.jsonl"
+    },
+    {
+      "raceId": "ballet-pitch-drop-experiment",
+      "difficulty": "hard",
+      "repeat": 2,
+      "trace": "2026-11-20T14-42-00.533Z_ballet-pitch-drop-experiment-r2.jsonl"
+    },
+    {
+      "raceId": "kite-cottingley-fairies",
+      "difficulty": "hard",
+      "repeat": 2,
+      "trace": "2026-11-20T14-42-10.688Z_kite-cottingley-fairies-r2.jsonl"
+    },
+    {
+      "raceId": "saxophone-great-molasses-flood",
+      "difficulty": "hard",
+      "repeat": 2,
+      "trace": "2026-11-20T14-42-17.811Z_saxophone-great-molasses-flood-r2.jsonl"
+    },
+    {
+      "raceId": "violin-pinus-longaeva",
+      "difficulty": "hard",
+      "repeat": 2,
+      "trace": "2026-11-20T14-42-24.942Z_violin-pinus-longaeva-r2.jsonl"
+    },
+    {
+      "raceId": "bowling-mpemba-effect",
+      "difficulty": "hard",
+      "repeat": 2,
+      "trace": "2026-11-20T14-42-29.527Z_bowling-mpemba-effect-r2.jsonl"
+    },
+    {
+      "raceId": "pizza-united-states",
+      "difficulty": "easy",
+      "repeat": 3,
+      "trace": "2026-11-20T14-42-44.554Z_pizza-united-states-r3.jsonl"
+    },
+    {
+      "raceId": "tennis-world-war-ii",
+      "difficulty": "easy",
+      "repeat": 3,
+      "trace": "2026-11-20T14-42-52.523Z_tennis-world-war-ii-r3.jsonl"
+    },
+    {
+      "raceId": "banana-charles-darwin",
+      "difficulty": "easy",
+      "repeat": 3,
+      "trace": "2026-11-20T14-42-55.855Z_banana-charles-darwin-r3.jsonl"
+    },
+    {
+      "raceId": "volcano-isaac-newton",
+      "difficulty": "easy",
+      "repeat": 3,
+      "trace": "2026-11-20T14-42-58.530Z_volcano-isaac-newton-r3.jsonl"
+    },
+    {
+      "raceId": "chocolate-france",
+      "difficulty": "easy",
+      "repeat": 3,
+      "trace": "2026-11-20T14-43-02.071Z_chocolate-france-r3.jsonl"
+    },
+    {
+      "raceId": "dinosaur-moon",
+      "difficulty": "easy",
+      "repeat": 3,
+      "trace": "2026-11-20T14-43-06.389Z_dinosaur-moon-r3.jsonl"
+    },
+    {
+      "raceId": "kazoo-higgs-boson",
+      "difficulty": "medium",
+      "repeat": 3,
+      "trace": "2026-11-20T14-43-10.238Z_kazoo-higgs-boson-r3.jsonl"
+    },
+    {
+      "raceId": "tardigrade-cricket-world-cup",
+      "difficulty": "medium",
+      "repeat": 3,
+      "trace": "2026-11-20T14-43-16.588Z_tardigrade-cricket-world-cup-r3.jsonl"
+    },
+    {
+      "raceId": "bagpipes-quantum-entanglement",
+      "difficulty": "medium",
+      "repeat": 3,
+      "trace": "2026-11-20T14-43-32.786Z_bagpipes-quantum-entanglement-r3.jsonl"
+    },
+    {
+      "raceId": "haiku-fermats-last-theorem",
+      "difficulty": "medium",
+      "repeat": 3,
+      "trace": "2026-11-20T14-43-41.802Z_haiku-fermats-last-theorem-r3.jsonl"
+    },
+    {
+      "raceId": "origami-peace-of-westphalia",
+      "difficulty": "medium",
+      "repeat": 3,
+      "trace": "2026-11-20T14-43-48.202Z_origami-peace-of-westphalia-r3.jsonl"
+    },
+    {
+      "raceId": "lichen-rubiks-cube",
+      "difficulty": "medium",
+      "repeat": 3,
+      "trace": "2026-11-20T14-43-55.727Z_lichen-rubiks-cube-r3.jsonl"
+    },
+    {
+      "raceId": "penguin-bauhaus",
+      "difficulty": "medium",
+      "repeat": 3,
+      "trace": "2026-11-20T14-44-03.409Z_penguin-bauhaus-r3.jsonl"
+    },
+    {
+      "raceId": "kazoo-hapalopilus-rutilans",
+      "difficulty": "hard",
+      "repeat": 3,
+      "trace": "2026-11-20T14-44-10.992Z_kazoo-hapalopilus-rutilans-r3.jsonl"
+    },
+    {
+      "raceId": "cheese-codex-seraphinianus",
+      "difficulty": "hard",
+      "repeat": 3,
+      "trace": "2026-11-20T14-44-22.714Z_cheese-codex-seraphinianus-r3.jsonl"
+    },
+    {
+      "raceId": "jazz-toynbee-tiles",
+      "difficulty": "hard",
+      "repeat": 3,
+      "trace": "2026-11-20T14-44-35.115Z_jazz-toynbee-tiles-r3.jsonl"
+    },
+    {
+      "raceId": "toothbrush-emu-war",
+      "difficulty": "hard",
+      "repeat": 3,
+      "trace": "2026-11-20T14-44-59.502Z_toothbrush-emu-war-r3.jsonl"
+    },
+    {
+      "raceId": "basketball-baghdad-battery",
+      "difficulty": "hard",
+      "repeat": 3,
+      "trace": "2026-11-20T14-45-15.825Z_basketball-baghdad-battery-r3.jsonl"
+    },
+    {
+      "raceId": "lego-lake-nyos-disaster",
+      "difficulty": "hard",
+      "repeat": 3,
+      "trace": "2026-11-20T14-49-11.536Z_lego-lake-nyos-disaster-r3.jsonl"
+    },
+    {
+      "raceId": "umbrella-dancing-plague-of-1518",
+      "difficulty": "hard",
+      "repeat": 3,
+      "trace": "2026-11-20T14-49-16.396Z_umbrella-dancing-plague-of-1518-r3.jsonl"
+    },
+    {
+      "raceId": "ballet-pitch-drop-experiment",
+      "difficulty": "hard",
+      "repeat": 3,
+      "trace": "2026-11-20T14-49-26.073Z_ballet-pitch-drop-experiment-r3.jsonl"
+    },
+    {
+      "raceId": "kite-cottingley-fairies",
+      "difficulty": "hard",
+      "repeat": 3,
+      "trace": "2026-11-20T14-49-35.861Z_kite-cottingley-fairies-r3.jsonl"
+    },
+    {
+      "raceId": "saxophone-great-molasses-flood",
+      "difficulty": "hard",
+      "repeat": 3,
+      "trace": "2026-11-20T14-49-40.563Z_saxophone-great-molasses-flood-r3.jsonl"
+    },
+    {
+      "raceId": "violin-pinus-longaeva",
+      "difficulty": "hard",
+      "repeat": 3,
+      "trace": "2026-11-20T14-49-47.895Z_violin-pinus-longaeva-r3.jsonl"
+    },
+    {
+      "raceId": "bowling-mpemba-effect",
+      "difficulty": "hard",
+      "repeat": 3,
+      "trace": "2026-11-20T14-49-52.930Z_bowling-mpemba-effect-r3.jsonl"
+    }
+  ]
+}
