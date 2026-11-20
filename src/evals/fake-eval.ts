@@ -19,7 +19,7 @@ export function fakeRace(id: string): RaceSpec {
     start: "Guinness",
     target: "Albert Einstein",
     knownPath: ["Guinness", "Republic of Ireland", "Einstein"],
-    measured: { twoHopRoutes: 1, complete: true, examples: [], measuredOn: "2026-11-16" },
+    measured: { twoHopRoutes: 1, targetBacklinks: 3, complete: true, examples: [], measuredOn: "2026-11-16" },
   };
 }
 

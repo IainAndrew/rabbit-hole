@@ -1,7 +1,7 @@
 // Measure every race in races.json on live Wikipedia and write each one's
-// 2-hop route count and difficulty back into the file. The hand-written
-// parts (id, start, target, known path) are kept as they are. Free:
-// Wikipedia only. Writes nothing if any race can't be measured.
+// 2-hop route count, target backlinks and difficulty back into the file. The
+// hand-written parts (id, start, target, known path) are kept as they are.
+// Free: Wikipedia only. Writes nothing if any race can't be measured.
 // Usage: npm run measure-races
 
 import { readFileSync, writeFileSync } from "node:fs";
@@ -23,9 +23,11 @@ for (const draft of drafts) {
     continue;
   }
   const { difficulty } = result;
-  const { twoHopRoutes, complete, examples } = result.measured;
+  const { twoHopRoutes, targetBacklinks, complete, examples } = result.measured;
+  const more = complete ? "" : "+";
   console.log(
-    `${difficulty.padEnd(6)} ${draft.id.padEnd(34)} ${twoHopRoutes}${complete ? "" : "+"} routes  ${examples.join(", ")}`,
+    `${difficulty.padEnd(6)} ${draft.id.padEnd(34)} ${`${twoHopRoutes}${more}`.padStart(4)} routes ` +
+      `${`${targetBacklinks.toLocaleString()}${more}`.padStart(7)} backlinks  ${examples.join(", ")}`,
   );
   // Key order kept fixed so the file reads the same way every time.
   measured.push({

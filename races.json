@@ -11,13 +11,14 @@
     ],
     "measured": {
       "twoHopRoutes": 11,
+      "targetBacklinks": 2248,
       "complete": false,
       "examples": [
         "Buffalo, New York",
         "Chicago",
         "Detroit"
       ],
-      "measuredOn": "2026-11-16"
+      "measuredOn": "2026-11-20"
     }
   },
   {
@@ -31,14 +32,15 @@
       "World War II"
     ],
     "measured": {
-      "twoHopRoutes": 12,
+      "twoHopRoutes": 14,
+      "targetBacklinks": 1000,
       "complete": false,
       "examples": [
         "Belgium",
         "Brazil",
         "Bermuda"
       ],
-      "measuredOn": "2026-11-16"
+      "measuredOn": "2026-11-20"
     }
   },
   {
@@ -53,13 +55,14 @@
     ],
     "measured": {
       "twoHopRoutes": 10,
+      "targetBacklinks": 1010,
       "complete": false,
       "examples": [
         "Botany",
         "Carl Linnaeus",
         "Flowering plant"
       ],
-      "measuredOn": "2026-11-16"
+      "measuredOn": "2026-11-20"
     }
   },
   {
@@ -74,13 +77,14 @@
     ],
     "measured": {
       "twoHopRoutes": 10,
+      "targetBacklinks": 1166,
       "complete": false,
       "examples": [
         "Exoplanet",
         "Johannes Kepler",
         "James Hutton"
       ],
-      "measuredOn": "2026-11-16"
+      "measuredOn": "2026-11-20"
     }
   },
   {
@@ -95,13 +99,14 @@
     ],
     "measured": {
       "twoHopRoutes": 10,
+      "targetBacklinks": 1499,
       "complete": false,
       "examples": [
         "Benzodiazepine",
         "Calcium",
         "Easter egg"
       ],
-      "measuredOn": "2026-11-16"
+      "measuredOn": "2026-11-20"
     }
   },
   {
@@ -116,13 +121,14 @@
     ],
     "measured": {
       "twoHopRoutes": 10,
+      "targetBacklinks": 2252,
       "complete": false,
       "examples": [
         "Biome",
         "Ecology",
         "Geologic time scale"
       ],
-      "measuredOn": "2026-11-16"
+      "measuredOn": "2026-11-20"
     }
   },
   {
@@ -137,13 +143,14 @@
     ],
     "measured": {
       "twoHopRoutes": 3,
+      "targetBacklinks": 5326,
       "complete": true,
       "examples": [
         "Mary Coughlan (politician)",
         "The New York Times",
         "University of Nottingham"
       ],
-      "measuredOn": "2026-11-16"
+      "measuredOn": "2026-11-20"
     }
   },
   {
@@ -158,13 +165,14 @@
     ],
     "measured": {
       "twoHopRoutes": 5,
+      "targetBacklinks": 8126,
       "complete": true,
       "examples": [
         "Leonhard Euler",
         "Adrien-Marie Legendre",
         "Howard Staunton"
       ],
-      "measuredOn": "2026-11-16"
+      "measuredOn": "2026-11-20"
     }
   },
   {
@@ -179,13 +187,14 @@
     ],
     "measured": {
       "twoHopRoutes": 6,
+      "targetBacklinks": 15662,
       "complete": true,
       "examples": [
         "English Channel",
         "United Kingdom",
         "William Tecumseh Sherman"
       ],
-      "measuredOn": "2026-11-16"
+      "measuredOn": "2026-11-20"
     }
   },
   {
@@ -200,13 +209,14 @@
     ],
     "measured": {
       "twoHopRoutes": 7,
+      "targetBacklinks": 14904,
       "complete": true,
       "examples": [
         "Catalonia",
         "Salt",
         "The New York Times"
       ],
-      "measuredOn": "2026-11-16"
+      "measuredOn": "2026-11-20"
     }
   },
   {
@@ -221,13 +231,14 @@
     ],
     "measured": {
       "twoHopRoutes": 7,
+      "targetBacklinks": 7591,
       "complete": true,
       "examples": [
         "Copenhagen",
         "Hydraulics",
         "Toy"
       ],
-      "measuredOn": "2026-11-16"
+      "measuredOn": "2026-11-20"
     }
   },
   {
@@ -242,12 +253,13 @@
     ],
     "measured": {
       "twoHopRoutes": 2,
+      "targetBacklinks": 2799,
       "complete": true,
       "examples": [
         "Oxford English Dictionary",
         "National Geographic"
       ],
-      "measuredOn": "2026-11-16"
+      "measuredOn": "2026-11-20"
     }
   },
   {
@@ -262,11 +274,12 @@
     ],
     "measured": {
       "twoHopRoutes": 1,
+      "targetBacklinks": 3712,
       "complete": true,
       "examples": [
         "Antarctica"
       ],
-      "measuredOn": "2026-11-16"
+      "measuredOn": "2026-11-20"
     }
   },
   {
@@ -281,11 +294,12 @@
     ],
     "measured": {
       "twoHopRoutes": 1,
+      "targetBacklinks": 2306,
       "complete": true,
       "examples": [
         "New York City"
       ],
-      "measuredOn": "2026-11-16"
+      "measuredOn": "2026-11-20"
     }
   },
   {
@@ -301,9 +315,10 @@
     ],
     "measured": {
       "twoHopRoutes": 0,
+      "targetBacklinks": 795,
       "complete": true,
       "examples": [],
-      "measuredOn": "2026-11-16"
+      "measuredOn": "2026-11-20"
     }
   },
   {
@@ -319,9 +334,10 @@
     ],
     "measured": {
       "twoHopRoutes": 0,
+      "targetBacklinks": 2165,
       "complete": true,
       "examples": [],
-      "measuredOn": "2026-11-16"
+      "measuredOn": "2026-11-20"
     }
   },
   {
@@ -337,9 +353,10 @@
     ],
     "measured": {
       "twoHopRoutes": 0,
+      "targetBacklinks": 712,
       "complete": true,
       "examples": [],
-      "measuredOn": "2026-11-16"
+      "measuredOn": "2026-11-20"
     }
   },
   {
@@ -355,9 +372,10 @@
     ],
     "measured": {
       "twoHopRoutes": 0,
+      "targetBacklinks": 316,
       "complete": true,
       "examples": [],
-      "measuredOn": "2026-11-16"
+      "measuredOn": "2026-11-20"
     }
   },
   {
@@ -373,9 +391,10 @@
     ],
     "measured": {
       "twoHopRoutes": 0,
+      "targetBacklinks": 1571,
       "complete": true,
       "examples": [],
-      "measuredOn": "2026-11-16"
+      "measuredOn": "2026-11-20"
     }
   },
   {
@@ -391,9 +410,10 @@
     ],
     "measured": {
       "twoHopRoutes": 0,
+      "targetBacklinks": 548,
       "complete": true,
       "examples": [],
-      "measuredOn": "2026-11-16"
+      "measuredOn": "2026-11-20"
     }
   },
   {
@@ -409,9 +429,10 @@
     ],
     "measured": {
       "twoHopRoutes": 0,
+      "targetBacklinks": 2457,
       "complete": true,
       "examples": [],
-      "measuredOn": "2026-11-16"
+      "measuredOn": "2026-11-20"
     }
   }
 ]

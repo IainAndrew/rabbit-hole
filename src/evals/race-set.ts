@@ -14,11 +14,22 @@ export type Difficulty = "easy" | "medium" | "hard";
 /** Routes needed for a race to be easy. Counting can stop once it has this many. */
 export const EASY_ROUTES = 10;
 
+/**
+ * Backlinks worth counting. Past this many, a target is a hub that most
+ * routes run into, and the exact number doesn't matter.
+ */
+export const BACKLINKS_COUNTED = 1000;
+
 /** The evidence for a race's difficulty, measured on live Wikipedia by measure-races. */
 export type Measurement = {
   /** Pages the start links to that link to the target: each is a 2-hop win. */
   twoHopRoutes: number;
-  /** False when counting stopped early, so the true count may be higher. */
+  /**
+   * Articles that link to the target, directly or through a redirect: how
+   * findable it is. A target few pages link to has few ways in.
+   */
+  targetBacklinks: number;
+  /** False when counting stopped early, so the true counts may be higher. */
   complete: boolean;
   /** A few of the routes, for readers. */
   examples: string[];
@@ -111,6 +122,7 @@ export function parseRaceSet(value: unknown): RaceSpec[] {
     if (
       !isRecord(measured) ||
       typeof measured.twoHopRoutes !== "number" ||
+      typeof measured.targetBacklinks !== "number" ||
       typeof measured.complete !== "boolean" ||
       !Array.isArray(measured.examples) ||
       !measured.examples.every((example) => typeof example === "string") ||
@@ -118,8 +130,8 @@ export function parseRaceSet(value: unknown): RaceSpec[] {
     ) {
       throw bad('"measured" is missing or malformed: run measure-races');
     }
-    const { twoHopRoutes, complete, examples, measuredOn } = measured;
-    return { ...draft, difficulty, measured: { twoHopRoutes, complete, examples, measuredOn } };
+    const { twoHopRoutes, targetBacklinks, complete, examples, measuredOn } = measured;
+    return { ...draft, difficulty, measured: { twoHopRoutes, targetBacklinks, complete, examples, measuredOn } };
   });
 }
 
@@ -133,8 +145,9 @@ export type GraphSource = {
 };
 
 /**
- * Count a race's 2-hop routes: pages the start can move to that link to the
- * target. Counting stops once there are enough to call it easy.
+ * Count a race's 2-hop routes (pages the start can move to that link to the
+ * target) and the target's backlinks. Counting stops once there are enough
+ * routes to call it easy and BACKLINKS_COUNTED backlinks.
  *
  * @param today The date to record, YYYY-MM-DD.
  * @returns The measurement and the tier it puts the race in, or why the race
@@ -152,10 +165,14 @@ export async function measureRace(
     return { ok: false, problem: "the start links the target directly: a 1-hop race measures nothing" };
   }
   const routesIn = (pages: Set<string>) => [...neighbours].filter((page) => pages.has(page));
-  const backlinks = await graph.backlinks(draft.target, (found) => routesIn(found).length >= EASY_ROUTES);
+  const enough = (found: Set<string>) => {
+    return routesIn(found).length >= EASY_ROUTES && found.size >= BACKLINKS_COUNTED;
+  };
+  const backlinks = await graph.backlinks(draft.target, enough);
   const routes = routesIn(backlinks.pages);
   const measured = {
     twoHopRoutes: routes.length,
+    targetBacklinks: backlinks.pages.size,
     complete: backlinks.complete,
     examples: routes.slice(0, 3),
     measuredOn: today,
