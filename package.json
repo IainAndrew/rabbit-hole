@@ -17,6 +17,7 @@
     "replay-trace": "node src/commands/replay-trace.ts",
     "check-races": "node src/commands/check-races.ts",
     "measure-races": "node src/commands/measure-races.ts",
+    "race-distance": "node src/commands/race-distance.ts",
     "eval-model": "node --env-file=.env src/commands/eval-model.ts",
     "eval-report": "node src/commands/eval-report.ts",
     "compare-evals": "node src/commands/compare-evals.ts"
