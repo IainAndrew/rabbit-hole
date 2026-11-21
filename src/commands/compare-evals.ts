@@ -1,14 +1,14 @@
-// Rank evals of different models or context strategies against each other,
-// from their manifests and traces only. Refuses evals run with a different prompt, race set,
-// limits or commit. Free: reads files.
+// Rank evals of different models, context strategies or prompt variants
+// against each other, from their manifests and traces only. Refuses evals run
+// with a different race set, repeats, limits or commit. Free: reads files.
 // Usage: npm run compare-evals -- results/<sweep>/*
 
 import { evalLabel, rankEvals, type Ranked } from "../evals/compare.ts";
 import { withinNoise } from "../evals/intervals.ts";
 import { loadEval } from "../evals/report.ts";
 
-// Wide enough for the longest model name and a strategy name.
-const LABEL_WIDTH = 32;
+// Wide enough for the longest model name, a strategy and a prompt variant.
+const LABEL_WIDTH = 46;
 
 const dirs = process.argv.slice(2);
 if (dirs.length < 2) {
@@ -21,7 +21,7 @@ const ranked = rankEvals(dirs.map(loadEval));
 const { manifest } = ranked[0]!.eval;
 const { limits } = manifest;
 console.log(
-  `${ranked.length} evals | commit ${manifest.gitCommit.slice(0, 7)} | prompt ${manifest.promptHash} | ${manifest.races.length} races`,
+  `${ranked.length} evals | commit ${manifest.gitCommit.slice(0, 7)} | ${manifest.races.length} races`,
 );
 console.log(
   `limits: ${limits.maxTurns} turns, ${limits.maxContextChars.toLocaleString()} context chars, ${limits.maxOutputTokens.toLocaleString()} output tokens\n`,
@@ -31,7 +31,7 @@ console.log("Ranked by success rate, then fewer hops on wins. The columns after 
 console.log("95%: the range the success rate could take by chance. vs next: the gap to the model below, in points,");
 console.log("with its 95% range; \"noise\" means the range includes 0, so the order may be chance.\n");
 console.log(
-  `${"#".padEnd(3)}${"model / context".padEnd(LABEL_WIDTH)}${"runs".padEnd(10)}${"won".padEnd(12)}${"95%".padEnd(11)}${"hops".padEnd(6)}` +
+  `${"#".padEnd(3)}${"model / context / prompt".padEnd(LABEL_WIDTH)}${"runs".padEnd(10)}${"won".padEnd(12)}${"95%".padEnd(11)}${"hops".padEnd(6)}` +
     `${"vs next".padEnd(22)}${"cost/run".padEnd(10)}${"cost/win".padEnd(10)}${"tokens/run".padEnd(12)}${"turns".padEnd(7)}time/run`,
 );
 for (const entry of ranked) {
@@ -40,7 +40,7 @@ for (const entry of ranked) {
 
 console.log("\nHow runs ended (crashed and killed runs aren't counted in the score)\n");
 const reasons = Object.keys(ranked[0]!.endReasons) as (keyof Ranked["endReasons"])[];
-console.log(`${"model / context".padEnd(LABEL_WIDTH)}${reasons.map((reason) => reason.padEnd(15)).join("")}crashed  killed`);
+console.log(`${"model / context / prompt".padEnd(LABEL_WIDTH)}${reasons.map((reason) => reason.padEnd(15)).join("")}crashed  killed`);
 for (const entry of ranked) {
   const counts = reasons.map((reason) => String(entry.endReasons[reason]).padEnd(15)).join("");
   console.log(`${evalLabel(entry.eval).padEnd(LABEL_WIDTH)}${counts}${String(entry.score.crashed).padEnd(9)}${entry.score.killed}`);
@@ -49,7 +49,7 @@ for (const entry of ranked) {
 console.log("\nHow runs played, over decided runs: why a score is what it is, not part of it.");
 console.log("refused: moves the rules turned down, of all move attempts. first move: mean turn of the first move");
 console.log("that worked. never moved: runs with none. cached: prompt tokens served from the provider's cache.\n");
-console.log(`${"model / context".padEnd(LABEL_WIDTH)}${"refused".padEnd(10)}${"first move".padEnd(12)}${"never moved".padEnd(13)}cached`);
+console.log(`${"model / context / prompt".padEnd(LABEL_WIDTH)}${"refused".padEnd(10)}${"first move".padEnd(12)}${"never moved".padEnd(13)}cached`);
 for (const entry of ranked) {
   console.log(evalLabel(entry.eval).padEnd(LABEL_WIDTH) + behaviourRow(entry));
 }

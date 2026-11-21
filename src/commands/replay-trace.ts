@@ -24,7 +24,7 @@ if (first?.type !== "run_start") {
 
 const { model, limits } = first;
 console.log(`"${first.start}" → "${first.target}"`);
-console.log(`${model.id} (reasoning: ${reasoningLabel(model.reasoning)}) | context: ${first.contextStrategy} | prompt ${first.promptHash}`);
+console.log(`${model.id} (reasoning: ${reasoningLabel(model.reasoning)}) | context: ${first.contextStrategy} | prompt ${first.promptVariant} (${first.promptHash})`);
 console.log(`commit ${first.gitCommit.slice(0, 7)}${first.gitDirty ? " with uncommitted changes" : ""}`);
 console.log(`limits: ${limits.maxTurns} turns, ${limits.maxContextChars.toLocaleString()} context chars, ${limits.maxOutputTokens} output tokens`);
 

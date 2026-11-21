@@ -1,10 +1,12 @@
 // Run one race, print each turn as it happens, and write a trace to runs/.
 // Uses the build model unless --model names another from the registry, and
-// sends the full history unless --context names another strategy. Billed.
-// Usage: npm run race-agent -- "Start page" "Target page" [--model <id>] [--max-cost <dollars>] [--context full]
+// sends the full history unless --context names another strategy, under the
+// fewest-hops prompt unless --prompt names another. Billed.
+// Usage: npm run race-agent -- "Start page" "Target page" [--model <id>] [--max-cost <dollars>] [--context full] [--prompt fewest-hops]
 
 import { parseArgs } from "node:util";
-import { promptHash, RACE_LIMITS, runAgent, SYSTEM_PROMPT, type CallModel } from "../agent/agent.ts";
+import { RACE_LIMITS, runAgent, type CallModel } from "../agent/agent.ts";
+import { FEWEST_HOPS, PROMPT_VARIANTS, promptHash } from "../agent/prompt.ts";
 import { CONTEXT_STRATEGIES, FULL_HISTORY } from "../agent/context.ts";
 import { buildModel, models } from "../models/models.ts";
 import { chat } from "../models/openrouter.ts";
@@ -14,7 +16,7 @@ import { gitState, openTrace } from "../agent/trace.ts";
 import { snapshotLinks } from "../wikipedia/snapshot.ts";
 import { fetchLinks } from "../wikipedia/wikipedia.ts";
 
-const USAGE = 'Usage: npm run race-agent -- "Start page" "Target page" [--model <id>] [--max-cost <dollars>] [--context full]';
+const USAGE = 'Usage: npm run race-agent -- "Start page" "Target page" [--model <id>] [--max-cost <dollars>] [--context full] [--prompt fewest-hops]';
 
 // A safety net for this script, not the eval's --max-cost. It's checked
 // before each call, so the last call can go over by its own cost. Raise it
@@ -27,6 +29,7 @@ const { values, positionals } = parseArgs({
     model: { type: "string" },
     "max-cost": { type: "string" },
     context: { type: "string" },
+    prompt: { type: "string" },
   },
 });
 const [start, target] = positionals;
@@ -34,6 +37,8 @@ const model = values.model === undefined ? buildModel : models.find((candidate) 
 const maxCost = values["max-cost"] === undefined ? DEFAULT_MAX_COST : Number(values["max-cost"]);
 const contextName = values.context ?? FULL_HISTORY.name;
 const context = CONTEXT_STRATEGIES.find((strategy) => strategy.name === contextName);
+const promptName = values.prompt ?? FEWEST_HOPS.name;
+const prompt = PROMPT_VARIANTS.find((variant) => variant.name === promptName);
 if (!start || !target) {
   fail(USAGE);
 }
@@ -45,6 +50,9 @@ if (!(maxCost > 0)) {
 }
 if (!context) {
   fail(`--context must be one of: ${CONTEXT_STRATEGIES.map((strategy) => strategy.name).join(", ")}`);
+}
+if (!prompt) {
+  fail(`--prompt must be one of: ${PROMPT_VARIANTS.map((variant) => variant.name).join(", ")}`);
 }
 
 let spent = 0;
@@ -70,25 +78,27 @@ const callModel: CallModel = async (messages) => {
   return result;
 };
 
-const trace = openTrace("runs", `${model.id} ${context.name} ${start} ${target}`);
+const trace = openTrace("runs", `${model.id} ${context.name} ${prompt.name} ${start} ${target}`);
 trace.record({
   type: "run_start",
   model,
   start,
   target,
-  systemPrompt: SYSTEM_PROMPT,
-  promptHash: promptHash(),
+  systemPrompt: prompt.system,
+  promptHash: promptHash(prompt),
   ...gitState(),
   limits: RACE_LIMITS,
   contextStrategy: context.name,
+  promptVariant: prompt.name,
 });
 
-console.log(`${model.id} on ${model.provider}, context ${context.name}: "${start}" → "${target}", cap $${maxCost}\n`);
+console.log(`${model.id} on ${model.provider}, context ${context.name}, prompt ${prompt.name}: "${start}" → "${target}", cap $${maxCost}\n`);
 const result = await runAgent({
   start,
   target,
   callModel,
   getLinks: snapshotLinks("snapshot", fetchLinks),
+  prompt,
   context,
   maxTurns: RACE_LIMITS.maxTurns,
   maxContextChars: RACE_LIMITS.maxContextChars,

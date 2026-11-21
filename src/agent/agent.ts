@@ -2,11 +2,11 @@
 // results, repeat. The growing `messages` array is the agent's only memory;
 // a context strategy decides how much of it the model is shown each turn.
 
-import { createHash } from "node:crypto";
 import type { ContextStrategy } from "./context.ts";
+import { openingMessage, type PromptVariant } from "./prompt.ts";
 import { OpenRouterError, type AssistantMessage, type ChatResult, type Message } from "../models/openrouter.ts";
 import { currentPage, hops, startRace, type LinkSource, type Race } from "../race/race.ts";
-import { executeTool, toolDefinitions } from "../race/tools.ts";
+import { executeTool } from "../race/tools.ts";
 import type { Totals, TraceEvent } from "./trace.ts";
 
 /**
@@ -73,21 +73,6 @@ export const RACE_LIMITS = {
   maxOutputTokens: 2000,
 };
 
-/** The task and goal. Facts about the tools live in their descriptions. */
-export const SYSTEM_PROMPT = `You are playing a Wikipedia race. You start on one Wikipedia page and must reach the target page by following links, in as few hops as possible.`;
-/** The first user message; `{start}` and `{target}` are filled in per race. */
-const OPENING = `You are on "{start}". The target is "{target}".`;
-
-/**
- * A short hash of everything the model is told: system prompt, opening
- * message and tool definitions. It changes whenever any of them does, so
- * results are only compared between runs that saw the same prompt.
- */
-export function promptHash(): string {
-  const prompt = JSON.stringify({ system: SYSTEM_PROMPT, opening: OPENING, tools: toolDefinitions });
-  return createHash("sha256").update(prompt).digest("hex").slice(0, 12);
-}
-
 /** One race to run, and the limits it runs under. */
 export type RunOptions = {
   /** Start page title; redirects are resolved before the first turn. */
@@ -96,6 +81,8 @@ export type RunOptions = {
   target: string;
   callModel: CallModel;
   getLinks: LinkSource;
+  /** The system prompt the run starts with. */
+  prompt: PromptVariant;
   /** Turns the whole conversation into what the model is sent each turn. */
   context: ContextStrategy;
   /** Model calls allowed before the run ends as "turn_limit". */
@@ -124,8 +111,8 @@ export type RunOptions = {
 export async function runAgent(options: RunOptions): Promise<RunResult> {
   let race = await startRace(options.start, options.target, options.getLinks);
   const messages: Message[] = [
-    { role: "system", content: SYSTEM_PROMPT },
-    { role: "user", content: OPENING.replace("{start}", race.start).replace("{target}", race.target) },
+    { role: "system", content: options.prompt.system },
+    { role: "user", content: openingMessage(race.start, race.target) },
   ];
   const started = performance.now();
   const totals: Totals = { promptTokens: 0, cachedTokens: 0, completionTokens: 0, reasoningTokens: 0, cost: 0, durationMs: 0 };

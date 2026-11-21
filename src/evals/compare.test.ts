@@ -4,6 +4,7 @@ import { checkComparable, evalLabel, rankEvals } from "./compare.ts";
 import { fakeEval, fakeRace, givingUpModel, pathModel, winningModel } from "./fake-eval.ts";
 import { loadEval } from "./report.ts";
 import type { CallModel } from "../agent/agent.ts";
+import { SCORING_RULE } from "../agent/prompt.ts";
 import type { EvalOptions } from "./run-eval.ts";
 import { models } from "../models/models.ts";
 import type { Message } from "../models/openrouter.ts";
@@ -86,5 +87,12 @@ test("one model under two context strategies is two evals, ranked side by side",
   const full = await evalOf(wandering, { model: modelA });
   const other = await evalOf(winningModel(0.001), { model: modelA, context: masked });
   const ranked = rankEvals([full, other]);
-  assert.deepEqual(ranked.map((r) => evalLabel(r.eval)), [`${modelA.name} / masked`, `${modelA.name} / full`]);
+  assert.deepEqual(ranked.map((r) => evalLabel(r.eval)), [`${modelA.name} / masked / fewest-hops`, `${modelA.name} / full / fewest-hops`]);
+});
+
+test("one model under two prompt variants is two evals, comparable at one commit", async () => {
+  const fewestHops = await evalOf(wandering, { model: modelA });
+  const scoringRule = await evalOf(winningModel(0.001), { model: modelA, prompt: SCORING_RULE });
+  const ranked = rankEvals([fewestHops, scoringRule]);
+  assert.deepEqual(ranked.map((r) => evalLabel(r.eval)), [`${modelA.name} / full / scoring-rule`, `${modelA.name} / full / fewest-hops`]);
 });

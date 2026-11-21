@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { contextChars, runAgent, type CallModel, type RunOptions } from "./agent.ts";
+import { FEWEST_HOPS, SCORING_RULE } from "./prompt.ts";
 import { FULL_HISTORY, type ContextStrategy } from "./context.ts";
 import { fakeLinks } from "../wikipedia/fake-wikipedia.ts";
 import { OpenRouterError, type ChatResult, type Message } from "../models/openrouter.ts";
@@ -52,6 +53,7 @@ const race = (callModel: CallModel, options: Partial<RunOptions> = {}) =>
     target: "Albert Einstein",
     callModel,
     getLinks: fakeLinks,
+    prompt: FEWEST_HOPS,
     context: FULL_HISTORY,
     maxTurns: 10,
     maxContextChars: 330_000,
@@ -158,6 +160,12 @@ test("the context limit measures the view, not the record", async () => {
   const model = scriptedModel([{ calls: [go("Republic of Ireland")] }, { calls: [go("Einstein")] }]);
   const result = await race(model.callModel, { context: openingOnly, maxContextChars: 250 });
   assert.deepEqual(result.end, finished("won"));
+});
+
+test("the run starts with the prompt variant's system prompt", async () => {
+  const model = scriptedModel([{ calls: [go("Republic of Ireland")] }, { calls: [go("Einstein")] }]);
+  await race(model.callModel, { prompt: SCORING_RULE });
+  assert.deepEqual(model.seen[0]?.[0], { role: "system", content: SCORING_RULE.system });
 });
 
 test("context is counted in characters: message text plus tool call names and arguments", () => {

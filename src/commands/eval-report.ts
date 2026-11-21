@@ -28,7 +28,7 @@ const spent = runs.reduce<number | null>((sum, run) => {
 }, 0);
 
 console.log(`${model.id} on ${model.provider} (reasoning: ${reasoningLabel(model.reasoning)}) | context: ${manifest.contextStrategy}`);
-console.log(`commit ${manifest.gitCommit.slice(0, 7)} | prompt ${manifest.promptHash}`);
+console.log(`commit ${manifest.gitCommit.slice(0, 7)} | prompt ${manifest.promptVariant} (${manifest.promptHash})`);
 console.log(`limits: ${limits.maxTurns} turns, ${limits.maxContextChars.toLocaleString()} context chars, ${limits.maxOutputTokens.toLocaleString()} output tokens`);
 console.log(`stopped: ${manifest.stop ?? "never (killed, or still running)"}`);
 // A slot is one race and repeat; a crashed slot may have been re-run.

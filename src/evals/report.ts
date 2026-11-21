@@ -4,7 +4,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { EvalManifest, ManifestRun } from "./run-eval.ts";
-import { parseTrace, strategyName, type RunEndEvent, type RunStartEvent, type TraceLine } from "../agent/trace.ts";
+import { fillNames, parseTrace, type RunEndEvent, type RunStartEvent, type TraceLine } from "../agent/trace.ts";
 
 /** One run, as its trace tells it. */
 export type LoadedRun = ManifestRun & {
@@ -120,7 +120,7 @@ function parseManifest(value: unknown): EvalManifest {
   if (!Array.isArray(value.runs)) {
     throw bad("no runs");
   }
-  value.contextStrategy = strategyName(value.contextStrategy, "Malformed eval.json");
+  fillNames(value, "Malformed eval.json");
   for (const run of value.runs) {
     if (
       !isRecord(run) ||

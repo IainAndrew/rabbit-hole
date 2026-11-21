@@ -35,16 +35,18 @@ export type Ranked = {
   vsNext: Interval | null;
 };
 
-/** Names an eval by what it measures: the model and the context strategy. */
+/** Names an eval by what it measures: the model, the context strategy and the prompt. */
 export function evalLabel(loaded: LoadedEval): string {
-  return `${loaded.manifest.model.name} / ${loaded.manifest.contextStrategy}`;
+  const { manifest } = loaded;
+  return `${manifest.model.name} / ${manifest.contextStrategy} / ${manifest.promptVariant}`;
 }
 
 /**
- * Check every eval was run with the same prompt, races, repeats, limits and
- * code, so a difference in score comes from the model or the context
- * strategy, not the setup. Every
- * model gets the same number of runs, the floor and ceiling included.
+ * Check every eval was run with the same races, repeats, limits and code, so
+ * a difference in score comes from the model, the context strategy or the
+ * prompt variant, not the setup. Prompts may differ only as named variants:
+ * at one commit, a variant's name fixes its text. Every model gets the same
+ * number of runs, the floor and ceiling included.
  *
  * @throws Naming the first eval that differs from the first one, and how.
  */
@@ -56,7 +58,6 @@ export function checkComparable(evals: LoadedEval[]): void {
   const describe = (loaded: LoadedEval) => {
     const { manifest } = loaded;
     return {
-      prompt: manifest.promptHash,
       commit: manifest.gitCommit,
       limits: JSON.stringify(manifest.limits),
       races: manifest.races.map((race) => race.id).sort().join(", "),

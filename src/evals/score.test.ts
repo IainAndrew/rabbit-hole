@@ -36,6 +36,7 @@ function run(
       gitDirty: false,
       limits: { maxTurns: 30, maxContextChars: 330_000, maxOutputTokens: 2000 },
       contextStrategy: "full",
+      promptVariant: "fewest-hops",
     },
     end:
       ending === "killed"

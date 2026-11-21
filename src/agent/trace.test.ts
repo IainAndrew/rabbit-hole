@@ -41,9 +41,10 @@ const runStart = {
   limits: { maxContextChars: 330_000 },
 };
 
-test("a run_start from before context strategies is read as the full history", () => {
+test("a run_start from before strategies and variants is read as the full history and the fewest-hops prompt", () => {
   const [event] = parseTrace(JSON.stringify(runStart));
   assert.equal(event?.type === "run_start" && event.contextStrategy, "full");
+  assert.equal(event?.type === "run_start" && event.promptVariant, "fewest-hops");
   const [masked] = parseTrace(JSON.stringify({ ...runStart, contextStrategy: "masked" }));
   assert.equal(masked?.type === "run_start" && masked.contextStrategy, "masked");
   assert.throws(() => parseTrace(JSON.stringify({ ...runStart, contextStrategy: 3 })), /"contextStrategy" should be string/);

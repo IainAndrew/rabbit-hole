@@ -4,7 +4,8 @@
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { basename, join } from "node:path";
-import { promptHash, runAgent, SYSTEM_PROMPT, type CallModel } from "../agent/agent.ts";
+import { runAgent, type CallModel } from "../agent/agent.ts";
+import { promptHash, type PromptVariant } from "../agent/prompt.ts";
 import type { ContextStrategy } from "../agent/context.ts";
 import type { LinkSource } from "../race/race.ts";
 import type { RaceSpec } from "./race-set.ts";
@@ -48,6 +49,8 @@ export type EvalOptions = {
   maxCost: number;
   callModel: CallModel;
   getLinks: LinkSource;
+  /** The system prompt; part of what the eval measures. */
+  prompt: PromptVariant;
   /** What the model is shown each turn; part of what the eval measures. */
   context: ContextStrategy;
   limits: { maxTurns: number; maxContextChars: number; maxOutputTokens: number };
@@ -68,8 +71,10 @@ export type EvalOptions = {
  */
 export type EvalManifest = {
   model: Model;
-  /** The context strategy's name. An eval is one model under one strategy. */
+  /** The context strategy's name. An eval is one model, one strategy and one prompt. */
   contextStrategy: string;
+  /** The prompt variant's name; promptHash covers its text. */
+  promptVariant: string;
   promptHash: string;
   gitCommit: string;
   gitDirty: boolean;
@@ -142,17 +147,19 @@ export async function runEval(options: EvalOptions): Promise<{ stop: EvalStop; s
       model: options.model,
       start: race.start,
       target: race.target,
-      systemPrompt: SYSTEM_PROMPT,
+      systemPrompt: options.prompt.system,
       promptHash: manifest.promptHash,
       ...options.git,
       limits: options.limits,
       contextStrategy: options.context.name,
+      promptVariant: options.prompt.name,
     });
     const result = await runAgent({
       start: race.start,
       target: race.target,
       callModel: options.callModel,
       getLinks: options.getLinks,
+      prompt: options.prompt,
       context: options.context,
       maxTurns: options.limits.maxTurns,
       maxContextChars: options.limits.maxContextChars,
@@ -189,7 +196,8 @@ function freshManifest(options: EvalOptions): EvalManifest {
   return {
     model: options.model,
     contextStrategy: options.context.name,
-    promptHash: promptHash(),
+    promptVariant: options.prompt.name,
+    promptHash: promptHash(options.prompt),
     ...options.git,
     limits: options.limits,
     repeats: options.repeats,
@@ -209,8 +217,8 @@ function resumedManifest(previous: EvalManifest, options: EvalOptions): EvalMani
   if (previous.gitCommit !== options.git.gitCommit) {
     throw new Error(`The eval was made at commit ${previous.gitCommit}, this is ${options.git.gitCommit}: start a new eval`);
   }
-  if (previous.promptHash !== promptHash()) {
-    throw new Error("The prompt has changed since the eval was made: start a new eval");
+  if (previous.promptHash !== promptHash(options.prompt)) {
+    throw new Error(`The eval used the "${previous.promptVariant}" prompt (${previous.promptHash}), not this one: start a new eval`);
   }
   if (previous.model.id !== options.model.id) {
     throw new Error(`The eval is of ${previous.model.id}, not ${options.model.id}`);

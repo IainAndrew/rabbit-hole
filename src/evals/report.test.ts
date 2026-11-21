@@ -56,11 +56,13 @@ test("a malformed eval.json is refused", async () => {
   assert.throws(() => loadEval(dir), /Malformed eval.json: no plan/);
 });
 
-test("an eval.json from before context strategies is read as the full history", async () => {
+test("an eval.json from before strategies and variants is read as the full history and the fewest-hops prompt", async () => {
   const { dir, run } = fakeEval(winningModel(0.001));
   await run;
-  edit(dir, "eval.json", (text) => text.replace('"contextStrategy": "full",', ""));
-  assert.equal(loadEval(dir).manifest.contextStrategy, "full");
+  edit(dir, "eval.json", (text) => text.replace('"contextStrategy": "full",', "").replace('"promptVariant": "fewest-hops",', ""));
+  const { manifest } = loadEval(dir);
+  assert.equal(manifest.contextStrategy, "full");
+  assert.equal(manifest.promptVariant, "fewest-hops");
 });
 
 test("a trace made with another context strategy is refused", async () => {

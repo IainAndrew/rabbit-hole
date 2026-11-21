@@ -3,12 +3,13 @@
 // result points at a commit that describes it.
 // With --resume, picks up an unfinished eval instead: crashed, killed and
 // never-started runs, at the same commit.
-// Usage: npm run eval-model -- --model <id> --sweep <name> --max-cost <dollars> [--repeats 3] [--context full]
+// Usage: npm run eval-model -- --model <id> --sweep <name> --max-cost <dollars> [--repeats 3] [--context full] [--prompt fewest-hops]
 //        npm run eval-model -- --resume results/<sweep>/<eval> --max-cost <dollars>
 
 import { readFileSync } from "node:fs";
 import { parseArgs } from "node:util";
 import { RACE_LIMITS } from "../agent/agent.ts";
+import { FEWEST_HOPS, PROMPT_VARIANTS } from "../agent/prompt.ts";
 import { CONTEXT_STRATEGIES, FULL_HISTORY } from "../agent/context.ts";
 import { loadEval } from "../evals/report.ts";
 import { runEval, runsToDo } from "../evals/run-eval.ts";
@@ -20,7 +21,7 @@ import { chat } from "../models/openrouter.ts";
 import { snapshotLinks } from "../wikipedia/snapshot.ts";
 import { fetchLinks } from "../wikipedia/wikipedia.ts";
 
-const USAGE = `Usage: npm run eval-model -- --model <id> --sweep <name> --max-cost <dollars> [--repeats 3] [--context full]
+const USAGE = `Usage: npm run eval-model -- --model <id> --sweep <name> --max-cost <dollars> [--repeats 3] [--context full] [--prompt fewest-hops]
        npm run eval-model -- --resume results/<sweep>/<eval> --max-cost <dollars>`;
 
 const { values } = parseArgs({
@@ -31,13 +32,14 @@ const { values } = parseArgs({
     sweep: { type: "string" },
     resume: { type: "string" },
     context: { type: "string" },
+    prompt: { type: "string" },
   },
 });
 
-// A resumed eval keeps its own model, repeats, context strategy and folder.
+// A resumed eval keeps its own model, repeats, context strategy, prompt and folder.
 const previous = values.resume ? loadEval(values.resume) : undefined;
-if (previous && (values.model || values.repeats || values.sweep || values.context)) {
-  fail("--resume takes the model, repeats, context and sweep from the eval: leave out --model, --repeats, --context and --sweep");
+if (previous && (values.model || values.repeats || values.sweep || values.context || values.prompt)) {
+  fail("--resume takes the model, repeats, context, prompt and sweep from the eval: leave those flags out");
 }
 // Evals that belong together share a folder, so a reader can find a sweep.
 if (!previous && !/^[a-z0-9][a-z0-9-]*$/.test(values.sweep ?? "")) {
@@ -48,6 +50,8 @@ const maxCost = Number(values["max-cost"]);
 const repeats = previous?.manifest.repeats ?? Number(values.repeats ?? "3");
 const contextName = previous?.manifest.contextStrategy ?? values.context ?? FULL_HISTORY.name;
 const context = CONTEXT_STRATEGIES.find((strategy) => strategy.name === contextName);
+const promptName = previous?.manifest.promptVariant ?? values.prompt ?? FEWEST_HOPS.name;
+const prompt = PROMPT_VARIANTS.find((variant) => variant.name === promptName);
 if (!model) {
   fail(`--model must be one of: ${models.map((m) => m.id).join(", ")}`);
 }
@@ -61,6 +65,9 @@ if (!Number.isInteger(repeats) || repeats < 1) {
 if (!context) {
   fail(`--context must be one of: ${CONTEXT_STRATEGIES.map((strategy) => strategy.name).join(", ")}`);
 }
+if (!prompt) {
+  fail(`--prompt must be one of: ${PROMPT_VARIANTS.map((variant) => variant.name).join(", ")}`);
+}
 
 const git = gitState();
 if (git.gitDirty) {
@@ -70,12 +77,12 @@ if (git.gitDirty) {
 
 const races = parseRaceSet(JSON.parse(readFileSync("races.json", "utf8")));
 // Evals live in results/<sweep>/, committed by name when kept; runs/ is for dev races.
-// The strategy is in the name, so two evals of one model started together can't collide.
+// The strategy and prompt are in the name, so evals of one model started together can't collide.
 const stamp = new Date().toISOString().replaceAll(":", "-");
-const dir = values.resume ?? `results/${values.sweep}/${stamp}_${model.id.replaceAll("/", "-")}_${context.name}`;
+const dir = values.resume ?? `results/${values.sweep}/${stamp}_${model.id.replaceAll("/", "-")}_${context.name}_${prompt.name}`;
 const todo = runsToDo(races, repeats, previous?.runs ?? []).length;
 
-console.log(`${model.id} on ${model.provider}, context ${context.name}: ${todo} runs to do (${races.length} races × ${repeats}), cap $${maxCost}`);
+console.log(`${model.id} on ${model.provider}, context ${context.name}, prompt ${prompt.name}: ${todo} runs to do (${races.length} races × ${repeats}), cap $${maxCost}`);
 console.log(`${previous ? "Resuming" : "Writing to"} ${dir}\n`);
 
 const result = await runEval({
@@ -86,6 +93,7 @@ const result = await runEval({
   maxCost,
   callModel: (messages) => chat({ model, messages, tools: toolDefinitions, maxTokens: RACE_LIMITS.maxOutputTokens }),
   getLinks: snapshotLinks("snapshot", fetchLinks),
+  prompt,
   context,
   limits: RACE_LIMITS,
   git,

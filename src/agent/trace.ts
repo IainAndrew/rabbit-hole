@@ -5,6 +5,7 @@ import { execFileSync } from "node:child_process";
 import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { RunEnd } from "./agent.ts";
+import { FEWEST_HOPS } from "./prompt.ts";
 import { FULL_HISTORY } from "./context.ts";
 import type { Model } from "../models/models.ts";
 import type { ModelToolCall, Usage } from "../models/openrouter.ts";
@@ -32,6 +33,8 @@ export type RunStartEvent = {
   limits: { maxTurns: number; maxContextChars: number; maxOutputTokens: number };
   /** The context strategy's name: how much of the conversation the model saw each turn. */
   contextStrategy: string;
+  /** The prompt variant's name; systemPrompt is its text. */
+  promptVariant: string;
 };
 
 /** One call to the model and its full reply. */
@@ -210,27 +213,29 @@ function parseLine(line: string, number: number): TraceLine {
     }
   }
   if (event.type === "run_start") {
-    event.contextStrategy = strategyName(event.contextStrategy, `Trace line ${number}`);
+    fillNames(event, `Trace line ${number}`);
   }
   return event as TraceLine;
 }
 
 /**
- * A context strategy's name as read from a file. Traces and evals made before
- * strategies existed have none: those runs sent the whole conversation every
- * turn, which is the "full" strategy, so that's what they're read as.
+ * Fill in the context strategy and prompt variant names of a run_start or an
+ * eval.json read from a file, in place. Files made before these existed have
+ * none: those runs sent the whole conversation every turn under the
+ * fewest-hops prompt, so that's what they're read as.
  *
  * @param where Names the file or line, for the error message.
- * @throws If the name is there but isn't a string.
+ * @throws If a name is there but isn't a string.
  */
-export function strategyName(value: unknown, where: string): string {
-  if (value === undefined) {
-    return FULL_HISTORY.name;
+export function fillNames(value: Record<string, unknown>, where: string): void {
+  const defaults = { contextStrategy: FULL_HISTORY.name, promptVariant: FEWEST_HOPS.name };
+  for (const [field, fallback] of Object.entries(defaults)) {
+    if (value[field] === undefined) {
+      value[field] = fallback;
+    } else if (typeof value[field] !== "string") {
+      throw new Error(`${where}: "${field}" should be string`);
+    }
   }
-  if (typeof value !== "string") {
-    throw new Error(`${where}: "contextStrategy" should be string`);
-  }
-  return value;
 }
 
 /** True for any non-null object, so its fields can be read and checked. */
