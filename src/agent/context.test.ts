@@ -100,9 +100,11 @@ test("rebuilt state sends the system prompt and one message of facts", () => {
     [
       `You haven't looked up the links on "Guinness" yet.`,
       "",
+      "Your moves and lookups so far:",
+      "none yet",
+      "",
       `You are on "Guinness". The target is "Albert Einstein".`,
       "Path so far (0 hops): Guinness",
-      "Pages you have looked up: none yet",
     ].join("\n"),
   );
 });
@@ -120,7 +122,17 @@ test("rebuilt state shows last turn's results, the current page's links and move
   assert.ok(text.startsWith('Your last turn:\n\nmove_to {"page":"Albert Einstein"} returned:\nError:'));
   assert.ok(text.includes(guinnessLinks), "the current page's links, fetched two turns ago");
   assert.ok(!text.includes(irelandLinks), "other pages' lists aren't repeated");
-  assert.ok(text.includes("Pages you have looked up: Republic of Ireland, Guinness"));
+  assert.ok(
+    text.includes(
+      [
+        "Your moves and lookups so far:",
+        'turn 1: get_links "Republic of Ireland" → Links on "Republic of Ireland" (2):',
+        'turn 2: get_links "Guinness" → Links on "Guinness" (2):',
+        'turn 3: move_to "Albert Einstein" → Error: "Albert Einstein" is not a link on "Guinness".',
+      ].join("\n"),
+    ),
+    "one line per call, with no lists in it",
+  );
   assert.ok(text.endsWith('Moves already refused on "Guinness" (not links on it): Albert Einstein'));
   assert.ok(!text.includes("Stout must lead") && !text.includes("look around"));
 });
@@ -138,5 +150,5 @@ test("a move that works clears the refused moves and shows the new page", () => 
   const text = REBUILT_STATE.view(history, moved)[1]?.content ?? "";
   assert.ok(text.includes(irelandLinks));
   assert.ok(text.includes("Path so far (1 hops): Guinness > Republic of Ireland"));
-  assert.ok(!text.includes("refused"));
+  assert.ok(!text.includes("Moves already refused"));
 });

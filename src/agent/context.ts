@@ -64,11 +64,12 @@ export const MASKED: ContextStrategy = {
 /**
  * Rebuilt state: instead of the conversation, each turn the model gets one
  * fresh message written by the harness, holding facts only. What its last
- * turn's calls returned, the current page's links if it has fetched them,
- * then where it stands: page, target, path, pages looked up and moves refused
- * on this page. None of the model's own earlier words are sent, so it can't
- * build on a mistaken claim, but it can't keep a plan either. The facts come
- * last, where the model is most likely to heed them.
+ * turn's calls returned, the current page's links if it has fetched them, a
+ * log of every call so far (one line each, so it can see it's repeating
+ * itself), then where it stands: page, target, path and moves refused on this
+ * page. None of the model's own earlier words are sent, so it can't build on
+ * a mistaken claim, but it can't keep a plan either. The facts come last,
+ * where the model is most likely to heed them.
  */
 export const REBUILT_STATE: ContextStrategy = {
   name: "state",
@@ -86,9 +87,12 @@ function rebuildState(history: readonly Message[], race: Race): string {
   const here = currentPage(race);
   const calls = new Map<string, { name: string; arguments: string }>();
   const lists = new Map<string, string>();
+  const log: string[] = [];
   let refusedHere: string[] = [];
+  let turn = 0;
   for (const message of history) {
     if (message.role === "assistant") {
+      turn++;
       for (const call of message.tool_calls ?? []) {
         calls.set(call.id, call.function);
       }
@@ -101,6 +105,7 @@ function rebuildState(history: readonly Message[], race: Race): string {
     if (title !== null) {
       lists.set(title, message.content);
     }
+    log.push(logLine(turn, call, message.content));
     if (call?.name === "move_to" && message.content.startsWith("Error")) {
       refusedHere.push(pageArgument(call.arguments) ?? call.arguments);
     } else if (call?.name === "move_to") {
@@ -126,16 +131,26 @@ function rebuildState(history: readonly Message[], race: Race): string {
   if (!shownLastTurn) {
     sections.push(lists.get(here) ?? `You haven't looked up the links on "${here}" yet.`);
   }
-  const facts = [
-    `You are on "${here}". The target is "${race.target}".`,
-    `Path so far (${hops(race)} hops): ${race.path.join(" > ")}`,
-    `Pages you have looked up: ${lists.size > 0 ? [...lists.keys()].join(", ") : "none yet"}`,
-  ];
+  sections.push(`Your moves and lookups so far:\n${log.length > 0 ? log.join("\n") : "none yet"}`);
+  const facts = [`You are on "${here}". The target is "${race.target}".`, `Path so far (${hops(race)} hops): ${race.path.join(" > ")}`];
   if (refusedHere.length > 0) {
     facts.push(`Moves already refused on "${here}" (not links on it): ${refusedHere.join(", ")}`);
   }
   sections.push(facts.join("\n"));
   return sections.join("\n\n");
+}
+
+/**
+ * One line of REBUILT_STATE's log: the turn, the call, and the first line of
+ * what it returned (a list's header, a move's result, an error), never a list.
+ */
+function logLine(turn: number, call: { name: string; arguments: string } | undefined, result: string): string {
+  if (call === undefined) {
+    return `turn ${turn}: ${result.split("\n")[0]}`;
+  }
+  const page = pageArgument(call.arguments);
+  const target = page === null ? call.arguments : `"${page}"`;
+  return `turn ${turn}: ${call.name} ${target} → ${result.split("\n")[0]}`;
 }
 
 /**
