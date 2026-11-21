@@ -4,7 +4,7 @@
 
 import { outcomesByRace, rateInterval } from "../evals/intervals.ts";
 import { loadEval, type LoadedRun } from "../evals/report.ts";
-import { averagesOf, outcomeOf, scoreRuns, type Outcome, type Score } from "../evals/score.ts";
+import { averagesOf, behaviourOf, outcomeOf, scoreRuns, type Outcome, type Score } from "../evals/score.ts";
 import { reasoningLabel } from "../models/models.ts";
 
 const TIERS = ["easy", "medium", "hard"];
@@ -53,6 +53,15 @@ if (unresolved / manifest.plannedRuns > UNRELIABLE_SHARE) {
   console.log(`UNRELIABLE: ${unresolved} of ${manifest.plannedRuns} planned runs have no result. Resume the eval, or read why they crash.`);
 } else if (unresolved > 0) {
   console.log(`${unresolved} planned runs have no result (crashed or killed every time)`);
+}
+const behaviour = behaviourOf(runs);
+if (behaviour) {
+  const refused = behaviour.refusedMoveShare === null ? "-" : `${Math.round(behaviour.refusedMoveShare * 100)}%`;
+  const first = behaviour.meanFirstMoveTurn === null ? "-" : `turn ${behaviour.meanFirstMoveTurn.toFixed(1)}`;
+  console.log(
+    `Moves: ${refused} refused, first move at ${first} on average, ${behaviour.neverMoved} runs never moved` +
+      ` | cache served ${Math.round(behaviour.cachedShare * 100)}% of prompt tokens`,
+  );
 }
 console.log();
 

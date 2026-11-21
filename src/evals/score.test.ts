@@ -3,12 +3,15 @@ import assert from "node:assert/strict";
 import type { RunEnd } from "../agent/agent.ts";
 import { buildModel } from "../models/models.ts";
 import type { LoadedRun } from "./report.ts";
-import { averagesOf, outcomeOf, scoreRuns } from "./score.ts";
+import { averagesOf, behaviourOf, outcomeOf, scoreRuns } from "./score.ts";
 
 type Ending = "won" | "gave_up" | "turn_limit" | "crashed" | "killed";
 
 // A run built by hand: only the fields the scoring reads matter.
-function run(ending: Ending, numbers: { hops?: number; turns?: number; cost?: number | null } = {}): LoadedRun {
+function run(
+  ending: Ending,
+  numbers: { hops?: number; turns?: number; cost?: number | null; cached?: number; moves?: LoadedRun["moves"] } = {},
+): LoadedRun {
   let end: RunEnd;
   if (ending === "crashed") {
     end = { kind: "crashed", cause: "api_error", error: "boom" };
@@ -21,6 +24,7 @@ function run(ending: Ending, numbers: { hops?: number; turns?: number; cost?: nu
     difficulty: "medium",
     repeat: 1,
     trace: "a.jsonl",
+    moves: numbers.moves ?? { attempts: 2, refused: 0, firstTurn: 1 },
     start: {
       type: "run_start",
       model: buildModel,
@@ -44,7 +48,7 @@ function run(ending: Ending, numbers: { hops?: number; turns?: number; cost?: nu
             turns: numbers.turns ?? 5,
             totals: {
               promptTokens: 1000,
-              cachedTokens: 0,
+              cachedTokens: numbers.cached ?? 0,
               completionTokens: 0,
               reasoningTokens: 0,
               cost: numbers.cost === undefined ? 0.01 : numbers.cost,
@@ -84,4 +88,16 @@ test("averages cover decided runs, and one unknown cost makes the average unknow
   assert.deepEqual(averages, { turns: 6, promptTokens: 1000, cost: 0.01, seconds: 2 });
   assert.equal(averagesOf([run("won"), run("won", { cost: null })])?.cost, null);
   assert.equal(averagesOf([run("crashed")]), null);
+});
+
+test("behaviour pools moves and cached tokens over decided runs", () => {
+  const behaviour = behaviourOf([
+    run("won", { cached: 800, moves: { attempts: 3, refused: 1, firstTurn: 2 } }),
+    run("gave_up", { cached: 0, moves: { attempts: 1, refused: 1, firstTurn: null } }),
+    run("won", { cached: 400, moves: { attempts: 4, refused: 0, firstTurn: 4 } }),
+    run("crashed", { moves: { attempts: 9, refused: 9, firstTurn: null } }),
+  ]);
+  assert.deepEqual(behaviour, { refusedMoveShare: 2 / 8, meanFirstMoveTurn: 3, neverMoved: 1, cachedShare: 1200 / 3000 });
+  assert.equal(behaviourOf([run("crashed")]), null);
+  assert.equal(behaviourOf([run("gave_up", { moves: { attempts: 0, refused: 0, firstTurn: null } })])?.refusedMoveShare, null);
 });

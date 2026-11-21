@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { fakeEval, failingModel, winningModel } from "./fake-eval.ts";
+import { fakeEval, failingModel, pathModel, winningModel } from "./fake-eval.ts";
 import { loadEval } from "./report.ts";
 
 // Rewrite one file of an eval, to simulate a tampered or damaged eval.
@@ -68,4 +68,11 @@ test("a trace made with another context strategy is refused", async () => {
   await run;
   edit(dir, manifest().runs[1]!.trace, (text) => text.replace('"contextStrategy":"full"', '"contextStrategy":"masked"'));
   assert.throws(() => loadEval(dir), /made with context strategy masked, the eval with full/);
+});
+
+test("each run's moves are counted from its trace: attempts, refusals and the first that worked", async () => {
+  // From Guinness, "Einstein" isn't a link: refused at turn 1, then two moves win.
+  const { dir, run } = fakeEval(pathModel(["Einstein", "Republic of Ireland", "Einstein"], 0.001));
+  await run;
+  assert.deepEqual(loadEval(dir).runs[0]?.moves, { attempts: 3, refused: 1, firstTurn: 2 });
 });

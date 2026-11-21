@@ -6,7 +6,7 @@
 import type { EndReason } from "../agent/agent.ts";
 import { differenceInterval, outcomesByRace, rateInterval, type Interval } from "./intervals.ts";
 import type { LoadedEval } from "./report.ts";
-import { averagesOf, scoreRuns, type Averages, type Score } from "./score.ts";
+import { averagesOf, behaviourOf, scoreRuns, type Averages, type Behaviour, type Score } from "./score.ts";
 
 /** One eval's place in the ranking, and what's reported beside it. */
 export type Ranked = {
@@ -15,6 +15,8 @@ export type Ranked = {
   eval: LoadedEval;
   score: Score;
   averages: Averages | null;
+  /** How the runs moved and how much the cache served: why, not how well. */
+  behaviour: Behaviour | null;
   /**
    * Everything spent, crashed runs included, over the wins: what a win costs.
    * Null with no wins, or if any run's cost is unknown (a killed run has no
@@ -85,6 +87,7 @@ export function rankEvals(evals: LoadedEval[]): Ranked[] {
       outcomes,
       score: scoreRuns(loaded.runs),
       averages: averagesOf(loaded.runs),
+      behaviour: behaviourOf(loaded.runs),
       costPerWin: costPerWin(loaded),
       endReasons: endReasons(loaded),
       interval: rateInterval(outcomes),

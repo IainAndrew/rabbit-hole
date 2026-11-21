@@ -46,6 +46,27 @@ for (const entry of ranked) {
   console.log(`${evalLabel(entry.eval).padEnd(LABEL_WIDTH)}${counts}${String(entry.score.crashed).padEnd(9)}${entry.score.killed}`);
 }
 
+console.log("\nHow runs played, over decided runs: why a score is what it is, not part of it.");
+console.log("refused: moves the rules turned down, of all move attempts. first move: mean turn of the first move");
+console.log("that worked. never moved: runs with none. cached: prompt tokens served from the provider's cache.\n");
+console.log(`${"model / context".padEnd(LABEL_WIDTH)}${"refused".padEnd(10)}${"first move".padEnd(12)}${"never moved".padEnd(13)}cached`);
+for (const entry of ranked) {
+  console.log(evalLabel(entry.eval).padEnd(LABEL_WIDTH) + behaviourRow(entry));
+}
+
+/** An eval's move and cache numbers, or dashes with nothing decided. */
+function behaviourRow({ behaviour }: Ranked): string {
+  if (behaviour === null) {
+    return "-";
+  }
+  return (
+    (behaviour.refusedMoveShare === null ? "-" : percent(behaviour.refusedMoveShare)).padEnd(10) +
+    (behaviour.meanFirstMoveTurn === null ? "-" : `turn ${behaviour.meanFirstMoveTurn.toFixed(1)}`).padEnd(12) +
+    String(behaviour.neverMoved).padEnd(13) +
+    percent(behaviour.cachedShare)
+  );
+}
+
 /** One eval's rank, score, then what's reported beside it. */
 function rankRow(entry: Ranked): string {
   const { score, averages, eval: loaded } = entry;

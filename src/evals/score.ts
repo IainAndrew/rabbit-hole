@@ -36,6 +36,25 @@ export type Averages = {
   seconds: number;
 };
 
+/**
+ * How decided runs played, to explain a score rather than rank on it. Shares
+ * are pooled over all runs (total refused over total attempts, say), so a run
+ * with many moves weighs more than one with few.
+ */
+export type Behaviour = {
+  /** Refused moves over move attempts; null if no run tried to move. */
+  refusedMoveShare: number | null;
+  /** Mean turn of the first move that worked, over runs that moved; null if none did. */
+  meanFirstMoveTurn: number | null;
+  /** Runs that never made a move that worked. */
+  neverMoved: number;
+  /**
+   * Cached prompt tokens over all prompt tokens: how much the provider's cache
+   * served. A provider that doesn't report cached tokens counts as 0 here.
+   */
+  cachedShare: number;
+};
+
 /** How a run counts under the scoring rule. */
 export function outcomeOf(run: LoadedRun): Outcome {
   if (!run.end) {
@@ -76,6 +95,25 @@ export function averagesOf(runs: LoadedRun[]): Averages | null {
     promptTokens: mean(ends.map((end) => end.totals.promptTokens)),
     cost: known.length === costs.length ? mean(known) : null,
     seconds: mean(ends.map((end) => end.totals.durationMs / 1000)),
+  };
+}
+
+/** How the decided runs played; null if there are none. */
+export function behaviourOf(runs: LoadedRun[]): Behaviour | null {
+  const decided = runs.filter((run) => outcomeOf(run) === "won" || outcomeOf(run) === "lost");
+  if (decided.length === 0) {
+    return null;
+  }
+  const sum = (values: number[]) => values.reduce((total, value) => total + value, 0);
+  const attempts = sum(decided.map((run) => run.moves.attempts));
+  const firstTurns = decided.flatMap((run) => (run.moves.firstTurn === null ? [] : [run.moves.firstTurn]));
+  const ends = decidedEnds(decided);
+  const promptTokens = sum(ends.map((end) => end.totals.promptTokens));
+  return {
+    refusedMoveShare: attempts === 0 ? null : sum(decided.map((run) => run.moves.refused)) / attempts,
+    meanFirstMoveTurn: firstTurns.length === 0 ? null : mean(firstTurns),
+    neverMoved: decided.length - firstTurns.length,
+    cachedShare: promptTokens === 0 ? 0 : sum(ends.map((end) => end.totals.cachedTokens)) / promptTokens,
   };
 }
 

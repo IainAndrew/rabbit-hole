@@ -4,13 +4,24 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { EvalManifest, ManifestRun } from "./run-eval.ts";
-import { parseTrace, strategyName, type RunEndEvent, type RunStartEvent } from "../agent/trace.ts";
+import { parseTrace, strategyName, type RunEndEvent, type RunStartEvent, type TraceLine } from "../agent/trace.ts";
 
 /** One run, as its trace tells it. */
 export type LoadedRun = ManifestRun & {
   start: RunStartEvent;
   /** Null if the run was killed before it finished. */
   end: RunEndEvent | null;
+  moves: Moves;
+};
+
+/** How a run moved: the facts behind why it won or lost, not part of the score. */
+export type Moves = {
+  /** move_to calls that ran, legal or not. */
+  attempts: number;
+  /** Attempts the rules refused: not a link here, a red link, or bad arguments. */
+  refused: number;
+  /** The turn of the first move that worked; null if the run never moved. */
+  firstTurn: number | null;
 };
 
 /** An eval read back: its manifest and its runs, in the order they ran. */
@@ -37,9 +48,26 @@ export function loadEval(dir: string): LoadedEval {
 
     const last = events.at(-1);
     const end = last?.type === "run_end" ? last : null;
-    return { ...run, start, end };
+    return { ...run, start, end, moves: movesOf(events) };
   });
   return { manifest, runs };
+}
+
+/** Count a run's move attempts from its tool calls. Calls that weren't run don't count. */
+export function movesOf(events: TraceLine[]): Moves {
+  const moves: Moves = { attempts: 0, refused: 0, firstTurn: null };
+  for (const event of events) {
+    if (event.type !== "tool_call" || event.name !== "move_to" || event.status === "not_run") {
+      continue;
+    }
+    moves.attempts++;
+    if (event.status === "error") {
+      moves.refused++;
+    } else if (moves.firstTurn === null) {
+      moves.firstTurn = event.turn;
+    }
+  }
+  return moves;
 }
 
 /**
