@@ -1,5 +1,6 @@
 // Compare evals: check they were run the same way, then rank them by the
-// scoring rule. Success rate decides, fewer hops on wins breaks ties, and
+// scoring rule. An eval is one model under one context strategy, so evals can
+// differ in either. Success rate decides, fewer hops on wins breaks ties, and
 // everything else (cost, tokens, time, how runs ended) is shown, not ranked on.
 
 import type { EndReason } from "../agent/agent.ts";
@@ -32,9 +33,15 @@ export type Ranked = {
   vsNext: Interval | null;
 };
 
+/** Names an eval by what it measures: the model and the context strategy. */
+export function evalLabel(loaded: LoadedEval): string {
+  return `${loaded.manifest.model.name} / ${loaded.manifest.contextStrategy}`;
+}
+
 /**
  * Check every eval was run with the same prompt, races, repeats, limits and
- * code, so a difference in score comes from the model, not the setup. Every
+ * code, so a difference in score comes from the model or the context
+ * strategy, not the setup. Every
  * model gets the same number of runs, the floor and ceiling included.
  *
  * @throws Naming the first eval that differs from the first one, and how.
@@ -60,8 +67,8 @@ export function checkComparable(evals: LoadedEval[]): void {
     for (const key of Object.keys(expected) as (keyof typeof expected)[]) {
       if (found[key] !== expected[key]) {
         throw new Error(
-          `${other.manifest.model.id} was run with ${key} ${found[key]}, ` +
-            `${first.manifest.model.id} with ${expected[key]}: they can't be compared`,
+          `${evalLabel(other)} was run with ${key} ${found[key]}, ` +
+            `${evalLabel(first)} with ${expected[key]}: they can't be compared`,
         );
       }
     }

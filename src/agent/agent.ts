@@ -1,14 +1,16 @@
 // The agent loop: call the model, run the tools it asks for, append the
-// results, repeat. The growing `messages` array is the agent's only memory.
+// results, repeat. The growing `messages` array is the agent's only memory;
+// a context strategy decides how much of it the model is shown each turn.
 
 import { createHash } from "node:crypto";
+import type { ContextStrategy } from "./context.ts";
 import { OpenRouterError, type AssistantMessage, type ChatResult, type Message } from "../models/openrouter.ts";
 import { currentPage, hops, startRace, type LinkSource, type Race } from "../race/race.ts";
 import { executeTool, toolDefinitions } from "../race/tools.ts";
 import type { Totals, TraceEvent } from "./trace.ts";
 
 /**
- * Sends the conversation so far and returns the model's reply. Passed in
+ * Sends this turn's messages and returns the model's reply. Passed in
  * rather than imported, so tests can script the model's replies.
  */
 export type CallModel = (messages: Message[]) => Promise<ChatResult>;
@@ -94,12 +96,15 @@ export type RunOptions = {
   target: string;
   callModel: CallModel;
   getLinks: LinkSource;
+  /** Turns the whole conversation into what the model is sent each turn. */
+  context: ContextStrategy;
   /** Model calls allowed before the run ends as "turn_limit". */
   maxTurns: number;
   /**
-   * Context size in characters (see `contextChars`): once the conversation is
-   * bigger than this after a turn's tools run, the run ends as
-   * "context_limit" rather than send it.
+   * Context size in characters (see `contextChars`): once the next turn's
+   * view is bigger than this after a turn's tools run, the run ends as
+   * "context_limit" rather than send it. It measures what the model would be
+   * shown, not the whole record.
    */
   maxContextChars: number;
   /**
@@ -133,10 +138,10 @@ export async function runAgent(options: RunOptions): Promise<RunResult> {
   const finished = (reason: EndReason, turns: number) => finish({ kind: "finished", reason }, turns);
 
   for (let turn = 1; turn <= options.maxTurns; turn++) {
-    const promptChars = contextChars(messages);
+    const view = options.context.view(messages);
     let reply: ChatResult;
     try {
-      reply = await options.callModel(messages);
+      reply = await options.callModel(view);
     } catch (err) {
       // Only API failures are crashes. Anything else is a bug: let it throw.
       if (!(err instanceof OpenRouterError)) {
@@ -149,7 +154,7 @@ export async function runAgent(options: RunOptions): Promise<RunResult> {
     options.record({
       type: "model_call",
       turn,
-      contextChars: promptChars,
+      contextChars: contextChars(view),
       provider: reply.provider,
       generationId: reply.generationId,
       attempts: reply.attempts,
@@ -203,7 +208,7 @@ export async function runAgent(options: RunOptions): Promise<RunResult> {
     }
     // Checked after the turn's tools run, so a winning move still counts. This
     // is the size of the next prompt.
-    if (contextChars(messages) > options.maxContextChars) {
+    if (contextChars(options.context.view(messages)) > options.maxContextChars) {
       return finished("context_limit", turn);
     }
   }

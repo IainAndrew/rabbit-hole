@@ -9,6 +9,7 @@
 import { readFileSync } from "node:fs";
 import { parseArgs } from "node:util";
 import { RACE_LIMITS } from "../agent/agent.ts";
+import { FULL_HISTORY } from "../agent/context.ts";
 import { loadEval } from "../evals/report.ts";
 import { runEval, runsToDo } from "../evals/run-eval.ts";
 import { parseRaceSet } from "../evals/race-set.ts";
@@ -78,6 +79,7 @@ const result = await runEval({
   maxCost,
   callModel: (messages) => chat({ model, messages, tools: toolDefinitions, maxTokens: RACE_LIMITS.maxOutputTokens }),
   getLinks: snapshotLinks("snapshot", fetchLinks),
+  context: FULL_HISTORY,
   limits: RACE_LIMITS,
   git,
   log: (line) => console.log(line),

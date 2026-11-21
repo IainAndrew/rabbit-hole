@@ -27,7 +27,7 @@ const spent = runs.reduce<number | null>((sum, run) => {
   return sum === null || cost === undefined || cost === null ? null : sum + cost;
 }, 0);
 
-console.log(`${model.id} on ${model.provider} (reasoning: ${reasoningLabel(model.reasoning)})`);
+console.log(`${model.id} on ${model.provider} (reasoning: ${reasoningLabel(model.reasoning)}) | context: ${manifest.contextStrategy}`);
 console.log(`commit ${manifest.gitCommit.slice(0, 7)} | prompt ${manifest.promptHash}`);
 console.log(`limits: ${limits.maxTurns} turns, ${limits.maxContextChars.toLocaleString()} context chars, ${limits.maxOutputTokens.toLocaleString()} output tokens`);
 console.log(`stopped: ${manifest.stop ?? "never (killed, or still running)"}`);

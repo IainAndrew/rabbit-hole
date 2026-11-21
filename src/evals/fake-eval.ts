@@ -5,6 +5,7 @@ import { mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { CallModel } from "../agent/agent.ts";
+import { FULL_HISTORY } from "../agent/context.ts";
 import { runEval, type EvalManifest, type EvalOptions } from "./run-eval.ts";
 import type { RaceSpec } from "./race-set.ts";
 import { buildModel } from "../models/models.ts";
@@ -65,6 +66,7 @@ export function fakeEval(callModel: CallModel, options: Partial<EvalOptions> = {
     maxCost: 1,
     callModel,
     getLinks: fakeLinks,
+    context: FULL_HISTORY,
     limits: { maxTurns: 5, maxContextChars: 330_000, maxOutputTokens: 100 },
     git: { gitCommit: "abc123", gitDirty: false },
     log: () => {},

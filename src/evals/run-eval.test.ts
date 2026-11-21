@@ -7,6 +7,7 @@ import { loadEval } from "./report.ts";
 import { runsToDo } from "./run-eval.ts";
 import { scoreRuns } from "./score.ts";
 import { parseTrace } from "../agent/trace.ts";
+import type { Message } from "../models/openrouter.ts";
 
 test("every race runs every repeat, all races once before any twice", async () => {
   const { dir, run, manifest } = fakeEval(winningModel(0.001));
@@ -98,4 +99,12 @@ test("an eval can't be resumed at another commit", async () => {
   await run;
   const resume = fakeEval(winningModel(0.001), { dir, previous: loadEval(dir), git: { gitCommit: "def456", gitDirty: false } });
   await assert.rejects(resume.run, /made at commit abc123, this is def456/);
+});
+
+test("an eval can't be resumed with another context strategy", async () => {
+  const { dir, run } = fakeEval(failingModel(503));
+  await run;
+  const masked = { name: "masked", view: (history: readonly Message[]) => [...history] };
+  const resume = fakeEval(winningModel(0.001), { dir, previous: loadEval(dir), context: masked });
+  await assert.rejects(resume.run, /used the "full" context strategy, not "masked"/);
 });

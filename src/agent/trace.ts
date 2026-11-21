@@ -5,6 +5,7 @@ import { execFileSync } from "node:child_process";
 import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { RunEnd } from "./agent.ts";
+import { FULL_HISTORY } from "./context.ts";
 import type { Model } from "../models/models.ts";
 import type { ModelToolCall, Usage } from "../models/openrouter.ts";
 
@@ -29,6 +30,8 @@ export type RunStartEvent = {
   gitDirty: boolean;
   /** maxOutputTokens caps one reply, reasoning included. */
   limits: { maxTurns: number; maxContextChars: number; maxOutputTokens: number };
+  /** The context strategy's name: how much of the conversation the model saw each turn. */
+  contextStrategy: string;
 };
 
 /** One call to the model and its full reply. */
@@ -36,7 +39,7 @@ export type ModelCallEvent = {
   type: "model_call";
   /** Counts from 1. A turn is one model call and the tool calls it asked for. */
   turn: number;
-  /** Size of the prompt sent, in characters, the measure the context limit uses. */
+  /** Size of the view sent, in characters, the measure the context limit uses. */
   contextChars: number;
   /** Which upstream provider OpenRouter routed the call to. */
   provider: string | null;
@@ -206,7 +209,28 @@ function parseLine(line: string, number: number): TraceLine {
       throw new Error(`Trace line ${number} (${event.type}): "${path}" should be ${kind}`);
     }
   }
+  if (event.type === "run_start") {
+    event.contextStrategy = strategyName(event.contextStrategy, `Trace line ${number}`);
+  }
   return event as TraceLine;
+}
+
+/**
+ * A context strategy's name as read from a file. Traces and evals made before
+ * strategies existed have none: those runs sent the whole conversation every
+ * turn, which is the "full" strategy, so that's what they're read as.
+ *
+ * @param where Names the file or line, for the error message.
+ * @throws If the name is there but isn't a string.
+ */
+export function strategyName(value: unknown, where: string): string {
+  if (value === undefined) {
+    return FULL_HISTORY.name;
+  }
+  if (typeof value !== "string") {
+    throw new Error(`${where}: "contextStrategy" should be string`);
+  }
+  return value;
 }
 
 /** True for any non-null object, so its fields can be read and checked. */

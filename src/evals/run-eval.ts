@@ -5,6 +5,7 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { basename, join } from "node:path";
 import { promptHash, runAgent, SYSTEM_PROMPT, type CallModel } from "../agent/agent.ts";
+import type { ContextStrategy } from "../agent/context.ts";
 import type { LinkSource } from "../race/race.ts";
 import type { RaceSpec } from "./race-set.ts";
 import type { LoadedEval, LoadedRun } from "./report.ts";
@@ -47,6 +48,8 @@ export type EvalOptions = {
   maxCost: number;
   callModel: CallModel;
   getLinks: LinkSource;
+  /** What the model is shown each turn; part of what the eval measures. */
+  context: ContextStrategy;
   limits: { maxTurns: number; maxContextChars: number; maxOutputTokens: number };
   /** Recorded in every trace; passed in so tests don't depend on the repo. */
   git: { gitCommit: string; gitDirty: boolean };
@@ -65,6 +68,8 @@ export type EvalOptions = {
  */
 export type EvalManifest = {
   model: Model;
+  /** The context strategy's name. An eval is one model under one strategy. */
+  contextStrategy: string;
   promptHash: string;
   gitCommit: string;
   gitDirty: boolean;
@@ -141,12 +146,14 @@ export async function runEval(options: EvalOptions): Promise<{ stop: EvalStop; s
       promptHash: manifest.promptHash,
       ...options.git,
       limits: options.limits,
+      contextStrategy: options.context.name,
     });
     const result = await runAgent({
       start: race.start,
       target: race.target,
       callModel: options.callModel,
       getLinks: options.getLinks,
+      context: options.context,
       maxTurns: options.limits.maxTurns,
       maxContextChars: options.limits.maxContextChars,
       record: trace.record,
@@ -181,6 +188,7 @@ export async function runEval(options: EvalOptions): Promise<{ stop: EvalStop; s
 function freshManifest(options: EvalOptions): EvalManifest {
   return {
     model: options.model,
+    contextStrategy: options.context.name,
     promptHash: promptHash(),
     ...options.git,
     limits: options.limits,
@@ -206,6 +214,9 @@ function resumedManifest(previous: EvalManifest, options: EvalOptions): EvalMani
   }
   if (previous.model.id !== options.model.id) {
     throw new Error(`The eval is of ${previous.model.id}, not ${options.model.id}`);
+  }
+  if (previous.contextStrategy !== options.context.name) {
+    throw new Error(`The eval used the "${previous.contextStrategy}" context strategy, not "${options.context.name}"`);
   }
   return { ...previous, maxCost: previous.maxCost + options.maxCost, stop: null };
 }

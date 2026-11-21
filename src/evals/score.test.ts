@@ -31,6 +31,7 @@ function run(ending: Ending, numbers: { hops?: number; turns?: number; cost?: nu
       gitCommit: "c",
       gitDirty: false,
       limits: { maxTurns: 30, maxContextChars: 330_000, maxOutputTokens: 2000 },
+      contextStrategy: "full",
     },
     end:
       ending === "killed"

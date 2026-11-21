@@ -28,3 +28,23 @@ test("says which line is broken and why", () => {
     /line 1 \(run_end\): "totals.promptTokens" should be number/,
   );
 });
+
+const runStart = {
+  t: 0,
+  type: "run_start",
+  model: { id: "m" },
+  start: "Guinness",
+  target: "Albert Einstein",
+  promptHash: "p",
+  gitCommit: "c",
+  gitDirty: false,
+  limits: { maxContextChars: 330_000 },
+};
+
+test("a run_start from before context strategies is read as the full history", () => {
+  const [event] = parseTrace(JSON.stringify(runStart));
+  assert.equal(event?.type === "run_start" && event.contextStrategy, "full");
+  const [masked] = parseTrace(JSON.stringify({ ...runStart, contextStrategy: "masked" }));
+  assert.equal(masked?.type === "run_start" && masked.contextStrategy, "masked");
+  assert.throws(() => parseTrace(JSON.stringify({ ...runStart, contextStrategy: 3 })), /"contextStrategy" should be string/);
+});

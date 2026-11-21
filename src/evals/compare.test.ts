@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { checkComparable, rankEvals } from "./compare.ts";
+import { checkComparable, evalLabel, rankEvals } from "./compare.ts";
 import { fakeEval, fakeRace, givingUpModel, pathModel, winningModel } from "./fake-eval.ts";
 import { loadEval } from "./report.ts";
 import type { CallModel } from "../agent/agent.ts";
 import type { EvalOptions } from "./run-eval.ts";
 import { models } from "../models/models.ts";
+import type { Message } from "../models/openrouter.ts";
 
 const modelA = models[0]!;
 const modelB = models[1]!;
@@ -78,4 +79,12 @@ test("evals made with different commits, limits, races or repeats are refused", 
   assert.throws(() => checkComparable([base, otherLimits]), /with limits .*"maxTurns":6/);
   assert.throws(() => checkComparable([base, otherRaces]), /with races a, c, .* with a, b/);
   assert.throws(() => checkComparable([base, otherRepeats]), /with repeats 1, .* with 2/);
+});
+
+test("one model under two context strategies is two evals, ranked side by side", async () => {
+  const masked = { name: "masked", view: (history: readonly Message[]) => [...history] };
+  const full = await evalOf(wandering, { model: modelA });
+  const other = await evalOf(winningModel(0.001), { model: modelA, context: masked });
+  const ranked = rankEvals([full, other]);
+  assert.deepEqual(ranked.map((r) => evalLabel(r.eval)), [`${modelA.name} / masked`, `${modelA.name} / full`]);
 });

@@ -4,6 +4,7 @@
 
 import { parseArgs } from "node:util";
 import { promptHash, RACE_LIMITS, runAgent, SYSTEM_PROMPT, type CallModel } from "../agent/agent.ts";
+import { FULL_HISTORY } from "../agent/context.ts";
 import { buildModel, models } from "../models/models.ts";
 import { chat } from "../models/openrouter.ts";
 import { hops } from "../race/race.ts";
@@ -72,6 +73,7 @@ trace.record({
   promptHash: promptHash(),
   ...gitState(),
   limits: RACE_LIMITS,
+  contextStrategy: FULL_HISTORY.name,
 });
 
 console.log(`${model.id} on ${model.provider}: "${start}" → "${target}", cap $${maxCost}\n`);
@@ -80,6 +82,7 @@ const result = await runAgent({
   target,
   callModel,
   getLinks: snapshotLinks("snapshot", fetchLinks),
+  context: FULL_HISTORY,
   maxTurns: RACE_LIMITS.maxTurns,
   maxContextChars: RACE_LIMITS.maxContextChars,
   record: trace.record,

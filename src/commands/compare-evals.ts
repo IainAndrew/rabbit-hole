@@ -1,11 +1,14 @@
-// Rank evals of different models against each other, from their manifests
-// and traces only. Refuses evals run with a different prompt, race set,
+// Rank evals of different models or context strategies against each other,
+// from their manifests and traces only. Refuses evals run with a different prompt, race set,
 // limits or commit. Free: reads files.
 // Usage: npm run compare-evals -- results/<sweep>/*
 
-import { rankEvals, type Ranked } from "../evals/compare.ts";
+import { evalLabel, rankEvals, type Ranked } from "../evals/compare.ts";
 import { withinNoise } from "../evals/intervals.ts";
 import { loadEval } from "../evals/report.ts";
+
+// Wide enough for the longest model name and a strategy name.
+const LABEL_WIDTH = 32;
 
 const dirs = process.argv.slice(2);
 if (dirs.length < 2) {
@@ -28,7 +31,7 @@ console.log("Ranked by success rate, then fewer hops on wins. The columns after 
 console.log("95%: the range the success rate could take by chance. vs next: the gap to the model below, in points,");
 console.log("with its 95% range; \"noise\" means the range includes 0, so the order may be chance.\n");
 console.log(
-  `${"#".padEnd(3)}${"model".padEnd(24)}${"runs".padEnd(10)}${"won".padEnd(12)}${"95%".padEnd(11)}${"hops".padEnd(6)}` +
+  `${"#".padEnd(3)}${"model / context".padEnd(LABEL_WIDTH)}${"runs".padEnd(10)}${"won".padEnd(12)}${"95%".padEnd(11)}${"hops".padEnd(6)}` +
     `${"vs next".padEnd(22)}${"cost/run".padEnd(10)}${"cost/win".padEnd(10)}${"tokens/run".padEnd(12)}${"turns".padEnd(7)}time/run`,
 );
 for (const entry of ranked) {
@@ -37,10 +40,10 @@ for (const entry of ranked) {
 
 console.log("\nHow runs ended (crashed and killed runs aren't counted in the score)\n");
 const reasons = Object.keys(ranked[0]!.endReasons) as (keyof Ranked["endReasons"])[];
-console.log(`${"model".padEnd(24)}${reasons.map((reason) => reason.padEnd(15)).join("")}crashed  killed`);
+console.log(`${"model / context".padEnd(LABEL_WIDTH)}${reasons.map((reason) => reason.padEnd(15)).join("")}crashed  killed`);
 for (const entry of ranked) {
   const counts = reasons.map((reason) => String(entry.endReasons[reason]).padEnd(15)).join("");
-  console.log(`${entry.eval.manifest.model.name.padEnd(24)}${counts}${String(entry.score.crashed).padEnd(9)}${entry.score.killed}`);
+  console.log(`${evalLabel(entry.eval).padEnd(LABEL_WIDTH)}${counts}${String(entry.score.crashed).padEnd(9)}${entry.score.killed}`);
 }
 
 /** One eval's rank, score, then what's reported beside it. */
@@ -51,7 +54,7 @@ function rankRow(entry: Ranked): string {
   const repeats = `${loaded.manifest.races.length}×${loaded.manifest.repeats}`;
   return (
     String(entry.rank).padEnd(3) +
-    loaded.manifest.model.name.padEnd(24) +
+    evalLabel(loaded).padEnd(LABEL_WIDTH) +
     repeats.padEnd(10) +
     `${score.won}/${score.decided} ${rate}`.padEnd(12) +
     (entry.interval ? `${percent(entry.interval.low)}–${percent(entry.interval.high)}` : "-").padEnd(11) +

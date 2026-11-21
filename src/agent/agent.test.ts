@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { contextChars, runAgent, type CallModel, type RunOptions } from "./agent.ts";
+import { FULL_HISTORY, type ContextStrategy } from "./context.ts";
 import { fakeLinks } from "../wikipedia/fake-wikipedia.ts";
 import { OpenRouterError, type ChatResult, type Message } from "../models/openrouter.ts";
 import type { TraceEvent } from "./trace.ts";
@@ -51,6 +52,7 @@ const race = (callModel: CallModel, options: Partial<RunOptions> = {}) =>
     target: "Albert Einstein",
     callModel,
     getLinks: fakeLinks,
+    context: FULL_HISTORY,
     maxTurns: 10,
     maxContextChars: 330_000,
     record: () => {},
@@ -133,6 +135,29 @@ test("a winning move still wins over the context limit", async () => {
   const result = await race(model.callModel, { maxContextChars: 350 });
   assert.deepEqual(result.end, finished("won"));
   assert.ok(contextChars(result.messages) > 350);
+});
+
+// A strategy that shows only the system prompt and the opening message, so
+// the view never grows however long the run gets.
+const openingOnly: ContextStrategy = { name: "opening-only", view: (history) => history.slice(0, 2) };
+
+test("the model is sent the strategy's view; the run keeps the whole record", async () => {
+  const model = scriptedModel([{ calls: [look("Guinness")] }, { calls: [go("Republic of Ireland")] }, { calls: [go("Einstein")] }]);
+  const events: TraceEvent[] = [];
+  const result = await race(model.callModel, { context: openingOnly, record: (event) => events.push(event) });
+
+  assert.deepEqual(result.end, finished("won"));
+  assert.ok(model.seen.every((sent) => sent.length === 2), "every turn was sent the view");
+  assert.equal(result.messages.length, 2 + 3 * 2, "the record has every reply and tool result");
+  const sizes = events.flatMap((event) => (event.type === "model_call" ? [event.contextChars] : []));
+  assert.deepEqual(sizes, [199, 199, 199], "the trace measures what was sent");
+});
+
+test("the context limit measures the view, not the record", async () => {
+  // The same run that hits a 250-character limit with the full history.
+  const model = scriptedModel([{ calls: [go("Republic of Ireland")] }, { calls: [go("Einstein")] }]);
+  const result = await race(model.callModel, { context: openingOnly, maxContextChars: 250 });
+  assert.deepEqual(result.end, finished("won"));
 });
 
 test("context is counted in characters: message text plus tool call names and arguments", () => {

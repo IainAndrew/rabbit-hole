@@ -4,7 +4,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { EvalManifest, ManifestRun } from "./run-eval.ts";
-import { parseTrace, type RunEndEvent, type RunStartEvent } from "../agent/trace.ts";
+import { parseTrace, strategyName, type RunEndEvent, type RunStartEvent } from "../agent/trace.ts";
 
 /** One run, as its trace tells it. */
 export type LoadedRun = ManifestRun & {
@@ -21,8 +21,8 @@ export type LoadedEval = { manifest: EvalManifest; runs: LoadedRun[] };
  *
  * @param dir The eval's directory, holding eval.json and its traces.
  * @throws If eval.json is malformed, a trace is missing or malformed, or a
- *   trace was made with a different model, prompt or commit, or with
- *   uncommitted code: such runs can't be compared.
+ *   trace was made with a different model, context strategy, prompt or
+ *   commit, or with uncommitted code: such runs can't be compared.
  */
 export function loadEval(dir: string): LoadedEval {
   const manifest = parseManifest(JSON.parse(readFileSync(join(dir, "eval.json"), "utf8")));
@@ -46,7 +46,8 @@ export function loadEval(dir: string): LoadedEval {
  * Check a run was made the same way as the rest of the eval.
  *
  * @param file The trace's file name, for error messages.
- * @throws If the model, prompt or commit differs, or the code was uncommitted.
+ * @throws If the model, context strategy, prompt or commit differs, or the
+ *   code was uncommitted.
  */
 function checkComparable(file: string, start: RunStartEvent, manifest: EvalManifest): void {
   const mismatch = (what: string, found: string, expected: string) => {
@@ -55,6 +56,9 @@ function checkComparable(file: string, start: RunStartEvent, manifest: EvalManif
 
   if (start.model.id !== manifest.model.id) {
     throw mismatch("model", start.model.id, manifest.model.id);
+  }
+  if (start.contextStrategy !== manifest.contextStrategy) {
+    throw mismatch("context strategy", start.contextStrategy, manifest.contextStrategy);
   }
   if (start.promptHash !== manifest.promptHash) {
     throw mismatch("prompt", start.promptHash, manifest.promptHash);
@@ -88,6 +92,7 @@ function parseManifest(value: unknown): EvalManifest {
   if (!Array.isArray(value.runs)) {
     throw bad("no runs");
   }
+  value.contextStrategy = strategyName(value.contextStrategy, "Malformed eval.json");
   for (const run of value.runs) {
     if (
       !isRecord(run) ||
