@@ -3,16 +3,20 @@
 // sent this turn (the view). The trace holds the record, never the view.
 
 import type { Message } from "../models/openrouter.ts";
+import { currentPage, hops, type Race } from "../race/race.ts";
+import { linksTitle, pageArgument } from "../race/tools.ts";
 
 /** Decides what the model sees each turn, from the whole conversation so far. */
 export type ContextStrategy = {
   /** Recorded in every trace and eval.json, so results say how they were made. */
   name: string;
   /**
-   * The messages to send this turn. Must depend only on `history`, so any
-   * turn's view can be rebuilt from the trace, and must not change it.
+   * The messages to send this turn. Must depend only on `history` and `race`,
+   * which the trace records, so any turn's view can be rebuilt from it; must
+   * not change either. A strategy only reshapes what the run has already
+   * shown the model: it never adds anything new, so the game stays the same.
    */
-  view: (history: readonly Message[]) => Message[];
+  view: (history: readonly Message[], race: Race) => Message[];
 };
 
 /** The baseline: send the whole conversation, as every run did before strategies existed. */
@@ -57,8 +61,82 @@ export const MASKED: ContextStrategy = {
   },
 };
 
+/**
+ * Rebuilt state: instead of the conversation, each turn the model gets one
+ * fresh message written by the harness, holding facts only. What its last
+ * turn's calls returned, the current page's links if it has fetched them,
+ * then where it stands: page, target, path, pages looked up and moves refused
+ * on this page. None of the model's own earlier words are sent, so it can't
+ * build on a mistaken claim, but it can't keep a plan either. The facts come
+ * last, where the model is most likely to heed them.
+ */
+export const REBUILT_STATE: ContextStrategy = {
+  name: "state",
+  view: (history, race) => {
+    // The system prompt stays; everything after it is replaced.
+    return [history[0]!, { role: "user", content: rebuildState(history, race) }];
+  },
+};
+
 /** Every strategy a run can use, by name. */
-export const CONTEXT_STRATEGIES: ContextStrategy[] = [FULL_HISTORY, MASKED];
+export const CONTEXT_STRATEGIES: ContextStrategy[] = [FULL_HISTORY, MASKED, REBUILT_STATE];
+
+/** Rebuild where the race stands from the run so far, as the text of the one message REBUILT_STATE sends. */
+function rebuildState(history: readonly Message[], race: Race): string {
+  const here = currentPage(race);
+  const calls = new Map<string, { name: string; arguments: string }>();
+  const lists = new Map<string, string>();
+  let refusedHere: string[] = [];
+  for (const message of history) {
+    if (message.role === "assistant") {
+      for (const call of message.tool_calls ?? []) {
+        calls.set(call.id, call.function);
+      }
+    }
+    if (message.role !== "tool") {
+      continue;
+    }
+    const call = calls.get(message.tool_call_id);
+    const title = linksTitle(message.content);
+    if (title !== null) {
+      lists.set(title, message.content);
+    }
+    if (call?.name === "move_to" && message.content.startsWith("Error")) {
+      refusedHere.push(pageArgument(call.arguments) ?? call.arguments);
+    } else if (call?.name === "move_to") {
+      // A move that worked starts a new page, with nothing refused on it yet.
+      refusedHere = [];
+    }
+  }
+
+  const lastTurn = history.slice(history.findLastIndex((message) => message.role === "assistant") + 1);
+  const lastResults = lastTurn.flatMap((message) => {
+    if (message.role !== "tool") {
+      return [];
+    }
+    const call = calls.get(message.tool_call_id);
+    return [`${call?.name ?? "?"} ${call?.arguments ?? ""} returned:\n${message.content}`];
+  });
+  const shownLastTurn = lastTurn.some((message) => message.role === "tool" && linksTitle(message.content) === here);
+
+  const sections: string[] = [];
+  if (lastResults.length > 0) {
+    sections.push(`Your last turn:\n\n${lastResults.join("\n\n")}`);
+  }
+  if (!shownLastTurn) {
+    sections.push(lists.get(here) ?? `You haven't looked up the links on "${here}" yet.`);
+  }
+  const facts = [
+    `You are on "${here}". The target is "${race.target}".`,
+    `Path so far (${hops(race)} hops): ${race.path.join(" > ")}`,
+    `Pages you have looked up: ${lists.size > 0 ? [...lists.keys()].join(", ") : "none yet"}`,
+  ];
+  if (refusedHere.length > 0) {
+    facts.push(`Moves already refused on "${here}" (not links on it): ${refusedHere.join(", ")}`);
+  }
+  sections.push(facts.join("\n"));
+  return sections.join("\n\n");
+}
 
 /**
  * A get_links result cut to its header ("Links on "X" (312):"). An error is

@@ -138,7 +138,7 @@ export async function runAgent(options: RunOptions): Promise<RunResult> {
   const finished = (reason: EndReason, turns: number) => finish({ kind: "finished", reason }, turns);
 
   for (let turn = 1; turn <= options.maxTurns; turn++) {
-    const view = options.context.view(messages);
+    const view = options.context.view(messages, race);
     let reply: ChatResult;
     try {
       reply = await options.callModel(view);
@@ -208,7 +208,7 @@ export async function runAgent(options: RunOptions): Promise<RunResult> {
     }
     // Checked after the turn's tools run, so a winning move still counts. This
     // is the size of the next prompt.
-    if (contextChars(options.context.view(messages)) > options.maxContextChars) {
+    if (contextChars(options.context.view(messages, race)) > options.maxContextChars) {
       return finished("context_limit", turn);
     }
   }

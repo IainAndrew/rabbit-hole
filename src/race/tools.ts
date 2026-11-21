@@ -105,6 +105,7 @@ export async function executeTool(call: ToolCall, race: Race, getLinks: LinkSour
       }
       try {
         const result = await getLinks(page);
+        // linksTitle reads this first line back: keep the two in step.
         return success(`Links on "${result.title}" (${result.links.length}):\n${result.links.join("\n")}`);
       } catch (err) {
         if (err instanceof PageNotFoundError) {
@@ -153,6 +154,18 @@ export async function executeTool(call: ToolCall, race: Race, getLinks: LinkSour
     default:
       return mistake(`there is no tool called "${call.name}". Use get_links, move_to or give_up.`);
   }
+}
+
+/** The page a get_links result lists, from its first line; null for any other result, such as an error. */
+export function linksTitle(result: string): string | null {
+  const match = /^Links on "(.*)" \(\d+\):/.exec(result);
+  return match ? match[1]! : null;
+}
+
+/** A tool call's "page" argument as the model wrote it, or null if it has none. */
+export function pageArgument(json: string): string | null {
+  const args = parseArguments(json);
+  return args === null ? null : stringArg(args, "page");
 }
 
 /**

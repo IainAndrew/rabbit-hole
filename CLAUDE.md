@@ -63,8 +63,9 @@ Needs Node 24 or later. Copy `.env.example` to `.env` before anything that calls
 - `npm run race-agent -- "Start" "Target" [--model <id>] [--max-cost <dollars>] [--context full]`:
   a model (the build model by default) plays one race, printed turn by turn, and writes a
   trace to `runs/` (billed, stops at 30 turns or the cap, $0.05 by default). `--context`
-  picks what the model is shown each turn: `full` (everything) or `masked` (link lists
-  older than the last 2 turns cut to their header)
+  picks what the model is shown each turn: `full` (everything), `masked` (link lists
+  older than the last 2 turns cut to their header) or `state` (one fresh message of
+  facts each turn, none of the model's own words)
 - `npm run eval-model -- --model <id> --sweep <name> --max-cost <dollars> [--repeats 3] [--context full]`:
   run every race in `races.json` against one model and context strategy, writing traces and `eval.json` to
   `results/<sweep>/<eval>/`. Refuses uncommitted code; stops starting runs at the cap
