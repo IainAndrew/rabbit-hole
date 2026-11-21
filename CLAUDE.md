@@ -60,11 +60,13 @@ Needs Node 24 or later. Copy `.env.example` to `.env` before anything that calls
 - `npm run model-endpoints -- <model id>`: list every provider endpoint for one model:
   tier, precision, prices (and when they vary), uptime, caching, tools; marks the
   registry's pin (free)
-- `npm run race-agent -- "Start" "Target" [--model <id>] [--max-cost <dollars>]`: a
-  model (the build model by default) plays one race, printed turn by turn, and writes a
-  trace to `runs/` (billed, stops at 30 turns or the cap, $0.05 by default)
-- `npm run eval-model -- --model <id> --sweep <name> --max-cost <dollars> [--repeats 3]`:
-  run every race in `races.json` against one model, writing traces and `eval.json` to
+- `npm run race-agent -- "Start" "Target" [--model <id>] [--max-cost <dollars>] [--context full]`:
+  a model (the build model by default) plays one race, printed turn by turn, and writes a
+  trace to `runs/` (billed, stops at 30 turns or the cap, $0.05 by default). `--context`
+  picks what the model is shown each turn: `full` (everything) or `masked` (link lists
+  older than the last 2 turns cut to their header)
+- `npm run eval-model -- --model <id> --sweep <name> --max-cost <dollars> [--repeats 3] [--context full]`:
+  run every race in `races.json` against one model and context strategy, writing traces and `eval.json` to
   `results/<sweep>/<eval>/`. Refuses uncommitted code; stops starting runs at the cap
   (billed). With `--resume results/<sweep>/<eval> --max-cost <dollars>`, re-runs crashed
   runs and starts unstarted ones, at the same commit (billed). `results/README.md` lists

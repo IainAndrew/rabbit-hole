@@ -1,10 +1,11 @@
 // Run one race, print each turn as it happens, and write a trace to runs/.
-// Uses the build model unless --model names another from the registry. Billed.
-// Usage: npm run race-agent -- "Start page" "Target page" [--model <id>] [--max-cost <dollars>]
+// Uses the build model unless --model names another from the registry, and
+// sends the full history unless --context names another strategy. Billed.
+// Usage: npm run race-agent -- "Start page" "Target page" [--model <id>] [--max-cost <dollars>] [--context full]
 
 import { parseArgs } from "node:util";
 import { promptHash, RACE_LIMITS, runAgent, SYSTEM_PROMPT, type CallModel } from "../agent/agent.ts";
-import { FULL_HISTORY } from "../agent/context.ts";
+import { CONTEXT_STRATEGIES, FULL_HISTORY } from "../agent/context.ts";
 import { buildModel, models } from "../models/models.ts";
 import { chat } from "../models/openrouter.ts";
 import { hops } from "../race/race.ts";
@@ -13,7 +14,7 @@ import { gitState, openTrace } from "../agent/trace.ts";
 import { snapshotLinks } from "../wikipedia/snapshot.ts";
 import { fetchLinks } from "../wikipedia/wikipedia.ts";
 
-const USAGE = 'Usage: npm run race-agent -- "Start page" "Target page" [--model <id>] [--max-cost <dollars>]';
+const USAGE = 'Usage: npm run race-agent -- "Start page" "Target page" [--model <id>] [--max-cost <dollars>] [--context full]';
 
 // A safety net for this script, not the eval's --max-cost. It's checked
 // before each call, so the last call can go over by its own cost. Raise it
@@ -25,11 +26,14 @@ const { values, positionals } = parseArgs({
   options: {
     model: { type: "string" },
     "max-cost": { type: "string" },
+    context: { type: "string" },
   },
 });
 const [start, target] = positionals;
 const model = values.model === undefined ? buildModel : models.find((candidate) => candidate.id === values.model);
 const maxCost = values["max-cost"] === undefined ? DEFAULT_MAX_COST : Number(values["max-cost"]);
+const contextName = values.context ?? FULL_HISTORY.name;
+const context = CONTEXT_STRATEGIES.find((strategy) => strategy.name === contextName);
 if (!start || !target) {
   fail(USAGE);
 }
@@ -38,6 +42,9 @@ if (!model) {
 }
 if (!(maxCost > 0)) {
   fail("--max-cost must be a number of dollars above 0");
+}
+if (!context) {
+  fail(`--context must be one of: ${CONTEXT_STRATEGIES.map((strategy) => strategy.name).join(", ")}`);
 }
 
 let spent = 0;
@@ -63,7 +70,7 @@ const callModel: CallModel = async (messages) => {
   return result;
 };
 
-const trace = openTrace("runs", `${model.id} ${start} ${target}`);
+const trace = openTrace("runs", `${model.id} ${context.name} ${start} ${target}`);
 trace.record({
   type: "run_start",
   model,
@@ -73,16 +80,16 @@ trace.record({
   promptHash: promptHash(),
   ...gitState(),
   limits: RACE_LIMITS,
-  contextStrategy: FULL_HISTORY.name,
+  contextStrategy: context.name,
 });
 
-console.log(`${model.id} on ${model.provider}: "${start}" → "${target}", cap $${maxCost}\n`);
+console.log(`${model.id} on ${model.provider}, context ${context.name}: "${start}" → "${target}", cap $${maxCost}\n`);
 const result = await runAgent({
   start,
   target,
   callModel,
   getLinks: snapshotLinks("snapshot", fetchLinks),
-  context: FULL_HISTORY,
+  context,
   maxTurns: RACE_LIMITS.maxTurns,
   maxContextChars: RACE_LIMITS.maxContextChars,
   record: trace.record,
