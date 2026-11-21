@@ -7,3 +7,6 @@ SPEC.md
 
 # Traces from development races. Evals go to results/ and are committed by name.
 runs/
+
+# macOS Finder metadata
+.DS_Store
