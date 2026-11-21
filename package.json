@@ -9,7 +9,6 @@
   "scripts": {
     "typecheck": "tsc",
     "test": "node --test",
-    "wiki-links": "node src/commands/wiki-links.ts",
     "race-by-hand": "node src/commands/race-by-hand.ts",
     "list-models": "node src/commands/list-models.ts",
     "model-endpoints": "node src/commands/model-endpoints.ts",
