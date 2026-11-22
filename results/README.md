@@ -7,6 +7,7 @@ per run. Nothing here is edited by hand; reports are derived from the traces.
 
 | Sweep | What | Commit | Races | Status |
 |---|---|---|---|---|
+| [2026-11-22-prompts](2026-11-22-prompts/) | DeepSeek V4.1 Flash under prompt variants fewest-hops and scoring-rule, full history; 3 repeats | `d5a3ce7` | v2 | **Current** for prompt variants |
 | [2026-11-21-strategies](2026-11-21-strategies/) | DeepSeek V4.1 Flash and Mistral Small 4, each with context strategies full, masked and state; 3 repeats | `3e279f3` | v2 | **Current** for context strategies |
 | [2026-11-20-sweep-v2](2026-11-20-sweep-v2/) | 10 models, 3 repeats | `f45aba7` | v2: 25 races, tiers from distance and target backlinks | **Current** for models |
 | [2026-11-19-sweep-v1](2026-11-19-sweep-v1/) | 10 models, 3 repeats | `965433c` | v1: 21 races, tiers from 2-hop routes | Superseded: too easy to separate the top models |
