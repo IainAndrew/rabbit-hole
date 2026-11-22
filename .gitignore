@@ -3,6 +3,7 @@ node_modules/
 
 # Private working notes
 CLAUDE.local.md
+FINDINGS.local.md
 SPEC.md
 
 # Traces from development races. Evals go to results/ and are committed by name.
