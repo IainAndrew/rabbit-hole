@@ -13,6 +13,7 @@ import {
   type RaceOutcomes,
 } from "./intervals.ts";
 import type { LoadedEval } from "./report.ts";
+import { permutationP } from "./significance.ts";
 import { averagesOf, behaviourOf, scoreRuns, type Averages, type Behaviour, type Score } from "./score.ts";
 
 /** One eval's place in the ranking, and what's reported beside it. */
@@ -40,6 +41,12 @@ export type Ranked = {
    * the order stands, but it isn't evidence that one model is better.
    */
   vsNext: Interval | null;
+  /**
+   * The paired permutation test's p-value for the same gap: on these races,
+   * how likely a gap this big is if the two evals were the same. Null for the
+   * last eval.
+   */
+  vsNextP: number | null;
   /**
    * The ranks this eval could hold, given chance: best is 1 plus the evals
    * clearly better than it, worst is the count minus those clearly worse.
@@ -119,7 +126,8 @@ export function rankEvals(evals: LoadedEval[]): Ranked[] {
     const tied = previous !== undefined && compareScores(previous.score, entry.score) === 0;
     const next = entries[index + 1];
     const vsNext = next === undefined ? null : differenceInterval(outcomes, next.outcomes);
-    ranked.push({ ...entry, rank: tied ? previous.rank : index + 1, vsNext, rankRange: ranges[index]! });
+    const vsNextP = next === undefined ? null : permutationP(outcomes, next.outcomes);
+    ranked.push({ ...entry, rank: tied ? previous.rank : index + 1, vsNext, vsNextP, rankRange: ranges[index]! });
   }
   return ranked;
 }

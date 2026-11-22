@@ -63,6 +63,7 @@ export type BoardEntry = {
   score: Score;
   interval: Interval | null;
   vsNext: Interval | null;
+  vsNextP: number | null;
   averages: Averages | null;
   costPerWin: number | null;
   endReasons: Record<EndReason, number>;
@@ -122,6 +123,7 @@ function entryOf(entry: Ranked, folder: string): BoardEntry {
     score: entry.score,
     interval: entry.interval,
     vsNext: entry.vsNext,
+    vsNextP: entry.vsNextP,
     averages: entry.averages,
     costPerWin: entry.costPerWin,
     endReasons: entry.endReasons,

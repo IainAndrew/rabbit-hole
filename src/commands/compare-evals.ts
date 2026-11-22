@@ -29,11 +29,12 @@ console.log(
 
 console.log("Ranked by success rate, then fewer hops on wins. The columns after hops are reported, not ranked on.");
 console.log("95%: the range the success rate could take by chance. vs next: the gap to the model below, in points,");
-console.log("with its 95% range; \"noise\" means the range includes 0, so the order may be chance.");
+console.log("with its 95% range; \"noise\" means the range includes 0, so the order may be chance on new races.");
+console.log("p: the chance of a gap this big on these same races if the two were equal (paired permutation test).");
 console.log("could rank: every rank it can't be told apart from, comparing it with each other eval in the same way.\n");
 console.log(
   `${"#".padEnd(3)}${"could rank".padEnd(12)}${"model / context / prompt".padEnd(LABEL_WIDTH)}${"runs".padEnd(10)}${"won".padEnd(12)}${"95%".padEnd(11)}${"hops".padEnd(6)}` +
-    `${"vs next".padEnd(22)}${"cost/run".padEnd(10)}${"cost/win".padEnd(10)}${"tokens/run".padEnd(12)}${"turns".padEnd(7)}time/run`,
+    `${"vs next".padEnd(22)}${"p".padEnd(8)}${"cost/run".padEnd(10)}${"cost/win".padEnd(10)}${"tokens/run".padEnd(12)}${"turns".padEnd(7)}time/run`,
 );
 for (const entry of ranked) {
   console.log(rankRow(entry));
@@ -83,6 +84,7 @@ function rankRow(entry: Ranked): string {
     (entry.interval ? `${percent(entry.interval.low)}–${percent(entry.interval.high)}` : "-").padEnd(11) +
     hops.padEnd(6) +
     gap(entry).padEnd(22) +
+    (entry.vsNextP === null ? "-" : pValue(entry.vsNextP)).padEnd(8) +
     money(averages?.cost ?? null).padEnd(10) +
     money(entry.costPerWin).padEnd(10) +
     (averages ? Math.round(averages.promptTokens).toLocaleString() : "-").padEnd(12) +
@@ -109,6 +111,11 @@ function gap(entry: Ranked): string {
   };
   const range = `${points(score.successRate - next.score.successRate)} [${points(vsNext.low)}, ${points(vsNext.high)}]`;
   return withinNoise(vsNext) ? `${range} noise` : range;
+}
+
+/** A p-value to the precision 20,000 shuffles support: three places, or "<0.001". */
+function pValue(p: number): string {
+  return p < 0.001 ? "<0.001" : p.toFixed(3);
 }
 
 /** A rate from 0 to 1 as a whole percentage. */
