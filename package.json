@@ -19,7 +19,8 @@
     "race-distance": "node src/commands/race-distance.ts",
     "eval-model": "node --env-file=.env src/commands/eval-model.ts",
     "eval-report": "node src/commands/eval-report.ts",
-    "compare-evals": "node src/commands/compare-evals.ts"
+    "compare-evals": "node src/commands/compare-evals.ts",
+    "build-site": "node src/commands/build-site.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",

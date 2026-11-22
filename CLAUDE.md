@@ -82,6 +82,9 @@ Needs Node 24 or later. Copy `.env.example` to `.env` before anything that calls
   each success rate and on each gap to the next ("noise" if it could be chance), and cost
   per run and per win, tokens, turns, time, end reasons and how runs played beside it;
   refuses evals with a different prompt, race set, repeats, limits or commit (free)
+- `npm run build-site`: build the site's data from the current sweeps into
+  `site/data/leaderboards.json` (gitignored), ranked by the same code as
+  `compare-evals` (free)
 - `npm run replay-trace -- <trace>.jsonl`: replay a run from its trace, turn by turn
   (free)
 - `npm run measure-races`: measure each race's distance and its target's backlinks on
