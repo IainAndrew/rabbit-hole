@@ -3,6 +3,7 @@
 // computes a score: the build did that with the eval code.
 
 import { escapeHtml, formatNumber } from "./format.js";
+import { renderCostChart } from "./cost-chart.js";
 import { renderLeaderboard } from "./leaderboard.js";
 
 const REPO = "https://github.com/IainAndrew/rabbit-hole";
@@ -48,6 +49,7 @@ async function main() {
   const models = data.boards.find((board) => board.id === "models");
   renderLeaderboard(models, document.getElementById("model-board"));
   document.getElementById("model-board-source").innerHTML = sourceOf(models);
+  renderCostChart(models, document.getElementById("cost-chart"));
 }
 
 /** Where a board's numbers come from: its sweep folder and the commit it ran at. */
