@@ -201,3 +201,37 @@ function endReasons(loaded: LoadedEval): Record<EndReason, number> {
   }
   return counts;
 }
+
+/** How an eval differs from its baseline: the gap, its 95% range and its p. */
+export type BaselineGap = {
+  /** The baseline's label, e.g. "DeepSeek V4.1 Flash / full / fewest-hops". */
+  baseline: string;
+  /** Success rate minus the baseline's, from -1 to 1. */
+  gap: number;
+  /** Paired by race, like vsNext. */
+  interval: Interval | null;
+  p: number | null;
+};
+
+/**
+ * Compare an eval with its baseline: the same model run the usual way, so
+ * the gap is the effect of the one thing changed (a context strategy or a
+ * prompt). Paired by race, with the same range and test as vsNext.
+ *
+ * @returns Null if either eval has nothing decided.
+ */
+export function gapToBaseline(loaded: LoadedEval, baseline: LoadedEval): BaselineGap | null {
+  const rate = scoreRuns(loaded.runs).successRate;
+  const baseRate = scoreRuns(baseline.runs).successRate;
+  if (rate === null || baseRate === null) {
+    return null;
+  }
+  const outcomes = outcomesByRace(loaded.runs);
+  const baseOutcomes = outcomesByRace(baseline.runs);
+  return {
+    baseline: evalLabel(baseline),
+    gap: rate - baseRate,
+    interval: differenceInterval(outcomes, baseOutcomes),
+    p: permutationP(outcomes, baseOutcomes),
+  };
+}

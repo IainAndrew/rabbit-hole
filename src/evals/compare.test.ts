@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { checkComparable, evalLabel, rankEvals } from "./compare.ts";
+import { checkComparable, evalLabel, gapToBaseline, rankEvals } from "./compare.ts";
 import { fakeEval, fakeRace, givingUpModel, pathModel, winningModel } from "./fake-eval.ts";
 import { loadEval } from "./report.ts";
 import type { CallModel } from "../agent/agent.ts";
@@ -136,4 +136,15 @@ test("ties don't chain: a clear gap between first and last holds through a middl
       [0, { best: 2, worst: 3 }],
     ],
   );
+});
+
+test("a gap to the baseline is the difference in success rate, with its range and p", async () => {
+  const masked = { name: "masked", view: (history: readonly Message[]) => [...history] };
+  const baseline = await evalOf(givingUpModel(0.001), { model: modelA });
+  const better = await evalOf(winningModel(0.001), { model: modelA, context: masked });
+  const gap = gapToBaseline(better, baseline);
+  assert.equal(gap?.baseline, `${modelA.name} / full / fewest-hops`);
+  assert.equal(gap?.gap, 1);
+  assert.deepEqual(gap?.interval, { low: 1, high: 1 });
+  assert.ok(gap!.p! < 0.1);
 });
