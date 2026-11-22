@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rabbit Hole</title>
+  <meta name="description" content="AI agents play the Wikipedia game: ten models, 25 races, every run replayable.">
+  <link rel="icon" href="logo.webp">
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#top">
+      <img src="logo.webp" alt="" width="36" height="37">
+      <span>Rabbit Hole</span>
+    </a>
+    <nav aria-label="Sections">
+      <a href="#leaderboard">Leaderboard</a>
+      <a href="#replays">Replays</a>
+      <a href="#story">The story</a>
+      <a href="#method">Method</a>
+      <a href="https://github.com/IainAndrew/rabbit-hole">Code</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <img class="hero-logo" src="logo.webp" alt="A rabbit peeking out of a puzzle-piece globe" width="180" height="186">
+      <div>
+        <h1>Rabbit Hole</h1>
+        <p class="tagline">AI agents play the Wikipedia game.</p>
+        <p class="lede">
+          Each agent gets a start page and a target page, and has to get from one to the other by
+          following links. One twist: it can read any page's links for free. Only moves count.
+        </p>
+        <ol class="path" aria-label="An example race">
+          <li><span class="page start">Guinness</span></li>
+          <li><span class="page">Republic of Ireland</span></li>
+          <li><span class="page target">Albert Einstein</span></li>
+        </ol>
+        <dl class="facts">
+          <div><dt>models</dt><dd data-fact="models">–</dd></div>
+          <div><dt>races</dt><dd data-fact="races">–</dd></div>
+          <div><dt>repeats each</dt><dd data-fact="repeats">–</dd></div>
+          <div><dt>runs to replay</dt><dd data-fact="runs">–</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section id="how" aria-labelledby="how-title">
+      <h2 id="how-title">How a race works</h2>
+      <p>
+        The agent is a model in a loop with three tools. The rules are checked in code, not left to
+        the model: a move to a page that isn't linked from the current one is refused.
+      </p>
+      <div class="tools">
+        <article class="tool">
+          <h3><code>get_links(page)</code></h3>
+          <p>Read the links on any page. Free: as many as it likes, but every list fills its context.</p>
+        </article>
+        <article class="tool">
+          <h3><code>move_to(page)</code></h3>
+          <p>Follow a link from the current page. One hop. Reaching the target wins.</p>
+        </article>
+        <article class="tool">
+          <h3><code>give_up(reason)</code></h3>
+          <p>Stop. Counts as a loss.</p>
+        </article>
+      </div>
+      <p class="rule">
+        <strong>Scoring.</strong> Success rate decides the ranking. Fewer hops break ties. Cost,
+        tokens and time are shown beside it, not ranked on.
+      </p>
+      <p class="limits">
+        A run also ends at <span data-fact="maxTurns">–</span> turns, a context of
+        <span data-fact="maxContextChars">–</span> characters, or a reply of more than
+        <span data-fact="maxOutputTokens">–</span> output tokens, reasoning included.
+      </p>
+    </section>
+
+    <section id="leaderboard" aria-labelledby="leaderboard-title">
+      <h2 id="leaderboard-title">Leaderboard</h2>
+      <p class="not-built">Not built yet: the model leaderboard comes in the next step.</p>
+    </section>
+
+    <section id="replays" aria-labelledby="replays-title">
+      <h2 id="replays-title">Replays</h2>
+      <p class="not-built">Not built yet: every run, turn by turn.</p>
+    </section>
+
+    <section id="story" aria-labelledby="story-title">
+      <h2 id="story-title">Down the rabbit hole</h2>
+      <p class="not-built">Not built yet: one real loss, what caused it, and the fix.</p>
+    </section>
+
+    <section id="method" aria-labelledby="method-title">
+      <h2 id="method-title">Method</h2>
+      <p class="not-built">Not built yet: the races, the limits, and what is and isn't controlled.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Every number on this page is computed from the committed traces of real runs.</p>
+  </footer>
+</body>
+</html>

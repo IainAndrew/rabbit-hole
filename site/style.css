@@ -1,0 +1,292 @@
+/* Rabbit Hole: ink on paper, like the encyclopedia it races through, with one
+   accent for paths and links. Colours are tokens so dark mode is one block. */
+
+:root {
+  --paper: #fbfaf7;
+  --paper-raised: #ffffff;
+  --ink: #1c1b19;
+  --ink-soft: #5b5852;
+  --rule: #e2ded6;
+  --accent: #2f5bd3;
+  --accent-soft: #e8eefc;
+  --won: #2e7d4f;
+  --lost: #b3412e;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --measure: 46rem;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #151513;
+    --paper-raised: #1d1d1a;
+    --ink: #ecebe7;
+    --ink-soft: #a5a29b;
+    --rule: #33322e;
+    --accent: #8aa8ff;
+    --accent-soft: #1f2840;
+    --won: #6cc58f;
+    --lost: #f08a76;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 1.0625rem/1.6 var(--sans);
+}
+
+a {
+  color: var(--accent);
+}
+
+code {
+  font-family: var(--mono);
+  font-size: 0.92em;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--serif);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+h2 {
+  font-size: 1.75rem;
+  margin: 0 0 1rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1.5rem;
+  padding: 0.6rem max(1rem, calc((100% - 64rem) / 2));
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--rule);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.site-header nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.25rem;
+  font-size: 0.95rem;
+}
+
+.site-header nav a {
+  color: var(--ink-soft);
+  text-decoration: none;
+}
+
+.site-header nav a:hover {
+  color: var(--accent);
+}
+
+main {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+main > section {
+  padding: 3rem 0 1rem;
+  /* Clears the sticky header when a nav link jumps here. */
+  scroll-margin-top: 3.5rem;
+}
+
+main > section > p {
+  max-width: var(--measure);
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2.5rem;
+  align-items: center;
+  padding-top: 4rem;
+}
+
+.hero h1 {
+  font-size: clamp(2.5rem, 7vw, 4rem);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.tagline {
+  margin: 0.25rem 0 1rem;
+  font-family: var(--serif);
+  font-size: 1.4rem;
+  color: var(--ink-soft);
+}
+
+.lede {
+  max-width: 36rem;
+  margin: 0 0 1.5rem;
+}
+
+/* A race path: pages joined by arrows. Each arrow belongs to the page after
+   it, so a long path wraps with its arrows. Replays reuse it. */
+.path {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0 0 1.75rem;
+  padding: 0;
+  list-style: none;
+}
+
+.path li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.path li + li::before {
+  content: "→";
+  color: var(--ink-soft);
+}
+
+.path .page {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: var(--paper-raised);
+  font-family: var(--serif);
+}
+
+.path .start,
+.path .target {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 2.5rem;
+  margin: 0;
+}
+
+.facts dd {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 2rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.facts dt {
+  order: 2;
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+
+.facts div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.tools {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.tool {
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  background: var(--paper-raised);
+}
+
+.tool h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1rem;
+}
+
+.tool p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+}
+
+.rule {
+  padding-left: 1rem;
+  border-left: 3px solid var(--accent);
+}
+
+.limits {
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+}
+
+.not-built {
+  padding: 1.5rem;
+  border: 1px dashed var(--rule);
+  border-radius: 10px;
+  color: var(--ink-soft);
+  text-align: center;
+}
+
+.load-error {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  background: var(--lost);
+  color: var(--paper);
+  text-align: center;
+}
+
+.site-footer {
+  max-width: 64rem;
+  margin: 3rem auto 0;
+  padding: 1.5rem 1rem 3rem;
+  border-top: 1px solid var(--rule);
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 40rem) {
+  .hero {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding-top: 2rem;
+  }
+
+  .hero-logo {
+    width: 96px;
+    height: auto;
+  }
+
+  .facts dd {
+    font-size: 1.6rem;
+  }
+}

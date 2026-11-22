@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="logo.webp" alt="A rabbit peeking out of a puzzle-piece globe" width="220">
+  <img src="site/logo.webp" alt="A rabbit peeking out of a puzzle-piece globe" width="220">
 </p>
 
 <h1 align="center">Rabbit Hole</h1>
