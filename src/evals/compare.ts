@@ -4,7 +4,14 @@
 // everything else (cost, tokens, time, how runs ended) is shown, not ranked on.
 
 import type { EndReason } from "../agent/agent.ts";
-import { differenceInterval, outcomesByRace, rateInterval, type Interval } from "./intervals.ts";
+import {
+  differenceInterval,
+  outcomesByRace,
+  rateInterval,
+  withinNoise,
+  type Interval,
+  type RaceOutcomes,
+} from "./intervals.ts";
 import type { LoadedEval } from "./report.ts";
 import { averagesOf, behaviourOf, scoreRuns, type Averages, type Behaviour, type Score } from "./score.ts";
 
@@ -33,7 +40,16 @@ export type Ranked = {
    * the order stands, but it isn't evidence that one model is better.
    */
   vsNext: Interval | null;
+  /**
+   * The ranks this eval could hold, given chance: best is 1 plus the evals
+   * clearly better than it, worst is the count minus those clearly worse.
+   * "Clearly" means the paired 95% interval of the gap excludes 0.
+   */
+  rankRange: RankRange;
 };
+
+/** The best and worst rank an eval could hold; equal when its place is clear. */
+export type RankRange = { best: number; worst: number };
 
 /** Names an eval by what it measures: the model, the context strategy and the prompt. */
 export function evalLabel(loaded: LoadedEval): string {
@@ -96,15 +112,42 @@ export function rankEvals(evals: LoadedEval[]): Ranked[] {
   });
   entries.sort((a, b) => compareScores(a.score, b.score));
 
+  const ranges = rankRanges(entries.map((entry) => entry.outcomes));
   const ranked: Ranked[] = [];
   for (const [index, { outcomes, ...entry }] of entries.entries()) {
     const previous = ranked[index - 1];
     const tied = previous !== undefined && compareScores(previous.score, entry.score) === 0;
     const next = entries[index + 1];
     const vsNext = next === undefined ? null : differenceInterval(outcomes, next.outcomes);
-    ranked.push({ ...entry, rank: tied ? previous.rank : index + 1, vsNext });
+    ranked.push({ ...entry, rank: tied ? previous.rank : index + 1, vsNext, rankRange: ranges[index]! });
   }
   return ranked;
+}
+
+/**
+ * Each eval's rank range, from the paired gap between every two evals. A
+ * neighbour-only check would chain: A ties B, B ties C, so A "ties" C even
+ * when A is clearly better. Comparing every pair avoids that. Each gap is a
+ * 95% interval on its own, so with many evals a few clear gaps may be flukes.
+ */
+function rankRanges(outcomes: RaceOutcomes[]): RankRange[] {
+  const clearlyBetter = outcomes.map(() => 0);
+  const clearlyWorse = outcomes.map(() => 0);
+  for (let i = 0; i < outcomes.length; i++) {
+    for (let j = i + 1; j < outcomes.length; j++) {
+      const gap = differenceInterval(outcomes[i]!, outcomes[j]!);
+      if (gap === null || withinNoise(gap)) {
+        continue;
+      }
+      const [winner, loser] = gap.low > 0 ? [i, j] : [j, i];
+      clearlyWorse[winner]!++;
+      clearlyBetter[loser]!++;
+    }
+  }
+  return outcomes.map((_, index) => ({
+    best: 1 + clearlyBetter[index]!,
+    worst: outcomes.length - clearlyWorse[index]!,
+  }));
 }
 
 /**

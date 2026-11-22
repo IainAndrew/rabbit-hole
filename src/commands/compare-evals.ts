@@ -29,9 +29,10 @@ console.log(
 
 console.log("Ranked by success rate, then fewer hops on wins. The columns after hops are reported, not ranked on.");
 console.log("95%: the range the success rate could take by chance. vs next: the gap to the model below, in points,");
-console.log("with its 95% range; \"noise\" means the range includes 0, so the order may be chance.\n");
+console.log("with its 95% range; \"noise\" means the range includes 0, so the order may be chance.");
+console.log("could rank: every rank it can't be told apart from, comparing it with each other eval in the same way.\n");
 console.log(
-  `${"#".padEnd(3)}${"model / context / prompt".padEnd(LABEL_WIDTH)}${"runs".padEnd(10)}${"won".padEnd(12)}${"95%".padEnd(11)}${"hops".padEnd(6)}` +
+  `${"#".padEnd(3)}${"could rank".padEnd(12)}${"model / context / prompt".padEnd(LABEL_WIDTH)}${"runs".padEnd(10)}${"won".padEnd(12)}${"95%".padEnd(11)}${"hops".padEnd(6)}` +
     `${"vs next".padEnd(22)}${"cost/run".padEnd(10)}${"cost/win".padEnd(10)}${"tokens/run".padEnd(12)}${"turns".padEnd(7)}time/run`,
 );
 for (const entry of ranked) {
@@ -75,6 +76,7 @@ function rankRow(entry: Ranked): string {
   const repeats = `${loaded.manifest.races.length}×${loaded.manifest.repeats}`;
   return (
     String(entry.rank).padEnd(3) +
+    rankRange(entry).padEnd(12) +
     evalLabel(loaded).padEnd(LABEL_WIDTH) +
     repeats.padEnd(10) +
     `${score.won}/${score.decided} ${rate}`.padEnd(12) +
@@ -87,6 +89,11 @@ function rankRow(entry: Ranked): string {
     (averages ? averages.turns.toFixed(1) : "-").padEnd(7) +
     (averages ? `${averages.seconds.toFixed(1)} s` : "-")
   );
+}
+
+/** The ranks an eval could hold, as "2–5", or one number when its place is clear. */
+function rankRange({ rankRange: { best, worst } }: Ranked): string {
+  return best === worst ? String(best) : `${best}–${worst}`;
 }
 
 /** The gap to the next model in points, its 95% range, and whether it's noise. */

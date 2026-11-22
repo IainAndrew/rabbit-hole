@@ -96,3 +96,44 @@ test("one model under two prompt variants is two evals, comparable at one commit
   const ranked = rankEvals([fewestHops, scoringRule]);
   assert.deepEqual(ranked.map((r) => evalLabel(r.eval)), [`${modelA.name} / full / scoring-rule`, `${modelA.name} / full / fewest-hops`]);
 });
+
+/** Wins race a and gives up on race b: runs go a, b, a, b, so it alternates. */
+function winsRaceAOnly(): CallModel {
+  const win = winningModel(0.001);
+  const lose = givingUpModel(0.001);
+  let runs = -1;
+  return async (messages, ...rest) => {
+    if (!messages.some((message: Message) => message.role === "assistant")) {
+      runs++;
+    }
+    return runs % 2 === 0 ? win(messages, ...rest) : lose(messages, ...rest);
+  };
+}
+
+test("an eval's rank range spans every rank it can't be told apart from", async () => {
+  const ranked = rankEvals([
+    await evalOf(winningModel(0.001), { model: modelA }),
+    await evalOf(winningModel(0.001), { model: modelB }),
+    await evalOf(givingUpModel(0.001), { model: modelC }),
+  ]);
+  assert.deepEqual(
+    ranked.map((r) => r.rankRange),
+    [{ best: 1, worst: 2 }, { best: 1, worst: 2 }, { best: 3, worst: 3 }],
+  );
+});
+
+test("ties don't chain: a clear gap between first and last holds through a middle that ties both", async () => {
+  const ranked = rankEvals([
+    await evalOf(winningModel(0.001), { model: modelA }),
+    await evalOf(winsRaceAOnly(), { model: modelB }),
+    await evalOf(givingUpModel(0.001), { model: modelC }),
+  ]);
+  assert.deepEqual(
+    ranked.map((r) => [r.score.successRate, r.rankRange]),
+    [
+      [1, { best: 1, worst: 2 }],
+      [0.5, { best: 1, worst: 3 }],
+      [0, { best: 2, worst: 3 }],
+    ],
+  );
+});

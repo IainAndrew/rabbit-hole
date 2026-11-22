@@ -4,7 +4,7 @@
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
 import type { EndReason } from "../agent/agent.ts";
-import { rankEvals, type Ranked } from "../evals/compare.ts";
+import { rankEvals, type RankRange, type Ranked } from "../evals/compare.ts";
 import type { Interval } from "../evals/intervals.ts";
 import type { Difficulty, RaceSpec } from "../evals/race-set.ts";
 import { loadEval, type LoadedEval } from "../evals/report.ts";
@@ -53,6 +53,7 @@ export type SweepEval = { folder: string; loaded: LoadedEval };
 /** One eval's row: the ranking and everything reported beside it. */
 export type BoardEntry = {
   rank: number;
+  rankRange: RankRange;
   /** The eval's folder name inside the sweep, which the replays will use. */
   eval: string;
   model: { id: string; name: string; lab: string; provider: string; reasoning: string };
@@ -106,6 +107,7 @@ function entryOf(entry: Ranked, folder: string): BoardEntry {
   const { model, contextStrategy, promptVariant, promptHash } = entry.eval.manifest;
   return {
     rank: entry.rank,
+    rankRange: entry.rankRange,
     eval: folder,
     model: {
       id: model.id,
