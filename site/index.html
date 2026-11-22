@@ -7,7 +7,7 @@
   <meta name="description" content="AI agents play the Wikipedia game: ten models, 25 races, every run replayable.">
   <link rel="icon" href="logo.webp">
   <link rel="stylesheet" href="style.css">
-  <script src="app.js" defer></script>
+  <script type="module" src="app.js"></script>
 </head>
 <body>
   <header class="site-header">
@@ -81,7 +81,19 @@
 
     <section id="leaderboard" aria-labelledby="leaderboard-title">
       <h2 id="leaderboard-title">Leaderboard</h2>
-      <p class="not-built">Not built yet: the model leaderboard comes in the next step.</p>
+      <p>
+        <span data-fact="models">–</span> models from <span data-fact="labs">–</span> labs, all on the same races with the same prompt, tools and limits.
+        Most are cheap models, at roughly the same price. LFM-3 1.7B is the floor, a tiny open
+        model, and Claude Opus 5.5 the ceiling.
+      </p>
+      <p>
+        A success rate from <span data-fact="runsPerModel">–</span> runs is an estimate. The range beside it is where the rate could
+        land on another set of races like these. Where two ranges overlap, the order between
+        those models could be chance, so each rank also says which ranks the model could
+        really hold.
+      </p>
+      <div id="model-board"></div>
+      <p class="source" id="model-board-source"></p>
     </section>
 
     <section id="replays" aria-labelledby="replays-title">
