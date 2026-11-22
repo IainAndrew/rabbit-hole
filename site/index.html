@@ -17,6 +17,7 @@
     </a>
     <nav aria-label="Sections">
       <a href="#leaderboard">Leaderboard</a>
+      <a href="#context">Context</a>
       <a href="#replays">Replays</a>
       <a href="#story">The story</a>
       <a href="#method">Method</a>
@@ -110,6 +111,34 @@
           table above has them all.
         </figcaption>
       </figure>
+    </section>
+
+    <section id="context" aria-labelledby="context-title">
+      <h2 id="context-title">Changing what the model sees</h2>
+      <p>
+        A page can have over a thousand links, so the conversation grows fast. Two models that
+        lost often, DeepSeek V4.1 Flash and Mistral Small 4, ran the same races again with
+        each change below. Every other setting stayed the same, so each gap is the effect of
+        that one change.
+      </p>
+
+      <h3>Context strategies</h3>
+      <p>What the model is shown each turn. Its tools and rules are the same either way; only its view changes.</p>
+      <div id="strategies-board"></div>
+      <p class="source" id="strategies-board-source"></p>
+
+      <h3>The prompt</h3>
+      <p>The instructions, rewritten to say what counts as winning. Everything else in the prompt stayed the same.</p>
+      <div id="prompts-board"></div>
+      <p class="source" id="prompts-board-source"></p>
+
+      <p class="rule">
+        <strong>Reading the gaps.</strong> The range is where the gap could land on another set
+        of races like these; if it includes 0, the change may do nothing. The p-value asks a
+        narrower question: on these same races, how likely is a gap this big if the change did
+        nothing? A small p with a range touching 0 means the change helped here, but 25 races
+        can't say it would elsewhere.
+      </p>
     </section>
 
     <section id="replays" aria-labelledby="replays-title">

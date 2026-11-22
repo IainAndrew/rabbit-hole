@@ -71,6 +71,8 @@ export type BoardEntry = {
   context: string;
   prompt: string;
   promptHash: string;
+  /** The prompt's text, so the site quotes it rather than paraphrasing it. */
+  systemPrompt: string | null;
   score: Score;
   interval: Interval | null;
   vsNext: Interval | null;
@@ -160,6 +162,8 @@ function entryOf(entry: Ranked, folder: string, vsBaseline: BaselineGap | null):
     context: contextStrategy,
     prompt: promptVariant,
     promptHash,
+    // loadEval has checked every run had the same prompt.
+    systemPrompt: entry.eval.runs[0]?.start.systemPrompt ?? null,
     score: entry.score,
     interval: entry.interval,
     vsNext: entry.vsNext,

@@ -62,7 +62,7 @@ function rankRangeText({ best, worst }) {
  * The rate as a number and as a dot on a 0–100% track, with its interval as
  * a band behind the dot, so overlapping ranges show at a glance.
  */
-function successCell(score, interval) {
+export function successCell(score, interval) {
   if (score.successRate === null) {
     return "–";
   }
@@ -81,7 +81,7 @@ function successCell(score, interval) {
 }
 
 /** The losing end reasons with a count, largest first, or "none". */
-function lossesText(endReasons) {
+export function lossesText(endReasons) {
   const losses = Object.entries(LOSS_REASONS)
     .map(([reason, words]) => [endReasons[reason], words])
     .filter(([count]) => count > 0)
