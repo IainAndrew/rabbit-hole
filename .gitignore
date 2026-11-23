@@ -14,3 +14,6 @@ runs/
 
 # Site data, rebuilt from results/ by npm run build-site on every deploy.
 site/data/
+
+# Doc pages, rendered from docs/ by npm run build-site.
+site/docs/

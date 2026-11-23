@@ -738,3 +738,60 @@ blockquote {
   color: var(--ink-soft);
   font-size: 0.95rem;
 }
+
+/* Doc pages: the long write-ups, rendered from docs/ at build time. */
+.doc {
+  max-width: var(--measure);
+  padding-top: 2.5rem;
+  padding-bottom: 1rem;
+}
+
+.doc h1 {
+  margin: 0 0 1rem;
+  font-size: clamp(2rem, 6vw, 2.75rem);
+}
+
+.doc h2 {
+  margin-top: 2.5rem;
+  scroll-margin-top: 3.5rem;
+}
+
+.doc h3 {
+  margin: 1.75rem 0 0.5rem;
+  font-size: 1.2rem;
+  scroll-margin-top: 3.5rem;
+}
+
+.doc li + li {
+  margin-top: 0.3rem;
+}
+
+.doc code {
+  padding: 0.05rem 0.3rem;
+  border-radius: 4px;
+  background: var(--accent-soft);
+}
+
+/* Tables scroll inside their own width on a phone, never the page. */
+.doc table {
+  display: block;
+  max-width: 100%;
+  margin: 1.25rem 0;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.doc th,
+.doc td {
+  padding: 0.45rem 0.7rem;
+  border-bottom: 1px solid var(--rule);
+  text-align: left;
+  vertical-align: top;
+}
+
+.doc thead th {
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}

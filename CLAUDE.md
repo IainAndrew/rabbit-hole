@@ -49,7 +49,8 @@ before writing or changing code.
 
 Needs Node 24 or later. Copy `.env.example` to `.env` before anything that calls a model.
 
-- `npm install`: install dev dependencies (TypeScript and Node types only)
+- `npm install`: install dev dependencies (TypeScript, Node types, and `marked` for the
+  site's doc pages)
 - `npm run typecheck`: type-check everything in `src/`
 - `npm test`: run tests with Node's built-in runner (`*.test.ts` files)
 - `npm run race-by-hand -- "Start" "Target"`: play a race yourself by typing tool calls
@@ -83,8 +84,8 @@ Needs Node 24 or later. Copy `.env.example` to `.env` before anything that calls
   per run and per win, tokens, turns, time, end reasons and how runs played beside it;
   refuses evals with a different prompt, race set, repeats, limits or commit (free)
 - `npm run build-site`: build the site's data from the current sweeps into
-  `site/data/leaderboards.json` (gitignored), ranked by the same code as
-  `compare-evals` (free)
+  `site/data/` (leaderboards ranked by the same code as `compare-evals`, and a replay of
+  every run) and render each `docs/*.md` as a page in `site/docs/`; both gitignored (free)
 - `npm run serve-site`: serve `site/` at http://localhost:8765 to look at it locally
   (run `build-site` first; free)
 - `npm run replay-trace -- <trace>.jsonl`: replay a run from its trace, turn by turn

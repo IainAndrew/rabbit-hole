@@ -60,7 +60,7 @@ three times with full history and three times with masking
 Masking did what it promises: prompts shrank and the context-limit losses disappeared.
 The output-limit losses didn't. They kept happening, now in prompts a fraction of the
 size. Context size wasn't the cause. (The success gap, +4 points, is within noise: p =
-0.62.) Rebuilding the prompt from facts each turn did worse, 68%, and broke the other
+0.61.) Rebuilding the prompt from facts each turn did worse, 68%, and broke the other
 model we tried it on.
 
 ## The real cause: two goals, no order
