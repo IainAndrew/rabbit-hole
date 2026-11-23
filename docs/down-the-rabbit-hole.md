@@ -63,21 +63,21 @@ size. Context size wasn't the cause. (The success gap, +4 points, is within nois
 0.62.) Rebuilding the prompt from facts each turn did worse, 68%, and broke the other
 model we tried it on.
 
-## The real cause
+## The real cause: two goals, no order
 
-The system prompt said:
+The system prompt named both goals of the game:
 
 > You must reach the target page by following links, in as few hops as possible.
 
-But that isn't how the race is scored. Success decides; fewer hops only break ties
-between runs that both reach the target. The prompt told DeepSeek that hops mattered
-more than they do, and it took the instruction seriously: rather than take a 3-hop route,
-it spent its whole reply trying to prove no 2-hop route existed. With a 2,000-token
-limit on each reply, that proof never finished.
+Both count, but in order. A run that reaches the target beats one that doesn't, however
+many hops it takes; fewer hops only decide between runs that both get there. The prompt
+didn't say which comes first, and DeepSeek put hops first: rather than take a 3-hop
+route, it spent its whole reply trying to prove no 2-hop route existed. With a
+2,000-token limit on each reply, that proof never finished.
 
 ## The fix
 
-One sentence, stating the real scoring rule:
+One sentence, stating the order:
 
 > Reaching the target is what counts: fewer hops only break ties between runs that
 > reach it. Once you know a route, take it.
@@ -143,5 +143,5 @@ tokens on reasoning that gets cut off.
    weaker than its peers. The traces said it was finding routes and not taking them.
 2. **The obvious fix can be the wrong one.** Context growth was real and correlated
    with the failure. Shrinking it fixed a different failure and left this one alone.
-3. **Tell the model what you score.** The prompt asked for something slightly different
-   from what the eval measured, and a capable model optimised for the prompt.
+3. **Say which goal comes first.** The prompt named two goals and no order between them,
+   and a capable model picked an order of its own: not the one the eval scores by.
