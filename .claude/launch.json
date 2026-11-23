@@ -3,10 +3,10 @@
   "configurations": [
     {
       "name": "site",
-      "runtimeExecutable": "node",
+      "runtimeExecutable": "npm",
       "runtimeArgs": [
-        "-e",
-        "\nconst http = require(\"node:http\"), fs = require(\"node:fs\"), path = require(\"node:path\");\nconst root = path.resolve(\"site\");\nconst types = { \".html\": \"text/html\", \".css\": \"text/css\", \".js\": \"text/javascript\", \".json\": \"application/json\", \".webp\": \"image/webp\" };\nhttp.createServer((req, res) => {\n  const url = decodeURIComponent(new URL(req.url, \"http://x\").pathname);\n  let file = path.join(root, url.endsWith(\"/\") ? url + \"index.html\" : url);\n  if (!file.startsWith(root) || !fs.existsSync(file)) { res.writeHead(404); res.end(\"not found\"); return; }\n  res.writeHead(200, { \"content-type\": types[path.extname(file)] ?? \"application/octet-stream\" });\n  fs.createReadStream(file).pipe(res);\n}).listen(Number(process.env.PORT ?? 8765));\n"
+        "run",
+        "serve-site"
       ],
       "port": 8765
     }

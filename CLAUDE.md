@@ -85,6 +85,8 @@ Needs Node 24 or later. Copy `.env.example` to `.env` before anything that calls
 - `npm run build-site`: build the site's data from the current sweeps into
   `site/data/leaderboards.json` (gitignored), ranked by the same code as
   `compare-evals` (free)
+- `npm run serve-site`: serve `site/` at http://localhost:8765 to look at it locally
+  (run `build-site` first; free)
 - `npm run replay-trace -- <trace>.jsonl`: replay a run from its trace, turn by turn
   (free)
 - `npm run measure-races`: measure each race's distance and its target's backlinks on
