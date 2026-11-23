@@ -13,7 +13,11 @@ const ENDINGS = {
   refused: "Replied without a tool call",
 };
 
-/** Set up the picker in `container` and open the first eval's first run. */
+/**
+ * Set up the picker in `container` and open a run: the one the address names
+ * (#run=sweep/eval/race-rN), or else the first eval's first run. A link to
+ * such an address anywhere on the page opens that run.
+ */
 export function renderReplays(data, container) {
   container.innerHTML = `
     <label class="picker">Eval
@@ -22,11 +26,34 @@ export function renderReplays(data, container) {
     <div id="replay-grid" class="replay-grid"></div>
     <div id="replay-view" class="replay-view" aria-live="polite"></div>`;
   const select = container.querySelector("#replay-eval");
-  const showEval = () => {
-    showGrid(data, select.value).catch(showError);
+  const open = (wanted) => {
+    if (wanted !== null) {
+      select.value = wanted.evalPath;
+    }
+    showGrid(data, select.value, wanted).catch(showError);
   };
-  select.addEventListener("change", showEval);
-  showEval();
+  select.addEventListener("change", () => open(null));
+  const openFromAddress = () => {
+    const wanted = runInAddress(select);
+    if (wanted !== null) {
+      open(wanted);
+      document.getElementById("replays").scrollIntoView();
+    }
+    return wanted;
+  };
+  window.addEventListener("hashchange", openFromAddress);
+  if (openFromAddress() === null) {
+    open(null);
+  }
+}
+
+/** The run the address names, if it names one of the picker's evals; else null. */
+function runInAddress(select) {
+  const match = /^#run=([^/]+\/[^/]+)\/(.+)-r(\d+)$/.exec(decodeURIComponent(location.hash));
+  if (match === null || ![...select.options].some((option) => option.value === match[1])) {
+    return null;
+  }
+  return { evalPath: match[1], raceId: match[2], repeat: Number(match[3]) };
 }
 
 /** One board's evals as a group of options; each value is "sweep/eval". */
@@ -49,8 +76,11 @@ async function load(path) {
   return response.json();
 }
 
-/** Every race the eval ran, one row each, with a button per repeat; then open the first run. */
-async function showGrid(data, evalPath) {
+/**
+ * Every race the eval ran, one row each, with a button per repeat; then open
+ * the wanted run, or the first.
+ */
+async function showGrid(data, evalPath, wanted) {
   const runs = await load(`${evalPath}/index.json`);
   const grid = document.getElementById("replay-grid");
   grid.innerHTML = data.races
@@ -61,6 +91,7 @@ async function showGrid(data, evalPath) {
         .map(
           (run) =>
             `<button class="outcome ${run.outcome}" data-file="${escapeHtml(run.file)}"
+              data-race="${escapeHtml(run.raceId)}" data-repeat="${run.repeat}"
               aria-label="${escapeHtml(`${race.start} to ${race.target}, run ${run.repeat}: ${run.outcome}`)}">${run.repeat}</button>`,
         )
         .join("");
@@ -72,12 +103,19 @@ async function showGrid(data, evalPath) {
         </div>`;
     })
     .join("");
-  for (const button of grid.querySelectorAll("button")) {
+  const buttons = [...grid.querySelectorAll("button")];
+  for (const button of buttons) {
     button.addEventListener("click", () => {
+      // Put the run in the address, so it can be shared or linked to.
+      history.replaceState(null, "", `#run=${evalPath}/${button.dataset.race}-r${button.dataset.repeat}`);
       showRun(evalPath, button).catch(showError);
     });
   }
-  await showRun(evalPath, grid.querySelector("button"));
+  // A run that crashed and was re-run has two buttons: the later one is the counted run.
+  const named = buttons.filter(
+    (button) => wanted !== null && button.dataset.race === wanted.raceId && Number(button.dataset.repeat) === wanted.repeat,
+  );
+  await showRun(evalPath, named.at(-1) ?? buttons[0]);
 }
 
 /** Load one run's replay and show it, marking its button as the open one. */

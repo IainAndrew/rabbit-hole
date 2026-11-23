@@ -2,7 +2,7 @@
 // writes from the committed traces, and fills the page from it. Nothing here
 // computes a score: the build did that with the eval code.
 
-import { escapeHtml, formatNumber } from "./format.js";
+import { escapeHtml, formatNumber, percent } from "./format.js";
 import { renderCostChart } from "./cost-chart.js";
 import { renderExperiment } from "./experiments.js";
 import { renderLeaderboard } from "./leaderboard.js";
@@ -38,6 +38,25 @@ function factsOf(data) {
     maxTurns: models.limits.maxTurns,
     maxContextChars: models.limits.maxContextChars,
     maxOutputTokens: models.limits.maxOutputTokens,
+    ...fixFacts(data.boards.find((board) => board.id === "prompts")),
+  };
+}
+
+/** The story's before and after, from the prompt board: the original prompt against the fix. */
+function fixFacts(board) {
+  const before = board.entries.find((entry) => entry.vsBaseline === null);
+  const after = board.entries.find((entry) => entry.vsBaseline !== null);
+  const { p, interval } = after.vsBaseline;
+  const points = (rate) => `${rate > 0 ? "+" : ""}${Math.round(rate * 100)}`;
+  return {
+    fixRateBefore: percent(before.score.successRate),
+    fixRateAfter: percent(after.score.successRate),
+    fixOutputBefore: before.endReasons.output_limit,
+    fixOutputAfter: after.endReasons.output_limit,
+    fixCostBefore: `$${before.costPerWin.toFixed(4)}`,
+    fixCostAfter: `$${after.costPerWin.toFixed(4)}`,
+    fixP: p < 0.001 ? "< 0.001" : p.toFixed(3),
+    fixRange: `${points(interval.low)} and ${points(interval.high)}`,
   };
 }
 
