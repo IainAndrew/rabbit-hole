@@ -6,6 +6,7 @@ import { escapeHtml, formatNumber } from "./format.js";
 import { renderCostChart } from "./cost-chart.js";
 import { renderExperiment } from "./experiments.js";
 import { renderLeaderboard } from "./leaderboard.js";
+import { renderReplays } from "./replay.js";
 
 const REPO = "https://github.com/IainAndrew/rabbit-hole";
 
@@ -56,6 +57,7 @@ async function main() {
     renderExperiment(board, document.getElementById(`${id}-board`));
     document.getElementById(`${id}-board-source`).innerHTML = sourceOf(board);
   }
+  renderReplays(data, document.getElementById("replays-app"));
 }
 
 /** Where a board's numbers come from: its sweep folder and the commit it ran at. */

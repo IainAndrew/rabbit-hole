@@ -449,3 +449,177 @@ main > section > h3 {
   font-size: 0.9rem;
   font-weight: 600;
 }
+
+/* Replays: the run picker, the grid of outcomes, then one run turn by turn. */
+.picker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1.5rem 0 1rem;
+  font-weight: 600;
+}
+
+.picker select {
+  max-width: 100%;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: var(--paper-raised);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 400;
+}
+
+.replay-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: 0.25rem 1.5rem;
+  margin-bottom: 2rem;
+  font-size: 0.9rem;
+}
+
+.grid-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.3rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.grid-runs {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.outcome {
+  width: 1.7rem;
+  height: 1.7rem;
+  border: none;
+  border-radius: 6px;
+  color: var(--paper);
+  font: 600 0.8rem var(--sans);
+  cursor: pointer;
+}
+
+.outcome.won {
+  background: var(--won);
+}
+
+.outcome.lost {
+  background: var(--lost);
+}
+
+.outcome.crashed,
+.outcome.killed {
+  background: var(--ink-soft);
+}
+
+.outcome[aria-current] {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.replay-head h3 {
+  margin: 0 0 0.25rem;
+  font-size: 1.35rem;
+}
+
+.replay-ending {
+  margin: 0;
+  font-weight: 600;
+}
+
+.replay-ending.won {
+  color: var(--won);
+}
+
+.replay-ending.lost {
+  color: var(--lost);
+}
+
+.replay-view .path {
+  margin: 1rem 0 1.5rem;
+}
+
+.turns {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.turn {
+  padding: 1rem 0;
+  border-top: 1px solid var(--rule);
+}
+
+.turn-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.9rem;
+}
+
+.turn-number {
+  font-family: var(--serif);
+  font-weight: 600;
+}
+
+/* How full the context was this turn, against the limit that ends a run. */
+.context-bar {
+  position: relative;
+  width: 8rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--rule);
+  overflow: hidden;
+}
+
+.context-bar span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--accent);
+}
+
+.reasoning,
+.says {
+  max-width: var(--measure);
+  margin-top: 0.6rem;
+}
+
+.reasoning p,
+.says p {
+  margin: 0.15rem 0 0;
+  white-space: pre-wrap;
+  font-size: 0.92rem;
+}
+
+.reasoning p {
+  max-height: 14rem;
+  overflow-y: auto;
+  padding: 0.5rem 0.75rem;
+  border-left: 2px solid var(--rule);
+  color: var(--ink-soft);
+}
+
+.calls {
+  margin: 0.6rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.92rem;
+}
+
+.call {
+  padding: 0.2rem 0;
+  overflow-wrap: anywhere;
+}
+
+.call .result {
+  color: var(--ink-soft);
+}
+
+.call.error .result,
+.call.none {
+  color: var(--lost);
+}
