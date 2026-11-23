@@ -539,91 +539,6 @@ main > section > h3 {
   color: var(--lost);
 }
 
-.replay-view .path {
-  margin: 1rem 0 1.5rem;
-}
-
-.turns {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.turn {
-  padding: 1rem 0;
-  border-top: 1px solid var(--rule);
-}
-
-.turn-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.3rem 0.9rem;
-}
-
-.turn-number {
-  font-family: var(--serif);
-  font-weight: 600;
-}
-
-/* How full the context was this turn, against the limit that ends a run. */
-.context-bar {
-  position: relative;
-  width: 8rem;
-  height: 0.5rem;
-  border-radius: 999px;
-  background: var(--rule);
-  overflow: hidden;
-}
-
-.context-bar span {
-  position: absolute;
-  inset: 0 auto 0 0;
-  background: var(--accent);
-}
-
-.reasoning,
-.says {
-  max-width: var(--measure);
-  margin-top: 0.6rem;
-}
-
-.reasoning p,
-.says p {
-  margin: 0.15rem 0 0;
-  white-space: pre-wrap;
-  font-size: 0.92rem;
-}
-
-.reasoning p {
-  max-height: 14rem;
-  overflow-y: auto;
-  padding: 0.5rem 0.75rem;
-  border-left: 2px solid var(--rule);
-  color: var(--ink-soft);
-}
-
-.calls {
-  margin: 0.6rem 0 0;
-  padding: 0;
-  list-style: none;
-  font-size: 0.92rem;
-}
-
-.call {
-  padding: 0.2rem 0;
-  overflow-wrap: anywhere;
-}
-
-.call .result {
-  color: var(--ink-soft);
-}
-
-.call.error .result,
-.call.none {
-  color: var(--lost);
-}
-
 /* The story: numbered chapters, quotes from the traces, a before-and-after. */
 main > section > .lede {
   max-width: var(--measure);
@@ -794,4 +709,396 @@ blockquote {
 .doc thead th {
   color: var(--ink-soft);
   font-size: 0.85rem;
+}
+
+/* Author styles like .path li's flex would otherwise beat the hidden attribute. */
+[hidden] {
+  display: none !important;
+}
+
+/* The replay stage: one turn drawn as a picture, with its controls on top. */
+.stage-card {
+  margin: 1.25rem 0 2rem;
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  background: var(--paper-raised);
+  overflow: hidden;
+}
+
+.playback {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1.25rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.playback-controls {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.playback button {
+  padding: 0.35rem 0.8rem;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink);
+  font: 600 0.85rem var(--sans);
+  cursor: pointer;
+}
+
+.playback button[data-action="next"] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--paper);
+}
+
+.playback button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* The card takes keyboard focus for the arrow keys; show it only to keyboard users. */
+.stage-card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.playback progress {
+  flex: 1 1 8rem;
+  height: 0.4rem;
+  accent-color: var(--accent);
+}
+
+.playback-totals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 1.1rem;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.playback-totals dt {
+  color: var(--ink-soft);
+  font-size: 0.72rem;
+}
+
+.playback-totals dd {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.stage {
+  position: relative;
+  display: grid;
+  gap: 1.1rem;
+  padding: 1.1rem 1.1rem 1.25rem;
+}
+
+.stage-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+
+.stage-turn {
+  min-width: 4.5rem;
+  font-family: var(--serif);
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+/* One pip per turn the run may take; filled as turns are used. */
+.pips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.pips i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--rule);
+  transition: background-color 0.3s;
+}
+
+.pips i.done {
+  background: var(--accent);
+}
+
+/* The path: pages joined by a line, the current one lit, the target flagged. */
+.lane {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lane > li {
+  display: flex;
+  align-items: center;
+}
+
+.lane li + li::before {
+  content: "";
+  flex: 0 0 1.6rem;
+  height: 2px;
+  margin: 0 0.15rem;
+  background: var(--ink-soft);
+}
+
+.lane .lane-gap::before,
+.lane .lane-gap + li::before {
+  background: repeating-linear-gradient(90deg, var(--ink-soft) 0 4px, transparent 4px 8px);
+}
+
+.lane .lane-gap {
+  color: var(--ink-soft);
+  font-family: var(--serif);
+  font-size: 1.2rem;
+}
+
+.node span {
+  display: inline-block;
+  padding: 0.35rem 0.8rem;
+  border: 2px solid var(--rule);
+  border-radius: 999px;
+  background: var(--paper);
+  font-family: var(--serif);
+}
+
+.node.new span {
+  animation: arrive 0.4s ease-out;
+}
+
+.node.start span {
+  border-color: var(--ink-soft);
+}
+
+.node.here span {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.node.flag span::before {
+  content: "⚑ ";
+  color: var(--lost);
+}
+
+.node.flag span {
+  border-style: dashed;
+  color: var(--ink-soft);
+}
+
+.node.target.here span {
+  border-color: var(--won);
+  background: color-mix(in srgb, var(--won) 16%, var(--paper));
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--won) 22%, transparent);
+}
+
+/* Pages it has looked at: bigger for more links, this turn's lit. */
+.cloud-head {
+  margin-bottom: -0.6rem;
+}
+
+.cloud {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2rem;
+}
+
+.bubble {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  padding: 0.2rem 0.6rem;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink-soft);
+  transition: background-color 0.4s, color 0.4s;
+}
+
+.bubble small {
+  font-size: 0.7em;
+  opacity: 0.75;
+}
+
+.bubble.now {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--paper);
+  animation: arrive 0.4s ease-out;
+}
+
+.bubble.refused {
+  border-color: color-mix(in srgb, var(--lost) 50%, transparent);
+  color: var(--lost);
+}
+
+.bubble.refused.now {
+  background: var(--lost);
+  color: var(--paper);
+}
+
+/* The start of this turn's reasoning, in a speech bubble. */
+.thought {
+  position: relative;
+  padding: 0.8rem 1rem;
+  border-radius: 12px;
+  background: var(--accent-soft);
+}
+
+/* The whole reasoning, in a box that scrolls itself as text streams in. */
+.thought-text {
+  max-height: 11rem;
+  margin: 0;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  font-family: var(--serif);
+  font-size: 1rem;
+  font-style: italic;
+  line-height: 1.55;
+}
+
+.thought .cut {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 4px;
+  background: var(--lost);
+  color: var(--paper);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+/* This turn's tool calls, in words. */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.6rem;
+}
+
+.action {
+  padding: 0.1rem 0.55rem;
+  border-radius: 4px;
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.action.look {
+  background: var(--paper);
+  color: var(--accent);
+}
+
+.action.move {
+  background: var(--accent);
+  color: var(--paper);
+}
+
+.action.refused {
+  background: var(--paper);
+  color: var(--lost);
+}
+
+.gauges {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 0.75rem 1.5rem;
+}
+
+.gauge {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.2rem 0.6rem;
+}
+
+.gauge .hint {
+  grid-column: 1 / -1;
+}
+
+.gauge-track {
+  grid-column: 1 / -1;
+  height: 0.6rem;
+  border-radius: 999px;
+  background: var(--rule);
+  overflow: hidden;
+}
+
+.gauge-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+  transition: width 0.5s ease-out;
+}
+
+.gauge.full .gauge-fill {
+  background: var(--lost);
+}
+
+.gauge-value {
+  grid-column: 1 / -1;
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The ending, stamped across the stage on the last turn. */
+.stamp {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.3rem 0.8rem;
+  border: 2px solid currentColor;
+  border-radius: 6px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transform: rotate(-4deg);
+  animation: arrive 0.4s ease-out;
+}
+
+.stamp.won {
+  color: var(--won);
+}
+
+.stamp.lost {
+  color: var(--lost);
+}
+
+@keyframes arrive {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* On a phone there's no room beside the turn counter: the stamp joins the flow. */
+@media (max-width: 40rem) {
+  .stamp {
+    position: static;
+    justify-self: start;
+    transform: none;
+  }
 }

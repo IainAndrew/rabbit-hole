@@ -3,6 +3,7 @@
 // when it's opened; build-site wrote it from the run's trace.
 
 import { escapeHtml, formatNumber } from "./format.js";
+import { attachPlayback } from "./playback.js";
 
 const ENDINGS = {
   won: "Won",
@@ -125,18 +126,14 @@ async function showRun(evalPath, button) {
   }
   button.setAttribute("aria-current", "true");
   const replay = await load(`${evalPath}/${button.dataset.file}.json`);
-  document.getElementById("replay-view").innerHTML = replayHtml(replay);
+  const view = document.getElementById("replay-view");
+  view.innerHTML = replayHtml(replay);
+  attachPlayback(view, replay);
 }
 
-/** A whole replay: what was run and how it ended, the path, then every turn. */
+/** A whole replay: what was run and how it ended, then the stage that steps through it. */
 function replayHtml(replay) {
-  const { start, turns, end } = replay;
-  const path = end?.path ?? pathFromTurns(start.start, turns);
-  let cost = 0;
-  const turnItems = turns.map((turn) => {
-    cost = cost === null || turn.usage.cost === null ? null : cost + turn.usage.cost;
-    return turnHtml(turn, cost, start.limits);
-  });
+  const { start, end } = replay;
   return `
     <header class="replay-head">
       <h3>${escapeHtml(start.model.name)}: ${escapeHtml(start.start)} → ${escapeHtml(start.target)}</h3>
@@ -144,8 +141,10 @@ function replayHtml(replay) {
       <p class="hint">context <code>${escapeHtml(start.contextStrategy)}</code>, prompt <code>${escapeHtml(start.promptVariant)}</code>,
         commit <code>${escapeHtml(start.gitCommit.slice(0, 7))}</code></p>
     </header>
-    <ol class="path" aria-label="Pages visited">${path.map((page, index) => pageChip(page, index, path, end)).join("")}</ol>
-    <ol class="turns">${turnItems.join("")}</ol>`;
+    <div class="stage-card">
+      <div class="playback"></div>
+      <div class="stage"></div>
+    </div>`;
 }
 
 /** How the run ended, with its totals. */
@@ -160,61 +159,6 @@ function endingText(end) {
   }
   const hops = end.end.reason === "won" ? ` in ${end.hops} ${end.hops === 1 ? "hop" : "hops"}` : ` after ${end.hops} hops`;
   return `${ENDINGS[end.end.reason]}${hops}. ${totals}`;
-}
-
-/** A killed run has no run_end path: rebuild it from the moves that worked. */
-function pathFromTurns(startPage, turns) {
-  const path = [startPage];
-  for (const call of turns.flatMap((turn) => turn.calls)) {
-    if (call.name === "move_to" && call.status === "ok") {
-      path.push(call.pageAfter);
-    }
-  }
-  return path;
-}
-
-/** A page on the path: the start, and the target if it was reached, stand out. */
-function pageChip(page, index, path, end) {
-  const won = end?.end.kind === "finished" && end.end.reason === "won";
-  const special = index === 0 ? " start" : won && index === path.length - 1 ? " target" : "";
-  return `<li><span class="page${special}">${escapeHtml(page)}</span></li>`;
-}
-
-/** One turn: its context and cost, what the model thought and said, and its tool calls. */
-function turnHtml(turn, cost, limits) {
-  const { usage } = turn;
-  const share = Math.min(1, turn.contextChars / limits.maxContextChars);
-  const calls = turn.calls.length > 0 ? turn.calls.map(callHtml).join("") : `<li class="call none">${noCallText(turn)}</li>`;
-  return `
-    <li class="turn">
-      <div class="turn-head">
-        <span class="turn-number">Turn ${turn.turn}</span>
-        <span class="context-bar" role="img" aria-label="Context ${formatNumber(turn.contextChars)} of ${formatNumber(limits.maxContextChars)} characters">
-          <span style="width: ${share * 100}%"></span>
-        </span>
-        <span class="hint">${formatNumber(turn.contextChars)} chars sent · ${formatNumber(usage.promptTokens)} tokens in
-          (${formatNumber(usage.cachedTokens ?? 0)} cached), ${formatNumber(usage.completionTokens)} out ·
-          ${usage.cost === null ? "cost unknown" : money(usage.cost)}, ${cost === null ? "total unknown" : `${money(cost)} so far`}</span>
-      </div>
-      ${turn.reasoning ? `<div class="reasoning"><span class="hint">Thinks</span><p>${escapeHtml(turn.reasoning)}</p></div>` : ""}
-      ${turn.content ? `<div class="says"><span class="hint">Says</span><p>${escapeHtml(turn.content)}</p></div>` : ""}
-      <ul class="calls">${calls}</ul>
-    </li>`;
-}
-
-/** Why a turn made no tool call. */
-function noCallText(turn) {
-  return turn.finishReason === "length" ? "No tool call: the reply was cut off at the output limit." : "No tool call.";
-}
-
-/** One tool call and what it returned; a cut link list says so. */
-function callHtml(call) {
-  const note = call.trimmed ? ` <span class="hint">(the list itself isn't kept in replays)</span>` : "";
-  return `
-    <li class="call ${call.status}">
-      <code>${escapeHtml(call.name)}(${escapeHtml(call.arguments)})</code>
-      <span class="result">→ ${escapeHtml(call.result)}${note}</span>
-    </li>`;
 }
 
 /** Dollars to four places. */
