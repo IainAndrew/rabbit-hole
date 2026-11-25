@@ -116,21 +116,18 @@ export function Replays({ data }: { data: SiteData }) {
                 </span>
               </span>
               <span className={styles.runs}>
-                {list
-                  .filter((summary) => summary.raceId === race.id)
-                  .sort((a, b) => a.repeat - b.repeat)
-                  .map((summary) => (
-                    <button
-                      key={summary.file}
-                      type="button"
-                      className={cx(styles.outcome, styles[summary.outcome])}
-                      aria-current={summary.file === run?.file ? "true" : undefined}
-                      aria-label={`${race.start} to ${race.target}, run ${summary.repeat}: ${summary.outcome}`}
-                      onClick={() => open(summary)}
-                    >
-                      {summary.repeat}
-                    </button>
-                  ))}
+                {countedRuns(list, race.id).map((summary) => (
+                  <button
+                    key={summary.file}
+                    type="button"
+                    className={cx(styles.outcome, styles[summary.outcome])}
+                    aria-current={summary.file === run?.file ? "true" : undefined}
+                    aria-label={`${race.start} to ${race.target}, run ${summary.repeat}: ${summary.outcome}`}
+                    onClick={() => open(summary)}
+                  >
+                    {summary.repeat}
+                  </button>
+                ))}
               </span>
             </div>
           ))}
@@ -174,6 +171,20 @@ function choiceInAddress(known: Set<string>): Choice | null {
 function showRunsHere() {
   document.getElementById("replays")?.scrollIntoView();
   history.replaceState(null, "", location.pathname + location.search);
+}
+
+/**
+ * A race's runs, one per repeat, in repeat order. A run that crashed and was
+ * re-run is listed twice; only the later, counted one is shown.
+ */
+function countedRuns(list: RunSummary[], raceId: string): RunSummary[] {
+  const byRepeat = new Map<number, RunSummary>();
+  for (const summary of list) {
+    if (summary.raceId === raceId) {
+      byRepeat.set(summary.repeat, summary);
+    }
+  }
+  return [...byRepeat.values()].sort((a, b) => a.repeat - b.repeat);
 }
 
 /**
