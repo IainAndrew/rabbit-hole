@@ -4,7 +4,8 @@
 
 import * as Plot from "@observablehq/plot";
 import { useEffect, useRef } from "react";
-import type { Board, BoardEntry } from "@harness/site-data/leaderboards.ts";
+import type { Board } from "@harness/site-data/leaderboards.ts";
+import { frontierOf, placedOf, type Placed } from "../../frontier.ts";
 import { percent } from "../../format.ts";
 import styles from "./CostChart.module.scss";
 
@@ -13,9 +14,6 @@ const COST_TICKS = [0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5];
 const NARROW_TICKS = [0.002, 0.01, 0.05, 0.2];
 const NARROW = 520;
 
-/** An entry the chart can place: it has a cost per win and a success rate. */
-type Placed = BoardEntry & { costPerWin: number; score: BoardEntry["score"] & { successRate: number } };
-
 export function CostChart({ board }: { board: Board }) {
   const container = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -23,9 +21,7 @@ export function CostChart({ board }: { board: Board }) {
     if (element === null) {
       return;
     }
-    const entries = board.entries.filter(
-      (entry): entry is Placed => entry.costPerWin !== null && entry.score.successRate !== null,
-    );
+    const entries = placedOf(board.entries);
     const observer = new ResizeObserver(() => element.replaceChildren(chartOf(entries, element.clientWidth)));
     observer.observe(element);
     return () => observer.disconnect();
@@ -38,18 +34,6 @@ export function CostChart({ board }: { board: Board }) {
       </figcaption>
     </figure>
   );
-}
-
-/** The models nobody beats on both counts: no other is cheaper per win and at least as successful. Cheapest first. */
-function frontierOf(entries: Placed[]): Placed[] {
-  const frontier: Placed[] = [];
-  for (const entry of [...entries].sort((a, b) => a.costPerWin - b.costPerWin)) {
-    const best = frontier.at(-1)?.score.successRate ?? -1;
-    if (entry.score.successRate > best) {
-      frontier.push(entry);
-    }
-  }
-  return frontier;
 }
 
 /** The chart as an SVG element `width` pixels wide. */

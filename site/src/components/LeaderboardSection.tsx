@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import type { Board } from "@harness/site-data/leaderboards.ts";
 import type { Facts } from "../facts.ts";
+import { BestBuys } from "./BestBuys/BestBuys.tsx";
 import { Leaderboard } from "./Leaderboard/Leaderboard.tsx";
 import { Source } from "./Source.tsx";
 
@@ -28,10 +29,14 @@ export function LeaderboardSection({ board, facts }: { board: Board; facts: Fact
 
       <h3>Best for the money</h3>
       <p>
-        Each dot is a model: how often it won against what a win cost it. Cost per win is everything the model spent,
-        losses included, divided by its wins, so a model that loses a lot pays for it here. The line joins the models no
-        other model beats on both counts, cheaper and at least as successful. The ranges overlap a lot, so read the line
-        as a rough frontier, not a verdict.
+        Cost per win is everything a model spent, losses included, divided by its wins, so a model that loses a lot pays
+        for it here. These models are each the best buy at their price: no other model wins more often for the same
+        money or less. Each step up wins more and costs more per win, and the step says by how much.
+      </p>
+      <BestBuys board={board} />
+      <p>
+        The chart puts every model on those two counts. The line joins the models above; any dot under it is beaten by a
+        model on the line. The ranges overlap a lot, so a step of a few points may not hold on new races.
       </p>
       <Suspense fallback={<p className="hint">Loading the chart…</p>}>
         <CostChart board={board} />
