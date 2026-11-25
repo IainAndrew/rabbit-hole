@@ -3,7 +3,7 @@
 
 import { useSiteData } from "../../data.ts";
 import { boardOf, factsOf } from "../../facts.ts";
-import { ContextSection } from "../ContextSection.tsx";
+import { ContextSection } from "../ContextSection/ContextSection.tsx";
 import { Hero } from "../Hero/Hero.tsx";
 import styles from "./Home.module.scss";
 import { HowItWorks } from "../HowItWorks/HowItWorks.tsx";
@@ -25,7 +25,7 @@ export function Home() {
       {data !== null && facts !== null && (
         <>
           <LeaderboardSection board={boardOf(data, "models")} facts={facts} />
-          <ContextSection strategies={boardOf(data, "strategies")} prompts={boardOf(data, "prompts")} />
+          <ContextSection strategies={boardOf(data, "strategies")} prompts={boardOf(data, "prompts")} facts={facts} />
           <Replays data={data} />
           <Story facts={facts} />
           <Method facts={facts} />

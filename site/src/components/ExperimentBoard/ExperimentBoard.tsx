@@ -1,6 +1,6 @@
-// A strategy or prompt board: one model at a time, each change beside that
-// model's usual setup, with the gap between them and how sure we are. The
-// gaps, ranges and p-values were all computed at build time.
+// A board of changes: one model at a time, each change beside that model's
+// usual setup, with the gap between them and how sure we are. The gaps,
+// ranges and p-values were all computed at build time.
 
 import type { BaselineGap } from "@harness/evals/compare.ts";
 import type { Baseline, Board, BoardEntry } from "@harness/site-data/leaderboards.ts";
@@ -9,13 +9,6 @@ import styles from "./ExperimentBoard.module.scss";
 import { RunEndings } from "../RunEndings/RunEndings.tsx";
 import { SuccessCell } from "../SuccessCell/SuccessCell.tsx";
 import table from "../../styles/table.module.scss";
-
-// What each context strategy shows the model each turn.
-const STRATEGIES: Record<string, string> = {
-  full: "Everything: the whole conversation, every link list.",
-  masked: "Link lists older than the last 2 turns cut to their first line.",
-  state: "One fresh message of facts each turn, none of the model's own words.",
-};
 
 /**
  * One table, grouped by model.
@@ -82,11 +75,10 @@ function byModel(entries: BoardEntry[]): BoardEntry[][] {
   ]);
 }
 
-/** The setting's name and what it means: a strategy described, a prompt quoted. */
+/** The setting's name, and a prompt's text quoted. Strategies are described in the copy around their tables. */
 function Setting({ entry, baseline }: { entry: BoardEntry; baseline: Baseline }) {
   const name = baseline.varies === "context" ? entry.context : entry.prompt;
-  const meaning =
-    baseline.varies === "context" ? (STRATEGIES[name] ?? "") : entry.systemPrompt === null ? "" : `“${entry.systemPrompt}”`;
+  const meaning = baseline.varies === "prompt" && entry.systemPrompt !== null ? `“${entry.systemPrompt}”` : "";
   return (
     <>
       <code>{name}</code>
@@ -97,7 +89,7 @@ function Setting({ entry, baseline }: { entry: BoardEntry; baseline: Baseline })
 }
 
 /** The gap to the baseline in points, with its range and p, and what they add up to. */
-function Gap({ gap }: { gap: BaselineGap | null }) {
+export function Gap({ gap }: { gap: BaselineGap | null }) {
   if (gap === null) {
     return <span className="hint">the baseline</span>;
   }

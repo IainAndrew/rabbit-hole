@@ -1,9 +1,12 @@
 import type { Board } from "@harness/site-data/leaderboards.ts";
-import { ExperimentBoard } from "./ExperimentBoard/ExperimentBoard.tsx";
-import { Source } from "./Source.tsx";
+import type { Facts } from "../../facts.ts";
+import { ExperimentBoard } from "../ExperimentBoard/ExperimentBoard.tsx";
+import { Source } from "../Source.tsx";
+import { StrategyTable } from "../StrategyTable/StrategyTable.tsx";
+import styles from "./ContextSection.module.scss";
 
-/** The context strategies and the prompt, each change against the same model's usual setup. */
-export function ContextSection({ strategies, prompts }: { strategies: Board; prompts: Board }) {
+/** The context strategies, each explained with its own table, then the prompt. */
+export function ContextSection({ strategies, prompts, facts }: { strategies: Board; prompts: Board; facts: Facts }) {
   return (
     <section id="context" aria-labelledby="context-title">
       <h2 id="context-title">Changing what the model sees</h2>
@@ -14,8 +17,63 @@ export function ContextSection({ strategies, prompts }: { strategies: Board; pro
       </p>
 
       <h3>Context strategies</h3>
-      <p>What the model is shown each turn. Its tools and rules are the same either way; only its view changes.</p>
-      <ExperimentBoard board={strategies} />
+      <p>
+        A context strategy decides what the model is shown each turn. Its tools and rules stay the same, and the trace
+        keeps the whole run either way; only the model's view changes. We tried two strategies against the usual one.
+      </p>
+
+      <div className={styles.strategy}>
+        <h4>
+          Full history <code>full</code> <span className={styles.usual}>usual</span>
+        </h4>
+        <p>
+          Every turn, the model gets the whole conversation so far: the instructions, every tool call it made, every
+          link list it fetched and everything it wrote. Nothing is lost, but nothing is let go either. One link list can
+          run to tens of thousands of characters, and a run ends once the conversation passes {facts.maxContextChars}{" "}
+          characters.
+        </p>
+        <p>
+          It costs less than it sounds. The conversation only ever grows at the end, so the provider has seen most of
+          each prompt before and serves it from its cache, at a fraction of the price.
+        </p>
+        <StrategyTable board={strategies} strategy="full" />
+      </div>
+
+      <div className={styles.strategy}>
+        <h4>
+          Masking <code>masked</code>
+        </h4>
+        <p>
+          Link lists older than the last 2 turns are cut down to their first line, which names the page and how many
+          links it has, with a note to look the page up again if needed. Everything else stays: the model's reasoning and
+          replies, its moves and any errors.
+        </p>
+        <p>
+          The idea comes from coding agents (SWE-agent, and JetBrains' study "The Complexity Trap"), where old tool
+          output fills most of the context and is rarely needed again. The price: the cut moves forward every turn, so
+          the prompt changes near its start and the cache serves much less of it, and a model that needs an old list has to fetch
+          it again.
+        </p>
+        <StrategyTable board={strategies} strategy="masked" />
+      </div>
+
+      <div className={styles.strategy}>
+        <h4>
+          Rebuilt state <code>state</code>
+        </h4>
+        <p>
+          Each turn the conversation is set aside and the harness writes one fresh message from facts: what last
+          turn's tool calls returned, the current page's links if the model has looked them up, one line for every move
+          and lookup so far, and where things stand (the current page, the target, the path, and any moves already
+          refused on this page). None of the model's own words carry over.
+        </p>
+        <p>
+          The idea is to hand the model facts rather than its own story about them, so it can't talk itself into a
+          mistake, and to keep the prompt small. The price: any link list older than the last turn is gone, so the model
+          can't plan across pages it looked at earlier without fetching them again.
+        </p>
+        <StrategyTable board={strategies} strategy="state" />
+      </div>
       <Source board={strategies} />
 
       <h3>The prompt</h3>
