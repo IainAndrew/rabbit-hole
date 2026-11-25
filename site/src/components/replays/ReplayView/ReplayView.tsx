@@ -1,7 +1,9 @@
 // One run: what was run and how it ended, then the stage and its step
 // controls. Remount it (a new key) for each run, so stepping starts over.
+// It lives in a modal, so while it's open the arrow keys step through it
+// wherever focus is.
 
-import { useMemo, type KeyboardEvent } from "react";
+import { useEffect, useMemo } from "react";
 import type { Replay } from "@harness/site-data/replays.ts";
 import { cx, formatNumber, money } from "../../../format.ts";
 import { endingText, isWin, stepsOf } from "../model.ts";
@@ -22,13 +24,17 @@ export function ReplayView({ replay }: { replay: Replay }) {
   const { start, end } = replay;
   const totals = stepper.shown === 0 ? null : steps[stepper.shown - 1]!.totals;
 
-  const onKey = (event: KeyboardEvent) => {
-    const action = KEYS[event.key];
-    if (action !== undefined) {
-      event.preventDefault();
-      stepper[action]();
-    }
-  };
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      const action = KEYS[event.key];
+      if (action !== undefined && !event.altKey && !event.ctrlKey && !event.metaKey) {
+        event.preventDefault();
+        stepper[action]();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [stepper]);
 
   return (
     <>
@@ -42,8 +48,7 @@ export function ReplayView({ replay }: { replay: Replay }) {
           <code>{start.gitCommit.slice(0, 7)}</code>
         </p>
       </header>
-      {/* The card takes keyboard focus, so the arrow keys step through the run. */}
-      <div className={styles.card} tabIndex={0} onKeyDown={onKey}>
+      <div className={styles.card}>
         <div className={styles.controls}>
           <div className={styles.buttons} role="group" aria-label="Step through the run">
             <button type="button" onClick={stepper.previous} disabled={stepper.thinking === null && stepper.shown <= stepper.first}>

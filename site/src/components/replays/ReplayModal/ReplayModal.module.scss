@@ -1,0 +1,55 @@
+@use "../../../styles/mixins" as *;
+
+.dialog {
+  width: min(72rem, calc(100% - 2rem));
+  max-width: none;
+  max-height: calc(100dvh - 2rem);
+  padding: 0;
+  border: 1px solid var(--rule);
+  border-radius: 16px;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 20px 60px rgb(0 0 0 / 0.35);
+
+  &::backdrop {
+    background: rgb(0 0 0 / 0.55);
+  }
+
+  @include phone {
+    width: 100%;
+    max-height: 100dvh;
+    border-radius: 0;
+  }
+}
+
+.panel {
+  position: relative;
+  padding: 1.5rem 1.5rem 0.5rem;
+
+  @include phone {
+    padding: 1rem 1rem 0.25rem;
+  }
+}
+
+.close {
+  position: absolute;
+  top: 0.9rem;
+  right: 0.9rem;
+  width: 2.2rem;
+  height: 2.2rem;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: var(--paper-raised);
+  color: var(--ink);
+  font-size: 1rem;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--ink-soft);
+  }
+}
+
+// The page behind a modal stays put.
+:global(:root:has(dialog[open])) {
+  overflow: hidden;
+}

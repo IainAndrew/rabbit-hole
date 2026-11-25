@@ -1,18 +1,19 @@
 // Replays: pick an eval, see every race and repeat it ran as a grid of
-// outcomes, and step through one run on the stage. The open run is in the
-// address (#run=sweep/eval/race-rN), so it can be shared, and a link to such
-// an address anywhere on the page opens it. Each replay is loaded only when
-// it's opened.
+// outcomes, and open one run in a modal to step through it on the stage. The
+// open run is in the address (#run=sweep/eval/race-rN), so it can be shared,
+// and a link to such an address anywhere on the page opens it. Each replay is
+// loaded only when it's opened.
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { SiteData } from "@harness/site-data/leaderboards.ts";
 import type { Replay, RunSummary } from "@harness/site-data/replays.ts";
 import { loadJson } from "../../../data.ts";
 import { cx } from "../../../format.ts";
+import { ReplayModal } from "../ReplayModal/ReplayModal.tsx";
 import { ReplayView } from "../ReplayView/ReplayView.tsx";
 import styles from "./Replays.module.scss";
 
-/** Which run to show: an eval, and a race and repeat in it (null: its first run). */
+/** The eval picked, and the run open in it (race and repeat null: none open). */
 type Choice = { evalPath: string; raceId: string | null; repeat: number | null };
 
 export function Replays({ data }: { data: SiteData }) {
@@ -35,18 +36,14 @@ export function Replays({ data }: { data: SiteData }) {
   const [replay, setReplay] = useState<{ file: string; replay: Replay } | null>(null);
   const [error, setError] = useState<Error | null>(null);
 
-  // A link to a run's address, from anywhere on the page, opens it here.
+  // A link to a run's address, from anywhere on the page, opens it over the page.
   useEffect(() => {
     const open = () => {
       const wanted = choiceInAddress(known);
       if (wanted !== null) {
         setChoice(wanted);
-        document.getElementById("replays")?.scrollIntoView();
       }
     };
-    if (choiceInAddress(known) !== null) {
-      document.getElementById("replays")?.scrollIntoView();
-    }
     window.addEventListener("hashchange", open);
     return () => window.removeEventListener("hashchange", open);
   }, [known]);
@@ -85,12 +82,19 @@ export function Replays({ data }: { data: SiteData }) {
     history.replaceState(null, "", `#run=${choice.evalPath}/${summary.raceId}-r${summary.repeat}`);
   };
 
+  // Stable, so the modal doesn't reopen on every render.
+  const close = useCallback(() => {
+    setChoice((current) => ({ evalPath: current.evalPath, raceId: null, repeat: null }));
+    history.replaceState(null, "", location.pathname + location.search);
+  }, []);
+
   return (
     <section id="replays" aria-labelledby="replays-title">
       <h2 id="replays-title">Replays</h2>
       <p>
         Every run above, turn by turn: what the model thought, what it did, and how big its context grew. Pick an eval,
-        then a run (green won, red lost, grey crashed and not counted), and step through it with Next.
+        then a run (green won, red lost, grey crashed and not counted) to open it, and step through it with Next or
+        the arrow keys.
       </p>
       <label className={styles.picker}>
         Eval
@@ -143,7 +147,17 @@ export function Replays({ data }: { data: SiteData }) {
       )}
 
       {error !== null && <p className={styles.error}>This replay didn't load: {error.message}</p>}
-      {replay !== null && replay.file === run?.file && <ReplayView key={replay.file} replay={replay.replay} />}
+      {choice.raceId !== null && list !== null && (
+        <ReplayModal onClose={close}>
+          {run === null ? (
+            <p className={styles.error}>This eval has no run of that race and repeat.</p>
+          ) : replay !== null && replay.file === run.file ? (
+            <ReplayView key={replay.file} replay={replay.replay} />
+          ) : (
+            <p className="hint">Loading the replay…</p>
+          )}
+        </ReplayModal>
+      )}
     </section>
   );
 }
@@ -158,10 +172,10 @@ function choiceInAddress(known: Set<string>): Choice | null {
 }
 
 /**
- * The run a choice names, or the eval's first run. A run that crashed and was
- * re-run is listed twice: the later one is the counted run.
+ * The run a choice names, if any. A run that crashed and was re-run is listed
+ * twice: the later one is the counted run.
  */
 function pick(list: RunSummary[], choice: Choice): RunSummary | null {
   const named = list.filter((summary) => summary.raceId === choice.raceId && summary.repeat === choice.repeat);
-  return named.at(-1) ?? list[0] ?? null;
+  return named.at(-1) ?? null;
 }
