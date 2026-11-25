@@ -27,7 +27,8 @@ export function Hero({ facts }: { facts: Facts | null }) {
           Each agent gets a start page and a target page, and has to get from one to the other by following links. One
           twist: it can read any page's links for free. Only moves count.
         </p>
-        <Path pages={["Guinness", "Republic of Ireland", "Albert Einstein"]} label="An example race" />
+        {/* A real race from the set, and the one the failure story opens with. */}
+        <Path pages={["Penguin", "Bird", "Germany", "Bauhaus"]} label="An example race: Penguin to Bauhaus in 3 hops" />
         <dl className={styles.facts}>
           {figures.map(([value, label]) => (
             <div key={label}>

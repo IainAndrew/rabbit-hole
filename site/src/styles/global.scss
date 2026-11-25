@@ -13,8 +13,16 @@
   --accent-soft: #e8eefc;
   --won: #2e7d4f;
   --lost: #b3412e;
+  // How runs ended: a vivid green for wins, a colour per way of losing.
+  // Checked for colour-blind readers in both themes (see RunEndings.tsx).
+  --end-won: #16a34a;
+  --end-output: #eda100;
+  --end-context: #e87ba4;
+  --end-turns: #6250d6;
+  --end-gave-up: #eb6834;
+  --end-no-call: #1baf7a;
   --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
-  --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --measure: 46rem;
   color-scheme: light dark;
@@ -29,6 +37,12 @@
     --accent-soft: #1f2840;
     --won: #6cc58f;
     --lost: #f08a76;
+    --end-won: #22c55e;
+    --end-output: #c98500;
+    --end-context: #d55181;
+    --end-turns: #9085e9;
+    --end-gave-up: #d95926;
+    --end-no-call: #199e70;
   }
 }
 

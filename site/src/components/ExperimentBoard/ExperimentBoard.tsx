@@ -6,7 +6,8 @@ import type { BaselineGap } from "@harness/evals/compare.ts";
 import type { Baseline, Board, BoardEntry } from "@harness/site-data/leaderboards.ts";
 import { points } from "../../format.ts";
 import styles from "./ExperimentBoard.module.scss";
-import { Losses, SuccessCell } from "../SuccessCell/SuccessCell.tsx";
+import { RunEndings } from "../RunEndings/RunEndings.tsx";
+import { SuccessCell } from "../SuccessCell/SuccessCell.tsx";
 import table from "../../styles/table.module.scss";
 
 // What each context strategy shows the model each turn.
@@ -36,7 +37,7 @@ export function ExperimentBoard({ board }: { board: Board }) {
               Success rate <span className="hint">with its 95% range</span>
             </th>
             <th scope="col">Against the usual setup</th>
-            <th scope="col">How the losses ended</th>
+            <th scope="col">How the runs ended</th>
           </tr>
         </thead>
         {byModel(board.entries).map((entries) => (
@@ -58,7 +59,7 @@ export function ExperimentBoard({ board }: { board: Board }) {
                   <Gap gap={entry.vsBaseline} />
                 </td>
                 <td className={table.losses}>
-                  <Losses endReasons={entry.endReasons} />
+                  <RunEndings endReasons={entry.endReasons} />
                 </td>
               </tr>
             ))}

@@ -1,0 +1,41 @@
+.endings {
+  display: grid;
+  gap: 0.35rem;
+}
+
+// One segment per ending, 2px apart, together spanning all decided runs.
+.bar {
+  display: flex;
+  gap: 2px;
+  height: 0.7rem;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.segment {
+  // A segment never shrinks below a sliver, so a single run still shows.
+  flex-basis: 3px;
+  min-width: 3px;
+  height: 100%;
+}
+
+.labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem 0.7rem;
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    white-space: nowrap;
+  }
+
+  i {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 2px;
+  }
+}

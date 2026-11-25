@@ -50,7 +50,8 @@ before writing or changing code.
 Needs Node 24 or later. Copy `.env.example` to `.env` before anything that calls a model.
 
 - `npm install`: install dev dependencies: TypeScript and Node types for the harness;
-  `marked` for the docs; React, Vite, Sass and Observable Plot for the site
+  `marked` for the docs; React, Vite, Sass, Observable Plot and the IBM Plex Sans font for
+  the site
 - `npm run typecheck`: type-check the harness in `src/` and the site in `site/`
 - `npm test`: run tests with Node's built-in runner (`*.test.ts` files)
 - `npm run race-by-hand -- "Start" "Target"`: play a race yourself by typing tool calls

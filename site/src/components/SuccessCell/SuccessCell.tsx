@@ -1,4 +1,3 @@
-import type { EndReason } from "@harness/agent/agent.ts";
 import type { Interval } from "@harness/evals/intervals.ts";
 import type { Score } from "@harness/evals/score.ts";
 import { percent } from "../../format.ts";
@@ -30,25 +29,4 @@ export function SuccessCell({ score, interval }: { score: Score; interval: Inter
       </span>
     </div>
   );
-}
-
-// How a lost run ended, in words. Won runs and crashes aren't losses.
-const LOSS_REASONS: Partial<Record<EndReason, string>> = {
-  gave_up: "gave up",
-  turn_limit: "turn limit",
-  context_limit: "context limit",
-  output_limit: "output limit",
-  refused: "no tool call",
-};
-
-/** The losing end reasons with a count, largest first, e.g. "14 output limit, 4 context limit". */
-export function Losses({ endReasons }: { endReasons: Record<EndReason, number> }) {
-  const losses = Object.entries(LOSS_REASONS)
-    .map(([reason, words]) => [endReasons[reason as EndReason], words] as const)
-    .filter(([count]) => count > 0)
-    .sort(([a], [b]) => b - a);
-  if (losses.length === 0) {
-    return <span className="hint">none</span>;
-  }
-  return <>{losses.map(([count, words]) => `${count} ${words}`).join(", ")}</>;
 }

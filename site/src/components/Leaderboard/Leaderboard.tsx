@@ -5,7 +5,8 @@ import type { RankRange } from "@harness/evals/compare.ts";
 import type { Board } from "@harness/site-data/leaderboards.ts";
 import { money } from "../../format.ts";
 import styles from "./Leaderboard.module.scss";
-import { Losses, SuccessCell } from "../SuccessCell/SuccessCell.tsx";
+import { RunEndings } from "../RunEndings/RunEndings.tsx";
+import { SuccessCell } from "../SuccessCell/SuccessCell.tsx";
 import table from "../../styles/table.module.scss";
 
 export function Leaderboard({ board }: { board: Board }) {
@@ -25,7 +26,7 @@ export function Leaderboard({ board }: { board: Board }) {
             <th scope="col" className={table.number}>
               Cost <span className="hint">per win</span>
             </th>
-            <th scope="col">How the losses ended</th>
+            <th scope="col">How the runs ended</th>
           </tr>
         </thead>
         <tbody>
@@ -47,7 +48,7 @@ export function Leaderboard({ board }: { board: Board }) {
               </td>
               <td className={table.number}>{entry.costPerWin === null ? "–" : money(entry.costPerWin)}</td>
               <td className={table.losses}>
-                <Losses endReasons={entry.endReasons} />
+                <RunEndings endReasons={entry.endReasons} />
               </td>
             </tr>
           ))}
