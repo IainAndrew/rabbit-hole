@@ -12,8 +12,8 @@ runs/
 # macOS Finder metadata
 .DS_Store
 
-# Site data, rebuilt from results/ by npm run build-site on every deploy.
-site/data/
-
-# Doc pages, rendered from docs/ by npm run build-site.
-site/docs/
+# The site's data and docs, rebuilt from results/ and docs/ by npm run build-site
+# on every deploy, and the built site itself.
+site/public/data/
+site/public/docs/
+site/dist/

@@ -1,0 +1,13 @@
+// Shared breakpoints, so every component agrees on what a phone is.
+
+@mixin phone {
+  @media (max-width: 40rem) {
+    @content;
+  }
+}
+
+@mixin wide {
+  @media (min-width: 56rem) {
+    @content;
+  }
+}

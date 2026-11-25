@@ -1,0 +1,67 @@
+// The rendered Markdown has no classes of its own, so its elements are styled
+// by tag inside the page.
+
+.doc {
+  max-width: var(--measure);
+  padding-top: 2.5rem;
+  padding-bottom: 1rem;
+
+  :global {
+    h1 {
+      margin: 0 0 1rem;
+      font-size: clamp(2rem, 6vw, 2.75rem);
+    }
+
+    h2 {
+      margin-top: 2.5rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid var(--rule);
+      font-size: 1.75rem;
+      scroll-margin-top: 3.5rem;
+    }
+
+    h3 {
+      margin: 1.75rem 0 0.5rem;
+      font-size: 1.2rem;
+      scroll-margin-top: 3.5rem;
+    }
+
+    li + li {
+      margin-top: 0.3rem;
+    }
+
+    code {
+      padding: 0.05rem 0.3rem;
+      border-radius: 4px;
+      background: var(--accent-soft);
+    }
+
+    // Tables scroll inside their own width on a phone, never the page.
+    table {
+      display: block;
+      max-width: 100%;
+      margin: 1.25rem 0;
+      overflow-x: auto;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    th,
+    td {
+      padding: 0.45rem 0.7rem;
+      border-bottom: 1px solid var(--rule);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    thead th {
+      color: var(--ink-soft);
+      font-size: 0.85rem;
+    }
+  }
+}
+
+.back {
+  margin-top: 2.5rem;
+}

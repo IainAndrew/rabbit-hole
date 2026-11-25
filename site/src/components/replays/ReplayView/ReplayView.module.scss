@@ -1,0 +1,91 @@
+.head h3 {
+  margin: 0 0 0.25rem;
+  font-size: 1.35rem;
+}
+
+.ending {
+  margin: 0;
+  font-weight: 600;
+}
+
+.won {
+  color: var(--won);
+}
+
+.lost {
+  color: var(--lost);
+}
+
+.card {
+  margin: 1.25rem 0 2rem;
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  background: var(--paper-raised);
+  overflow: hidden;
+
+  // Focus is for the arrow keys: show it only to keyboard users.
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1.25rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--rule);
+
+  progress {
+    flex: 1 1 8rem;
+    height: 0.4rem;
+    accent-color: var(--accent);
+  }
+}
+
+.buttons {
+  display: flex;
+  gap: 0.4rem;
+
+  button {
+    padding: 0.35rem 0.8rem;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    background: var(--paper);
+    color: var(--ink);
+    font: 600 0.85rem var(--sans);
+    cursor: pointer;
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+  }
+
+  .next {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--paper);
+  }
+}
+
+.totals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 1.1rem;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+
+  dt {
+    color: var(--ink-soft);
+    font-size: 0.72rem;
+  }
+
+  dd {
+    margin: 0;
+    font-size: 0.92rem;
+    font-weight: 600;
+  }
+}

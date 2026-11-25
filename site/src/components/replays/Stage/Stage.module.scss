@@ -1,0 +1,297 @@
+@use "../../../styles/mixins" as *;
+
+@keyframes arrive {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+}
+
+.stage {
+  position: relative;
+  display: grid;
+  gap: 1.1rem;
+  padding: 1.1rem 1.1rem 1.25rem;
+
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+}
+
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+
+.turn {
+  min-width: 4.5rem;
+  font-family: var(--serif);
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+// One pip per turn the run may take; filled as turns are used.
+.pips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+
+  i {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--rule);
+    transition: background-color 0.3s;
+  }
+
+  .done {
+    background: var(--accent);
+  }
+}
+
+// The path: pages joined by a line, the current one lit, the target flagged.
+.lane {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  > li {
+    display: flex;
+    align-items: center;
+  }
+
+  li + li::before {
+    content: "";
+    flex: 0 0 1.6rem;
+    height: 2px;
+    margin: 0 0.15rem;
+    background: var(--ink-soft);
+  }
+}
+
+.gap {
+  color: var(--ink-soft);
+  font-family: var(--serif);
+  font-size: 1.2rem;
+
+  &::before,
+  & + li::before {
+    background: repeating-linear-gradient(90deg, var(--ink-soft) 0 4px, transparent 4px 8px) !important;
+  }
+}
+
+.node span {
+  display: inline-block;
+  padding: 0.35rem 0.8rem;
+  border: 2px solid var(--rule);
+  border-radius: 999px;
+  background: var(--paper);
+  font-family: var(--serif);
+  animation: arrive 0.4s ease-out;
+}
+
+.start span {
+  border-color: var(--ink-soft);
+}
+
+.here span {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.reached span {
+  border-color: var(--won);
+  background: color-mix(in srgb, var(--won) 16%, var(--paper));
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--won) 22%, transparent);
+}
+
+.flag span {
+  border-style: dashed;
+  color: var(--ink-soft);
+  animation: none;
+
+  &::before {
+    content: "⚑ ";
+    color: var(--lost);
+  }
+}
+
+// Pages it has looked at: bigger for more links, this turn's lit.
+.cloud {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2rem;
+  margin-top: -0.6rem;
+}
+
+.bubble {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  padding: 0.2rem 0.6rem;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink-soft);
+  transition:
+    background-color 0.4s,
+    color 0.4s;
+
+  small {
+    font-size: 0.7em;
+    opacity: 0.75;
+  }
+}
+
+.now {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--paper);
+  animation: arrive 0.4s ease-out;
+}
+
+.refused {
+  border-color: color-mix(in srgb, var(--lost) 50%, transparent);
+  color: var(--lost);
+
+  &.now {
+    background: var(--lost);
+    color: var(--paper);
+  }
+}
+
+// The turn's reasoning, in a box that scrolls itself as text streams in.
+.thought {
+  padding: 0.8rem 1rem;
+  border-radius: 12px;
+  background: var(--accent-soft);
+}
+
+.thoughtText {
+  max-height: 11rem;
+  margin: 0;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  font-family: var(--serif);
+  font-size: 1rem;
+  font-style: italic;
+  line-height: 1.55;
+}
+
+.cut {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 4px;
+  background: var(--lost);
+  color: var(--paper);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+// The turn's tool calls, in words.
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.6rem;
+}
+
+.action {
+  padding: 0.1rem 0.55rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: var(--paper);
+
+  &.look {
+    color: var(--accent);
+  }
+
+  &.move {
+    background: var(--accent);
+    color: var(--paper);
+  }
+
+  &.refused {
+    border: none;
+    color: var(--lost);
+  }
+}
+
+.gauges {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 0.75rem 1.5rem;
+}
+
+.gauge {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.track {
+  height: 0.6rem;
+  border-radius: 999px;
+  background: var(--rule);
+  overflow: hidden;
+}
+
+.fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+  transition: width 0.5s ease-out;
+
+  .full & {
+    background: var(--lost);
+  }
+}
+
+.value {
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+}
+
+// The ending, stamped on the last turn.
+.stamp {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.3rem 0.8rem;
+  border: 2px solid currentColor;
+  border-radius: 6px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transform: rotate(-4deg);
+  animation: arrive 0.4s ease-out;
+
+  // No room beside the turn counter on a phone: the stamp joins the flow.
+  @include phone {
+    position: static;
+    justify-self: start;
+    transform: none;
+  }
+}
+
+.won {
+  color: var(--won);
+}
+
+.lost {
+  color: var(--lost);
+}

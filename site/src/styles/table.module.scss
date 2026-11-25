@@ -1,0 +1,39 @@
+// The look shared by the results tables: tabular numbers, hairline rows, and
+// a box that scrolls sideways on a phone so the page never does.
+
+.scroll {
+  overflow-x: auto;
+  margin: 1.5rem 0 0.75rem;
+}
+
+.table {
+  width: 100%;
+  min-width: 46rem;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+
+  th,
+  td {
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid var(--rule);
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  thead th {
+    color: var(--ink-soft);
+    font-size: 0.85rem;
+    font-weight: 600;
+    vertical-align: bottom;
+  }
+}
+
+.number {
+  text-align: right !important;
+}
+
+.losses {
+  min-width: 12rem;
+  max-width: 16rem;
+  font-size: 0.9rem;
+}

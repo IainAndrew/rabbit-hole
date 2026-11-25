@@ -1,0 +1,74 @@
+.picker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1.5rem 0 1rem;
+  font-weight: 600;
+
+  select {
+    max-width: 100%;
+    padding: 0.35rem 0.5rem;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    background: var(--paper-raised);
+    color: var(--ink);
+    font: inherit;
+    font-weight: 400;
+  }
+}
+
+// Every race, with a button per repeat coloured by how it ended.
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: 0.25rem 1.5rem;
+  margin-bottom: 2rem;
+  font-size: 0.9rem;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.3rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.runs {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.outcome {
+  width: 1.7rem;
+  height: 1.7rem;
+  border: none;
+  border-radius: 6px;
+  color: var(--paper);
+  font: 600 0.8rem var(--sans);
+  cursor: pointer;
+
+  &[aria-current] {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+  }
+}
+
+.won {
+  background: var(--won);
+}
+
+.lost {
+  background: var(--lost);
+}
+
+.crashed,
+.killed {
+  background: var(--ink-soft);
+}
+
+.error {
+  color: var(--lost);
+}

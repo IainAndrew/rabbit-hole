@@ -1,0 +1,132 @@
+// Rabbit Hole: ink on paper, like the encyclopedia it races through, with one
+// accent for paths and links. Colours are custom properties so dark mode is
+// one block and every component module can use them. Only page-wide basics
+// and a few shared text styles live here; everything else is a module.
+
+:root {
+  --paper: #fbfaf7;
+  --paper-raised: #ffffff;
+  --ink: #1c1b19;
+  --ink-soft: #5b5852;
+  --rule: #e2ded6;
+  --accent: #2f5bd3;
+  --accent-soft: #e8eefc;
+  --won: #2e7d4f;
+  --lost: #b3412e;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --measure: 46rem;
+  color-scheme: light dark;
+
+  @media (prefers-color-scheme: dark) {
+    --paper: #151513;
+    --paper-raised: #1d1d1a;
+    --ink: #ecebe7;
+    --ink-soft: #a5a29b;
+    --rule: #33322e;
+    --accent: #8aa8ff;
+    --accent-soft: #1f2840;
+    --won: #6cc58f;
+    --lost: #f08a76;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 1.0625rem/1.6 var(--sans);
+}
+
+a {
+  color: var(--accent);
+}
+
+code {
+  font-family: var(--mono);
+  font-size: 0.92em;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--serif);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+blockquote {
+  margin: 1rem 0;
+  padding: 0.25rem 0 0.25rem 1.1rem;
+  border-left: 3px solid var(--rule);
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  font-style: italic;
+}
+
+// The page's sections: a measure for prose, room under the sticky header.
+main {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+
+  > section {
+    padding: 3rem 0 1rem;
+    scroll-margin-top: 3.5rem;
+
+    > h2 {
+      font-size: 1.75rem;
+      margin: 0 0 1rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    > h3 {
+      margin: 2.5rem 0 0.5rem;
+      font-size: 1.3rem;
+    }
+
+    > p {
+      max-width: var(--measure);
+    }
+  }
+}
+
+// Shared text styles, used across components.
+.lede {
+  max-width: var(--measure);
+  margin: 0 0 1.5rem;
+  font-size: 1.15rem;
+}
+
+.hint {
+  display: block;
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+
+.source {
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+}
+
+.rule {
+  max-width: var(--measure);
+  padding-left: 1rem;
+  border-left: 3px solid var(--accent);
+}
+
+.run-link {
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

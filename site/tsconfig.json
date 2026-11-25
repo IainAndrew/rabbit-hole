@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "jsx": "react-jsx",
+    // Node types too: components import the data's types from src/site/,
+    // whose modules also use node:fs.
+    "types": ["node", "vite/client"],
+
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+
+    // Vite builds the code; tsc only checks it.
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+
+    "skipLibCheck": true,
+
+    // The harness's src/, for the data types the site shares with build-site.
+    "paths": { "@harness/*": ["../src/*"] }
+  },
+  "include": ["src", "vite.config.ts"]
+}

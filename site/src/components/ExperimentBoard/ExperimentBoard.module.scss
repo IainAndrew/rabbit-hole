@@ -1,0 +1,41 @@
+// A heading row per model, then its settings.
+.group th {
+  padding-top: 1.25rem;
+  border-bottom: 1px solid var(--ink-soft);
+  font-family: var(--serif);
+  font-size: 1.1rem;
+}
+
+.setting {
+  min-width: 14rem;
+  max-width: 20rem;
+  font-weight: 400;
+
+  :global(.hint) {
+    margin-top: 0.2rem;
+  }
+}
+
+.usual {
+  margin-left: 0.4rem;
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  font-size: 0.75rem;
+}
+
+.gap {
+  min-width: 13rem;
+}
+
+.points {
+  font-family: var(--serif);
+  font-size: 1.15rem;
+}
+
+.verdict {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+}

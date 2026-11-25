@@ -49,9 +49,9 @@ before writing or changing code.
 
 Needs Node 24 or later. Copy `.env.example` to `.env` before anything that calls a model.
 
-- `npm install`: install dev dependencies (TypeScript, Node types, and `marked` for the
-  site's doc pages)
-- `npm run typecheck`: type-check everything in `src/`
+- `npm install`: install dev dependencies: TypeScript and Node types for the harness;
+  `marked` for the docs; React, Vite, Sass and Observable Plot for the site
+- `npm run typecheck`: type-check the harness in `src/` and the site in `site/`
 - `npm test`: run tests with Node's built-in runner (`*.test.ts` files)
 - `npm run race-by-hand -- "Start" "Target"`: play a race yourself by typing tool calls
   (free)
@@ -83,11 +83,12 @@ Needs Node 24 or later. Copy `.env.example` to `.env` before anything that calls
   each success rate and on each gap to the next ("noise" if it could be chance), and cost
   per run and per win, tokens, turns, time, end reasons and how runs played beside it;
   refuses evals with a different prompt, race set, repeats, limits or commit (free)
-- `npm run build-site`: build the site's data from the current sweeps into
-  `site/data/` (leaderboards ranked by the same code as `compare-evals`, and a replay of
-  every run) and render each `docs/*.md` as a page in `site/docs/`; both gitignored (free)
-- `npm run serve-site`: serve `site/` at http://localhost:8765 to look at it locally
-  (run `build-site` first; free)
+- `npm run build-site`: write the site's data into `site/public/` (leaderboards ranked by
+  the same code as `compare-evals`, a replay of every run, and each `docs/*.md` rendered),
+  then build the React site into `site/dist/rabbit-hole/`; all gitignored (free)
+- `npm run serve-site`: run the site with Vite's dev server at
+  http://localhost:8765/rabbit-hole/, reloading on save (run `build-site` once first for
+  the data; free)
 - `npm run replay-trace -- <trace>.jsonl`: replay a run from its trace, turn by turn
   (free)
 - `npm run measure-races`: measure each race's distance and its target's backlinks on
