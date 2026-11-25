@@ -11,6 +11,11 @@
   max-width: 20rem;
   font-weight: 400;
 
+  code {
+    color: var(--ink-soft);
+    font-size: 0.8rem;
+  }
+
   :global(.hint) {
     margin-top: 0.2rem;
   }

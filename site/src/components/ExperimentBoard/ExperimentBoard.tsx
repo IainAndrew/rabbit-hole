@@ -5,6 +5,7 @@
 import type { BaselineGap } from "@harness/evals/compare.ts";
 import type { Baseline, Board, BoardEntry } from "@harness/site-data/leaderboards.ts";
 import { points } from "../../format.ts";
+import { promptName, strategyName } from "../../settings.ts";
 import styles from "./ExperimentBoard.module.scss";
 import { RunEndings } from "../RunEndings/RunEndings.tsx";
 import { SuccessCell } from "../SuccessCell/SuccessCell.tsx";
@@ -75,13 +76,16 @@ function byModel(entries: BoardEntry[]): BoardEntry[][] {
   ]);
 }
 
-/** The setting's name, and a prompt's text quoted. Strategies are described in the copy around their tables. */
+/**
+ * The setting's plain name with its code name beside it, and a prompt's text
+ * quoted. Strategies are described in the copy around their tables.
+ */
 function Setting({ entry, baseline }: { entry: BoardEntry; baseline: Baseline }) {
   const name = baseline.varies === "context" ? entry.context : entry.prompt;
   const meaning = baseline.varies === "prompt" && entry.systemPrompt !== null ? `“${entry.systemPrompt}”` : "";
   return (
     <>
-      <code>{name}</code>
+      <strong>{baseline.varies === "context" ? strategyName(name) : promptName(name)}</strong> <code>{name}</code>
       {name === baseline.value && <span className={styles.usual}>usual</span>}
       <span className="hint">{meaning}</span>
     </>

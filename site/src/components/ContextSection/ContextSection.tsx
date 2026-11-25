@@ -1,5 +1,6 @@
 import type { Board } from "@harness/site-data/leaderboards.ts";
 import type { Facts } from "../../facts.ts";
+import { strategyName } from "../../settings.ts";
 import { ExperimentBoard } from "../ExperimentBoard/ExperimentBoard.tsx";
 import { Source } from "../Source.tsx";
 import { StrategyTable } from "../StrategyTable/StrategyTable.tsx";
@@ -24,7 +25,7 @@ export function ContextSection({ strategies, prompts, facts }: { strategies: Boa
 
       <div className={styles.strategy}>
         <h4>
-          Full history <code>full</code> <span className={styles.usual}>usual</span>
+          {strategyName("full")} <code>full</code> <span className={styles.usual}>usual</span>
         </h4>
         <p>
           Every turn, the model gets the whole conversation so far: the instructions, every tool call it made, every
@@ -41,7 +42,7 @@ export function ContextSection({ strategies, prompts, facts }: { strategies: Boa
 
       <div className={styles.strategy}>
         <h4>
-          Masking <code>masked</code>
+          {strategyName("masked")} <code>masked</code>
         </h4>
         <p>
           Link lists older than the last 2 turns are cut down to their first line, which names the page and how many
@@ -59,7 +60,7 @@ export function ContextSection({ strategies, prompts, facts }: { strategies: Boa
 
       <div className={styles.strategy}>
         <h4>
-          Rebuilt state <code>state</code>
+          {strategyName("state")} <code>state</code>
         </h4>
         <p>
           Each turn the conversation is set aside and the harness writes one fresh message from facts: what last

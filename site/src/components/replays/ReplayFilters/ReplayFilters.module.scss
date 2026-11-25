@@ -1,0 +1,29 @@
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  margin: 1.5rem 0 1.25rem;
+
+  select {
+    min-width: 12rem;
+    max-width: 100%;
+    padding: 0.4rem 0.5rem;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    background: var(--paper-raised);
+    color: var(--ink);
+    font: inherit;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.label {
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+  font-weight: 600;
+}

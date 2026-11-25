@@ -6,6 +6,7 @@
 import { useEffect, useMemo } from "react";
 import type { Replay } from "@harness/site-data/replays.ts";
 import { cx, formatNumber, money } from "../../../format.ts";
+import { promptName, strategyName } from "../../../settings.ts";
 import { endingText, isWin, stepsOf } from "../model.ts";
 import styles from "./ReplayView.module.scss";
 import { Stage } from "../Stage/Stage.tsx";
@@ -44,7 +45,7 @@ export function ReplayView({ replay }: { replay: Replay }) {
         </h3>
         <p className={cx(styles.ending, isWin(end) ? styles.won : styles.lost)}>{endingText(end)}</p>
         <p className="hint">
-          context <code>{start.contextStrategy}</code>, prompt <code>{start.promptVariant}</code>, commit{" "}
+          Context: {strategyName(start.contextStrategy)}. Prompt: {promptName(start.promptVariant)}. Commit{" "}
           <code>{start.gitCommit.slice(0, 7)}</code>
         </p>
       </header>

@@ -11,26 +11,20 @@ import { loadJson } from "../../../data.ts";
 import { cx } from "../../../format.ts";
 import { ReplayModal } from "../ReplayModal/ReplayModal.tsx";
 import { ReplayView } from "../ReplayView/ReplayView.tsx";
+import { evalPathOf, ReplayFilters } from "../ReplayFilters/ReplayFilters.tsx";
 import styles from "./Replays.module.scss";
 
 /** The eval picked, and the run open in it (race and repeat null: none open). */
 type Choice = { evalPath: string; raceId: string | null; repeat: number | null };
 
 export function Replays({ data }: { data: SiteData }) {
-  const groups = useMemo(
-    () =>
-      data.boards.map((board) => ({
-        title: board.title,
-        options: board.entries.map((entry) => ({
-          value: `${board.sweep}/${entry.eval}`,
-          label: `${entry.model.name} / ${entry.context} / ${entry.prompt}`,
-        })),
-      })),
+  const known = useMemo(
+    () => new Set(data.boards.flatMap((board) => board.entries.map((entry) => evalPathOf(board, entry)))),
     [data],
   );
-  const known = useMemo(() => new Set(groups.flatMap((group) => group.options.map((option) => option.value))), [groups]);
   const [choice, setChoice] = useState<Choice>(
-    () => choiceInAddress(known) ?? { evalPath: groups[0]!.options[0]!.value, raceId: null, repeat: null },
+    () =>
+      choiceInAddress(known) ?? { evalPath: evalPathOf(data.boards[0]!, data.boards[0]!.entries[0]!), raceId: null, repeat: null },
   );
   const [runs, setRuns] = useState<{ evalPath: string; list: RunSummary[] } | null>(null);
   const [replay, setReplay] = useState<{ file: string; replay: Replay } | null>(null);
@@ -92,27 +86,15 @@ export function Replays({ data }: { data: SiteData }) {
     <section id="replays" aria-labelledby="replays-title">
       <h2 id="replays-title">Replays</h2>
       <p>
-        Every run above, turn by turn: what the model thought, what it did, and how big its context grew. Pick an eval,
-        then a run (green won, red lost, grey crashed and not counted) to open it, and step through it with Next or
+        Every run above, turn by turn: what the model thought, what it did, and how big its context grew. Choose a model,
+        a context strategy and a prompt, then a run (green won, red lost, grey crashed and not counted) to open it, and step through it with Next or
         the arrow keys.
       </p>
-      <label className={styles.picker}>
-        Eval
-        <select
-          value={choice.evalPath}
-          onChange={(event) => setChoice({ evalPath: event.target.value, raceId: null, repeat: null })}
-        >
-          {groups.map((group) => (
-            <optgroup key={group.title} label={group.title}>
-              {group.options.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </optgroup>
-          ))}
-        </select>
-      </label>
+      <ReplayFilters
+        boards={data.boards}
+        evalPath={choice.evalPath}
+        onChange={(evalPath) => setChoice({ evalPath, raceId: null, repeat: null })}
+      />
 
       {list !== null && (
         <div className={styles.grid}>
