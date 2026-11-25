@@ -11,7 +11,8 @@ import { loadJson } from "../../../data.ts";
 import { cx } from "../../../format.ts";
 import { ReplayModal } from "../ReplayModal/ReplayModal.tsx";
 import { ReplayView } from "../ReplayView/ReplayView.tsx";
-import { evalPathOf, ReplayFilters } from "../ReplayFilters/ReplayFilters.tsx";
+import { evalPathOf } from "../../../replayLinks.ts";
+import { ReplayFilters } from "../ReplayFilters/ReplayFilters.tsx";
 import styles from "./Replays.module.scss";
 
 /** The eval picked, and the run open in it (race and repeat null: none open). */
@@ -30,14 +31,22 @@ export function Replays({ data }: { data: SiteData }) {
   const [replay, setReplay] = useState<{ file: string; replay: Replay } | null>(null);
   const [error, setError] = useState<Error | null>(null);
 
-  // A link to a run's address, from anywhere on the page, opens it over the page.
+  // A link to a run's address, from anywhere on the page, opens it over the
+  // page; a link to an eval's runs shows them here.
   useEffect(() => {
     const open = () => {
       const wanted = choiceInAddress(known);
-      if (wanted !== null) {
-        setChoice(wanted);
+      if (wanted === null) {
+        return;
+      }
+      setChoice(wanted);
+      if (wanted.raceId === null) {
+        showRunsHere();
       }
     };
+    if (choiceInAddress(known)?.raceId === null) {
+      showRunsHere();
+    }
     window.addEventListener("hashchange", open);
     return () => window.removeEventListener("hashchange", open);
   }, [known]);
@@ -146,11 +155,25 @@ export function Replays({ data }: { data: SiteData }) {
 
 /** The run the address names, if it names one of the known evals; else null. */
 function choiceInAddress(known: Set<string>): Choice | null {
-  const match = /^#run=([^/]+\/[^/]+)\/(.+)-r(\d+)$/.exec(decodeURIComponent(location.hash));
-  if (match === null || !known.has(match[1]!)) {
+  const address = decodeURIComponent(location.hash);
+  const runs = /^#runs=([^/]+\/[^/]+)$/.exec(address);
+  if (runs !== null && known.has(runs[1]!)) {
+    return { evalPath: runs[1]!, raceId: null, repeat: null };
+  }
+  const run = /^#run=([^/]+\/[^/]+)\/(.+)-r(\d+)$/.exec(address);
+  if (run === null || !known.has(run[1]!)) {
     return null;
   }
-  return { evalPath: match[1]!, raceId: match[2]!, repeat: Number(match[3]) };
+  return { evalPath: run[1]!, raceId: run[2]!, repeat: Number(run[3]) };
+}
+
+/**
+ * Bring the reader to the replays, and drop the #runs= address: the filters
+ * now hold the choice, and the same link clicked again should work again.
+ */
+function showRunsHere() {
+  document.getElementById("replays")?.scrollIntoView();
+  history.replaceState(null, "", location.pathname + location.search);
 }
 
 /**

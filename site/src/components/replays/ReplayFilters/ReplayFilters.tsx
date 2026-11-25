@@ -7,16 +7,12 @@
 // baseline). A choice opens the first board that has it: the leaderboard for
 // the usual setup, the experiment for a changed one.
 
-import type { Board, BoardEntry } from "@harness/site-data/leaderboards.ts";
+import type { Board } from "@harness/site-data/leaderboards.ts";
+import { evalPathOf } from "../../../replayLinks.ts";
 import { promptName, strategyName } from "../../../settings.ts";
 import styles from "./ReplayFilters.module.scss";
 
 const USUAL = { context: "full", prompt: "fewest-hops" };
-
-/** An eval's address in the site data: "<sweep>/<eval folder>". */
-export function evalPathOf(board: Board, entry: BoardEntry): string {
-  return `${board.sweep}/${entry.eval}`;
-}
 
 type Setup = { model: string; context: string; prompt: string };
 

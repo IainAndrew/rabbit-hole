@@ -37,3 +37,16 @@
   max-width: 16rem;
   font-size: 0.9rem;
 }
+
+// A row's link to its runs in the replays.
+.runsLink {
+  display: inline-block;
+  margin-top: 0.3rem;
+  font-size: 0.85rem;
+  font-weight: 400;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

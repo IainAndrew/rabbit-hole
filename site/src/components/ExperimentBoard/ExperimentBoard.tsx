@@ -5,6 +5,7 @@
 import type { BaselineGap } from "@harness/evals/compare.ts";
 import type { Baseline, Board, BoardEntry } from "@harness/site-data/leaderboards.ts";
 import { points } from "../../format.ts";
+import { runsHref } from "../../replayLinks.ts";
 import { promptName, strategyName } from "../../settings.ts";
 import styles from "./ExperimentBoard.module.scss";
 import { RunEndings } from "../RunEndings/RunEndings.tsx";
@@ -44,7 +45,7 @@ export function ExperimentBoard({ board }: { board: Board }) {
             {entries.map((entry) => (
               <tr key={entry.eval}>
                 <th scope="row" className={styles.setting}>
-                  <Setting entry={entry} baseline={baseline} />
+                  <Setting board={board} entry={entry} baseline={baseline} />
                 </th>
                 <td>
                   <SuccessCell score={entry.score} interval={entry.interval} />
@@ -78,9 +79,10 @@ function byModel(entries: BoardEntry[]): BoardEntry[][] {
 
 /**
  * The setting's plain name with its code name beside it, and a prompt's text
- * quoted. Strategies are described in the copy around their tables.
+ * quoted, and a link to its runs. Strategies are described in the copy around
+ * their tables.
  */
-function Setting({ entry, baseline }: { entry: BoardEntry; baseline: Baseline }) {
+function Setting({ board, entry, baseline }: { board: Board; entry: BoardEntry; baseline: Baseline }) {
   const name = baseline.varies === "context" ? entry.context : entry.prompt;
   const meaning = baseline.varies === "prompt" && entry.systemPrompt !== null ? `“${entry.systemPrompt}”` : "";
   return (
@@ -88,6 +90,9 @@ function Setting({ entry, baseline }: { entry: BoardEntry; baseline: Baseline })
       <strong>{baseline.varies === "context" ? strategyName(name) : promptName(name)}</strong> <code>{name}</code>
       {name === baseline.value && <span className={styles.usual}>usual</span>}
       <span className="hint">{meaning}</span>
+      <a className={table.runsLink} href={runsHref(board, entry)}>
+        Watch these runs
+      </a>
     </>
   );
 }

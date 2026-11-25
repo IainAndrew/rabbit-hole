@@ -4,6 +4,7 @@
 
 import type { Board } from "@harness/site-data/leaderboards.ts";
 import { money, percent } from "../../format.ts";
+import { runsHref } from "../../replayLinks.ts";
 import table from "../../styles/table.module.scss";
 import { Gap } from "../ExperimentBoard/ExperimentBoard.tsx";
 import { RunEndings } from "../RunEndings/RunEndings.tsx";
@@ -42,6 +43,9 @@ export function StrategyTable({ board, strategy }: { board: Board; strategy: str
               <th scope="row">
                 {entry.model.name}
                 <span className="hint">{entry.model.lab}</span>
+                <a className={table.runsLink} href={runsHref(board, entry)}>
+                  Watch these runs
+                </a>
               </th>
               <td>
                 <SuccessCell score={entry.score} interval={entry.interval} />
