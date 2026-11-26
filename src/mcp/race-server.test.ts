@@ -64,6 +64,16 @@ test("the server offers start_race and the eval tools, described as in the evals
   }
 });
 
+test("only get_links is marked read-only", async () => {
+  const { request } = await connect();
+  const { tools } = await request<{ tools: { name: string; annotations?: { readOnlyHint?: boolean } }[] }>(
+    "tools/list",
+    {},
+  );
+  const readOnly = tools.filter((tool) => tool.annotations?.readOnlyHint === true).map((tool) => tool.name);
+  assert.deepEqual(readOnly, ["get_links"]);
+});
+
 test("the server's instructions say how the race is scored", async () => {
   const { init } = await connect();
   assert.match(init.instructions, /Reaching the target is what counts/);

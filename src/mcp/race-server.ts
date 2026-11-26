@@ -19,6 +19,14 @@ const START_RACE_SCHEMA = {
 } as const;
 
 /**
+ * Tools that change nothing, hinted to hosts so they can treat them more
+ * lightly (some ask less before running them). get_links may record a page
+ * into the snapshot, but that only caches what Wikipedia already says: the
+ * race and everything a player can see stay the same.
+ */
+const READ_ONLY_TOOLS = new Set(["get_links"]);
+
+/**
  * An MCP server holding one race at a time. Starting a race replaces the one
  * before; a race that ends (won or given up) is cleared.
  *
@@ -67,7 +75,11 @@ export function createRaceServer(getLinks: LinkSource): McpServer {
   for (const { function: tool } of toolDefinitions) {
     server.registerTool(
       tool.name,
-      { description: tool.description, inputSchema: fromJsonSchema(tool.parameters) },
+      {
+        description: tool.description,
+        inputSchema: fromJsonSchema(tool.parameters),
+        annotations: { readOnlyHint: READ_ONLY_TOOLS.has(tool.name) },
+      },
       (args) =>
         oneAtATime(async () => {
           if (race === null) {
