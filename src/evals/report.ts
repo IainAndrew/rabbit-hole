@@ -5,6 +5,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { EvalManifest, ManifestRun } from "./run-eval.ts";
 import { fillNames, parseTrace, type RunEndEvent, type RunStartEvent, type TraceLine } from "../agent/trace.ts";
+import { isRecord } from "../is-record.ts";
 
 /** One run, as its trace tells it. */
 export type LoadedRun = ManifestRun & {
@@ -133,9 +134,4 @@ function parseManifest(value: unknown): EvalManifest {
     }
   }
   return value as EvalManifest;
-}
-
-/** True for any non-null object, so its fields can be read and checked. */
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
 }

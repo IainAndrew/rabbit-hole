@@ -2,6 +2,7 @@
 // Free to call: no key needed.
 
 import { fetchWithRetry } from "../http/retry.ts";
+import { isRecord } from "../is-record.ts";
 
 const MODELS_URL = "https://openrouter.ai/api/v1/models";
 
@@ -97,9 +98,4 @@ export function perMillion(value: unknown, id: string): number {
     throw new Error(`Malformed price for ${id}`);
   }
   return perToken * 1_000_000;
-}
-
-/** True for any non-null object, so its fields can be read and checked. */
-export function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
 }

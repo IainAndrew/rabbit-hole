@@ -7,6 +7,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { normalizeTitle, type LinkSource } from "../race/race.ts";
 import { PageNotFoundError } from "./wikipedia.ts";
+import { isRecord } from "../is-record.ts";
 
 /**
  * What one snapshot file holds. There's one file per title looked up. A
@@ -132,9 +133,4 @@ function parseEntry(value: unknown, file: string): Entry {
     return { kind, title: value.title, message: value.message, fetchedAt };
   }
   throw bad;
-}
-
-/** True for any non-null object, so its fields can be read and checked. */
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
 }

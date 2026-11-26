@@ -1,6 +1,7 @@
 // Client for the English Wikipedia Action API.
 
 import { fetchWithRetry } from "../http/retry.ts";
+import { isRecord } from "../is-record.ts";
 
 const API_URL = "https://en.wikipedia.org/w/api.php";
 
@@ -274,9 +275,4 @@ function parseContinue(value: unknown): Record<string, string> | null {
     fields[key] = field;
   }
   return fields;
-}
-
-/** True for any non-null object, so its fields can be read and checked. */
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
 }

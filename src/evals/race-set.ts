@@ -3,6 +3,7 @@
 import { DISTANCE_LIMITS, shortestPath } from "./distance.ts";
 import { PageNotFoundError } from "../wikipedia/wikipedia.ts";
 import { hasWon, hops, move, normalizeTitle, startRace, type LinkSource } from "../race/race.ts";
+import { isRecord } from "../is-record.ts";
 
 /**
  * How hard a race is, from two facts about the map (see `tierFor`): how far
@@ -239,9 +240,4 @@ export async function checkRace(spec: RaceSpec, getLinks: LinkSource): Promise<s
     problems.push(`the known path takes ${hops(race)} hops, but the race was measured at ${spec.measured.distance}`);
   }
   return problems;
-}
-
-/** True for any non-null object, so its fields can be read and checked. */
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
 }

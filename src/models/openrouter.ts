@@ -3,6 +3,7 @@
 
 import type { Model, ReasoningSetting } from "./models.ts";
 import { fetchWithRetry } from "../http/retry.ts";
+import { isRecord } from "../is-record.ts";
 
 const CHAT_URL = "https://openrouter.ai/api/v1/chat/completions";
 
@@ -269,9 +270,4 @@ function optionalString(value: unknown): string | null {
 /** The value if it's a number, otherwise null. */
 function optionalNumber(value: unknown): number | null {
   return typeof value === "number" ? value : null;
-}
-
-/** True for any non-null object, so its fields can be read and checked. */
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
 }

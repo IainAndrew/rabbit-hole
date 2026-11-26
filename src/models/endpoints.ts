@@ -3,7 +3,8 @@
 // so choosing a model is also choosing an endpoint. Free to call: no key.
 
 import { fetchWithRetry } from "../http/retry.ts";
-import { isRecord, perMillion } from "./model-list.ts";
+import { isRecord } from "../is-record.ts";
+import { perMillion } from "./model-list.ts";
 
 /** One provider's endpoint for a model. Prices are dollars per million tokens. */
 export type Endpoint = {

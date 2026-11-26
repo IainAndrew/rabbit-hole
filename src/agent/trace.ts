@@ -9,6 +9,7 @@ import { FEWEST_HOPS } from "./prompt.ts";
 import { FULL_HISTORY } from "./context.ts";
 import type { Model } from "../models/models.ts";
 import type { ModelToolCall, Usage } from "../models/openrouter.ts";
+import { isRecord } from "../is-record.ts";
 
 /** One line of a trace. A run writes run_start, then model and tool calls, then run_end. */
 export type TraceEvent = RunStartEvent | ModelCallEvent | ToolCallEvent | RunEndEvent;
@@ -252,11 +253,6 @@ export function fillNames(value: Record<string, unknown>, where: string): void {
       throw new Error(`${where}: "${field}" should be string`);
     }
   }
-}
-
-/** True for any non-null object, so its fields can be read and checked. */
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
 }
 
 /** Make text safe for a file name: runs of other characters become one dash. */
