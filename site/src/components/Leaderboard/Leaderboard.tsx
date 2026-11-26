@@ -88,7 +88,7 @@ function HopsWasted({ entry }: { entry: BoardEntry }) {
   );
 }
 
-/** "could be 2–7", or "clearly here" when the range is one rank. */
+/** "could be 2–7", or "could only be 10" when the range is one rank. */
 function rankRangeText({ best, worst }: RankRange): string {
-  return best === worst ? "clearly here" : `could be ${best}–${worst}`;
+  return best === worst ? `could only be ${best}` : `could be ${best}–${worst}`;
 }

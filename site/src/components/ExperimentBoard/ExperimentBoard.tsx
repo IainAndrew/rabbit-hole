@@ -100,7 +100,7 @@ function Setting({ board, entry, baseline }: { board: Board; entry: BoardEntry; 
 /** The gap to the baseline in points, with its range and p, and what they add up to. */
 export function Gap({ gap }: { gap: BaselineGap | null }) {
   if (gap === null) {
-    return <span className="hint">the baseline</span>;
+    return <span className="hint">the default, to compare against</span>;
   }
   const range = gap.interval === null ? null : `range ${points(gap.interval.low)} to ${points(gap.interval.high)}`;
   const p = gap.p === null ? null : gap.p < 0.001 ? "p < 0.001" : `p = ${gap.p.toFixed(3)}`;

@@ -32,7 +32,7 @@ export function StrategyTable({ board, strategy }: { board: Board; strategy: str
             </th>
             {!isBaseline && <th scope="col">Against full history</th>}
             <th scope="col" className={table.number}>
-              Cost <span className="hint">per run, cache served</span>
+              Cost <span className="hint">per run, share of prompt cached</span>
             </th>
             <th scope="col">How the runs ended</th>
           </tr>

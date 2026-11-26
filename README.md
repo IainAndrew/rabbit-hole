@@ -28,7 +28,7 @@ good place to measure how models plan, wander and run out of room.
 Ten models raced the same 25 races three times each.
 
 - **Claude Opus 5.5 won all 75 runs, at $0.14 a win.** GLM-5.3 Flash won 95% of its runs
-  at $0.006 a win, about a twenty-fourth of the cost. GPT-6 Luna had the cheapest wins
+  at $0.006 a win, about 24 times cheaper. GPT-6 Luna had the cheapest wins
   ($0.003) but lost one race in five. LFM-3 1.7B, the tiny model at the bottom, won 12%.
 - **Changing what the model sees each turn made no difference I could detect.** Hiding
   old link lists moved DeepSeek and Mistral by +4 and +3 points, well within noise.
@@ -36,7 +36,7 @@ Ten models raced the same 25 races three times each.
   ever saw the latest link lists, so it kept looking up the same pages again.
 - **What helped DeepSeek was the prompt.** The original asked it to reach the target in
   as few hops as possible, two goals with no order between them. DeepSeek put hops first:
-  it often had a route in hand and spent its whole reply proving no shorter one existed,
+  it often already had a route and spent its whole reply proving no shorter one existed,
   until it hit the output limit. Saying that reaching the target comes first took it from
   87% to 96%, and its losses to the output limit from 6 to 0. The full story is in
   [Down the rabbit hole](docs/down-the-rabbit-hole.md).

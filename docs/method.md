@@ -62,9 +62,10 @@ A run ends in one of these ways:
 - **gave up**: it called `give_up`.
 - **turn limit**, **context limit**: it hit a limit above.
 - **output limit**: a reply was cut off at 2,000 tokens.
-- **refused**: a reply came back with no tool call. There's no second chance: a model
-  that doesn't follow the protocol has failed the run.
-- **crashed**: an API error, an outage, an exhausted retry. This says nothing about the
+- **no tool call** (`refused` in the traces): a reply came back with no tool call.
+  There's no second chance: a model that doesn't call a tool has failed the run.
+- **crashed**: an API error, an outage, or a request that still failed after every
+  retry. This says nothing about the
   agent, so a crash isn't a loss. Crashed runs are left out of the score, reported
   apart, and run again.
 
@@ -166,7 +167,7 @@ races doesn't look cheap.
 ## How sure the results are
 
 A success rate from 75 runs is an estimate, and runs aren't independent: repeats of one
-race tend to go the same way. Three tools account for that.
+race tend to go the same way. The site uses three measures that allow for that.
 
 - **Ranges.** Each success rate's 95% range comes from a two-stage bootstrap: resample
   the 25 races with replacement, then resample the runs within each, 10,000 times, and
@@ -180,7 +181,8 @@ race tend to go the same way. Three tools account for that.
   the site shows both.
 - **Rank ranges.** Every pair of models is compared this way. A model's best possible
   rank is 1 plus the models clearly better than it; its worst is the count minus those
-  clearly worse. Comparing every pair, not just neighbours, stops ties chaining.
+  clearly worse. Every pair is compared, not just neighbours, because A can be level
+  with B and B level with C while A is still clearly ahead of C.
 
 Three cautions:
 
@@ -217,7 +219,7 @@ summary. It needs extra model calls, published comparisons found it no better th
 masking at about twice the cost, and it made runs longer
 ([The Complexity Trap](#related-work)).
 
-## Receipts
+## Traces
 
 Each run writes a trace, one line per event: the setup (model, provider, prompt and its
 hash, context strategy, limits, code commit), every model call (tokens, cached tokens,

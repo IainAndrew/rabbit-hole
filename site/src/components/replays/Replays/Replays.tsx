@@ -96,8 +96,8 @@ export function Replays({ data }: { data: SiteData }) {
       <h2 id="replays-title">Replays</h2>
       <p>
         Every run above, turn by turn: what the model thought, what it did, and how big its context grew. Choose a model
-        and a setup it ran with, then a run (green won, red lost, grey crashed and not counted) to open it, and step
-        through it with Next or the arrow keys.
+        and a setup it ran with (the default, or one of the experiments), then a run to open it: green won, red lost,
+        grey crashed and not counted. Step through it with Next or the arrow keys.
       </p>
       <ReplayFilters
         boards={data.boards}
@@ -138,7 +138,7 @@ export function Replays({ data }: { data: SiteData }) {
       {choice.raceId !== null && list !== null && (
         <ReplayModal onClose={close}>
           {run === null ? (
-            <p className={styles.error}>This eval has no run of that race and repeat.</p>
+            <p className={styles.error}>This model and setup has no run of that race and repeat.</p>
           ) : replay !== null && replay.file === run.file ? (
             <ReplayView key={replay.file} replay={replay.replay} />
           ) : (

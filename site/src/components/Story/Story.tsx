@@ -19,8 +19,8 @@ export function Story({ facts }: { facts: Facts }) {
     <section id="story" aria-labelledby="story-title">
       <h2 id="story-title">Down the rabbit hole</h2>
       <p className="lede">
-        DeepSeek V4.1 Flash found a route to the target, said so, and then never moved. One real loss, how we found the
-        cause, the fix that looked obvious and wasn't, and the one sentence that did fix it.
+        DeepSeek V4.1 Flash found a route to the target, said so, and then never moved. This is one real loss, how we
+        found the cause, a fix we tried that didn't work, and the change to the prompt that did.
       </p>
 
       <Chapter number={1} title="The loss">
@@ -30,7 +30,7 @@ export function Story({ facts }: { facts: Facts }) {
         </p>
         <blockquote>“Germany directly links Bauhaus. So 3 hops. Need see if 2 possible.”</blockquote>
         <p>
-          It had the shortest route in hand. Instead of moving, it went through Penguin's links one by one, asking of each
+          It had found the shortest route. Instead of moving, it went through Penguin's links one by one, asking of each
           whether it might lead to Bauhaus: “Puffin” no, “Auk” no, “Great auk” no. After 188 pages its reply hit the
           2,000-token output limit and was cut off. The run ended at 0 hops: a loss.
         </p>
@@ -44,17 +44,17 @@ export function Story({ facts }: { facts: Facts }) {
       <Chapter number={2} title="Not a one-off">
         <p>
           DeepSeek lost 19 of its 75 runs on the model leaderboard. Reading every trace: 16 never made a move, 15 already
-          had a complete route among the lists they'd fetched, and 14 ended at the output limit. It wins most races; it
-          loses a share of them the same way, by searching for a shorter route until it runs out of room.
+          had a complete route among the lists they'd fetched, and 14 ended at the output limit. It wins most races, but
+          it loses a share of them the same way: it keeps searching for a shorter route until it hits a limit.
         </p>
       </Chapter>
 
       <Chapter number={3} title="The obvious suspect: context">
         <p>
           Every list it looks up stays in the conversation, and DeepSeek's reasoning grew with it. So we tested the
-          standard fix, masking old link lists, on all 25 races. Masking did what it promises: prompts shrank and the
-          context-limit losses disappeared. The output-limit losses didn't. They kept happening in prompts a fraction of
-          the size. Context wasn't the cause (see <a href="#experiments">the strategy board</a>).
+          standard fix, masking old link lists, on all 25 races. The prompts shrank and the context-limit losses
+          disappeared, but the output-limit losses didn't: they kept happening in prompts a fraction of the size. So
+          context size wasn't the cause (see <a href="#experiments">the experiments</a>).
         </p>
       </Chapter>
 
@@ -81,8 +81,9 @@ export function Story({ facts }: { facts: Facts }) {
           <Figure label="Cost per win" before={fix.costBefore} after={fix.costAfter} />
         </dl>
         <p>
-          On these 25 races the gain is clear: a gap this large turns up by chance with p = {fix.p}. On new races it's
-          probably real, but 25 races can only place it between {fix.range} points. DeepSeek still looks ahead before
+          On these 25 races the gain is clear: if the new prompt made no difference, a gap this large would turn up by
+          chance with probability {fix.p}. On new races it's probably real, but 25 races can only place it between{" "}
+          {fix.range} points. DeepSeek still looks ahead before
           moving; it just stops once it has a good enough route. Compare the same turn of Haiku to Fermat's Last Theorem{" "}
           <a className="run-link" href={`#run=${HAIKU_BEFORE}`}>
             before
@@ -106,7 +107,10 @@ export function Story({ facts }: { facts: Facts }) {
             The obvious fix can be the wrong one. Context growth was real and correlated with the failure, but shrinking it
             fixed a different failure.
           </li>
-          <li>Say which goal comes first. Given two goals and no order, a capable model picks one, and it may not be yours.</li>
+          <li>
+            Say which goal comes first. Given two goals and no order, DeepSeek picked its own order, and it wasn't the one
+            the races are scored by.
+          </li>
         </ol>
       </div>
       <p>

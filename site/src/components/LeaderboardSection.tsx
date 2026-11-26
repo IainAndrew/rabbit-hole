@@ -21,12 +21,12 @@ export function LeaderboardSection({ board, facts }: { board: Board; facts: Fact
       </p>
       <p>
         A success rate from {facts.runsPerModel} runs is an estimate. The range beside it is where the rate could land
-        on another set of races like these. Where two ranges overlap, the order between those models could be chance, so
-        each rank also says which ranks the model could really hold.
+        on another set of races like these. Where two ranges overlap, the order between those two models could be down
+        to chance, so under each rank is the range of ranks the model could hold.
       </p>
       <p>
-        Hops wasted is how many more hops than necessary a model took per win, on average. Every race has a shortest
-        route, so a model that only wins the short races gets no credit for it.
+        Hops wasted is how many hops a model took beyond the shortest route, averaged over its wins. It's measured
+        against each race's own shortest route, so a model that wins only the short races doesn't look efficient for it.
       </p>
       <Leaderboard board={board} />
       <Source board={board} />
@@ -34,13 +34,14 @@ export function LeaderboardSection({ board, facts }: { board: Board; facts: Fact
       <h3>Best for the money</h3>
       <p>
         Cost per win is everything a model spent, losses included, divided by its wins, so a model that loses a lot pays
-        for it here. These models are each the best buy at their price: no other model wins more often for the same
-        money or less. Each step up wins more and costs more per win, and the step says by how much.
+        for it here. The models below are the best buys: for each one, no other model wins as often for the same cost
+        per win or less. Each card wins more than the one before it and costs more per win, and says how much of both.
       </p>
       <BestBuys board={board} />
       <p>
-        The chart puts every model on those two counts. The line joins the models above; any dot under it is beaten by a
-        model on the line. The ranges overlap a lot, so a step of a few points may not hold on new races.
+        The chart plots every model by those two numbers. The line joins the models in the cards; any dot below it is
+        beaten on both by a model on the line. The ranges overlap a lot, so a step of a few points may not hold on new
+        races.
       </p>
       <Suspense fallback={<p className="hint">Loading the chart…</p>}>
         <CostChart board={board} />

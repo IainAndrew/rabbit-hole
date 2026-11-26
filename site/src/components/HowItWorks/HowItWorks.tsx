@@ -3,7 +3,7 @@ import type { Facts } from "../../facts.ts";
 import styles from "./HowItWorks.module.scss";
 
 const TOOLS = [
-  ["get_links(page)", "Read the links on any page. Free: as many as it likes, but every list fills its context."],
+  ["get_links(page)", "Read the links on any page. Free and unlimited, but every list it reads is added to its context."],
   ["move_to(page)", "Follow a link from the current page. One hop. Reaching the target wins."],
   ["give_up(reason)", "Stop. Counts as a loss."],
 ] as const;
@@ -14,16 +14,16 @@ export function HowItWorks({ facts }: { facts: Facts | null }) {
     <section id="how" aria-labelledby="how-title">
       <h2 id="how-title">How a race works</h2>
       <p>
-        The agent is a model in a loop. Each turn it sees the race so far and calls a tool; the harness runs the tool and
-        hands back the result.
+        The agent is a model called in a loop. Each turn it sees the race so far and calls a tool; our code runs the tool
+        and sends back the result.
       </p>
 
       <Part title="The rules">
         <ul className={styles.rules}>
           <li>Start on the start page and reach the target by following links.</li>
           <li>
-            A move has to follow a link on the current page. The harness checks it in code, and a move that doesn't is
-            refused: the agent stays where it is.
+            A move has to follow a link on the current page. That's checked in code, and a move that doesn't is refused:
+            the agent stays where it is.
           </li>
           <li>The agent can read any page's links, as often as it likes. Only moves count as hops.</li>
           <li>
@@ -51,7 +51,7 @@ export function HowItWorks({ facts }: { facts: Facts | null }) {
         <p className={styles.lead}>Success rate decides the ranking. Between equal success rates, fewer hops on wins decides.</p>
         <p>
           Cost, tokens and time are shown beside the ranking, never ranked on. A crash, such as an API error or a provider
-          outage, says nothing about the agent, so it isn't counted either way.
+          outage, says nothing about the agent, so it isn't counted as a win or a loss, and the run is played again.
         </p>
       </Part>
     </section>

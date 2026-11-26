@@ -1,8 +1,8 @@
 # Down the rabbit hole
 
 DeepSeek V4.1 Flash found a route to the target, said so, and then never moved. This is
-how we found out why, the fix that looked obvious and wasn't, and the one sentence that
-did fix it.
+how we found out why, a fix we tried that didn't work, and the change to the prompt that
+did.
 
 Everything below comes from the traces in [`results/`](../results/): every model call,
 tool call and reasoning text a run produced. The quotes are DeepSeek's own reasoning.
@@ -20,7 +20,7 @@ played it like this:
 | 3 | "Bird links Germany directly! So path Penguin -> Bird -> Germany -> Bauhaus? Need check Germany links Bauhaus." Looked up Germany's links | 27k chars |
 | 4 | "Germany directly links Bauhaus. So 3 hops. Need see if 2 possible." | 53k chars |
 
-It had the shortest route in hand. Turn 4 should have been a move. Instead it went
+It had found the shortest route, and turn 4 should have been a move. Instead it went
 through Penguin's links one by one, asking of each whether it might link to Bauhaus,
 and answered itself: "Puffin" no. "Auk" no. "Great auk" no. It dismissed 188 pages this
 way, working down a list of bird families ("Lark" no. "Pipit" no. "Wagtail" no.), until
@@ -37,7 +37,7 @@ DeepSeek lost 19 of its 75 runs in sweep v2. Reading every one:
 
 The failure is intermittent. The same model won Penguin to Bauhaus in its other
 repeats. What it does is lose a share of runs, across many races, the same way: it
-finds a route and keeps searching for a shorter one until it runs out of room.
+finds a route and keeps searching for a shorter one until it hits a limit.
 
 ## The obvious suspect: context
 
@@ -57,9 +57,9 @@ three times with full history and three times with masking
 | Full history | 58/75 (77%) | 11 | 6 | 75k to 274k chars |
 | Masked | 61/75 (81%) | 13 | 0 | 3k to 104k, median 33k |
 
-Masking did what it promises: prompts shrank and the context-limit losses disappeared.
-The output-limit losses didn't. They kept happening, now in prompts a fraction of the
-size. Context size wasn't the cause. (The success gap, +4 points, is within noise: p =
+The prompts shrank and the context-limit losses disappeared, but the output-limit losses
+didn't: they kept happening, now in prompts a fraction of the size. So context size
+wasn't the cause. (The success gap, +4 points, is within noise: p =
 0.61.) Rebuilding the prompt from facts each turn did worse, 68%, and broke the other
 model we tried it on.
 
@@ -88,8 +88,8 @@ DeepSeek played all 25 races three times under each prompt, at the same commit
 
 | DeepSeek, full history | Won | Output-limit losses | Never moved | Hops on wins | Cost per win |
 |---|---|---|---|---|---|
-| Original prompt | 65/75 (87%) | 6 | 8 | 3.2 | $0.0043 |
-| Scoring-rule prompt | **72/75 (96%)** | **0** | 2 | 3.6 | **$0.0031** |
+| Original prompt (`fewest-hops`) | 65/75 (87%) | 6 | 8 | 3.2 | $0.0043 |
+| New prompt (`scoring-rule`) | **72/75 (96%)** | **0** | 2 | 3.6 | **$0.0031** |
 
 Its only losses under the new prompt were the three repeats of Jazz to Toynbee tiles,
 the hardest race in the set.
@@ -116,7 +116,7 @@ exists. It just stops asking once it has a good enough answer.
 - **On new races, it's probably real, but 25 races can't say firmly.** Our reports'
   bootstrap, which also resamples which races were run, puts the gain at somewhere
   between 0 and +21 points.
-- **The cause is gone.** Across three evals with the original prompt, DeepSeek hit the
+- **The output-limit losses are gone.** Across three evals with the original prompt, DeepSeek hit the
   output limit 31 times in 225 runs. With the new prompt: 0 in 75.
 - **Single runs of an eval mislead.** The same setup, original prompt and full history,
   scored 75%, 77% and 87% on three different days.
@@ -131,7 +131,7 @@ What we predicted beforehand, against what happened:
 | Success rises to about 90% | 96% |
 | Hops on wins rise slightly, to about 3.4 | 3.6 |
 
-The miss is telling. DeepSeek looks ahead just as long before moving as it did before.
+The prediction we got wrong is the most useful one. DeepSeek looks ahead just as long before moving as it did before.
 What changed is that it no longer tries to prove its route is the shortest. It takes
 slightly longer routes, 3.6 hops instead of 3.2, and that's the right trade under the
 scoring rule. It's also cheaper: 28% less per win, because replies no longer burn 2,000
@@ -144,4 +144,4 @@ tokens on reasoning that gets cut off.
 2. **The obvious fix can be the wrong one.** Context growth was real and correlated
    with the failure. Shrinking it fixed a different failure and left this one alone.
 3. **Say which goal comes first.** The prompt named two goals and no order between them,
-   and a capable model picked an order of its own: not the one the eval scores by.
+   and DeepSeek picked an order of its own, which wasn't the one the races are scored by.

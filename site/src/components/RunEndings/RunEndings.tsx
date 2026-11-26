@@ -26,7 +26,7 @@ export function RunEndings({ endReasons }: { endReasons: Record<EndReason, numbe
   const endings = ENDINGS.map((kind) => ({ ...kind, count: endReasons[kind.reason] })).filter((kind) => kind.count > 0);
   const decided = endings.reduce((sum, kind) => sum + kind.count, 0);
   if (decided === 0) {
-    return <span className="hint">no decided runs</span>;
+    return <span className="hint">no runs counted</span>;
   }
   const described = endings.map((kind) => `${kind.count} ${kind.words}`).join(", ");
   return (

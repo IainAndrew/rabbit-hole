@@ -11,7 +11,7 @@ export function Method({ facts }: { facts: Facts }) {
       <>
         The Wikipedia game, played through tools. Unlike the human game, the agent can read any page's links for free;
         only moves count. That's on purpose: it tests knowing when to stop looking and act, like an agent deciding when
-        it has read enough files. It's also why models here rarely loop.
+        it has read enough files. It's also why models here rarely go round in circles.
       </>,
     ],
     [
@@ -57,12 +57,13 @@ export function Method({ facts }: { facts: Facts }) {
       "What we can't control",
       <>
         Models are served by third-party providers; each is pinned to one, but a provider can change what it serves.
-        Some prices vary by time of day. Tokens aren't comparable across models. And runs vary: the same DeepSeek setup
+        Some prices vary by time of day. Each model counts tokens its own way, so token counts aren't comparable across
+        models. And runs vary: the same DeepSeek setup
         scored 75%, 77% and 87% on three days.
       </>,
     ],
     [
-      "Receipts",
+      "Traces",
       <>
         Every run writes a trace: each model call with its reasoning, tokens and cost, and each tool call with its
         result. Every trace records the model, provider, prompt, context strategy, limits and code commit, and results

@@ -104,7 +104,7 @@ const ENDINGS = {
 /** How the run ended, for its header. */
 export function endingText(end: Replay["end"]): string {
   if (end === null) {
-    return "Killed before it finished: no totals.";
+    return "Stopped before it finished, so there are no totals.";
   }
   const cost = end.totals.cost === null ? "cost unknown" : `$${end.totals.cost.toFixed(4)}`;
   const totals = `${end.turns} turns, ${end.totals.promptTokens.toLocaleString("en-US")} prompt tokens, ${cost}, ${(

@@ -14,7 +14,7 @@ export function ContextSection({ strategies, prompts, facts }: { strategies: Boa
       <p>
         A page can have over a thousand links, so the conversation grows fast. Two models that lost often, DeepSeek V4.1
         Flash and Mistral Small 4, ran the same races again with each change below. Every other setting stayed the same,
-        so each gap is the effect of that one change.
+        so each gap comes from that one change, or from chance.
       </p>
 
       <h3>Context strategies</h3>
@@ -29,13 +29,14 @@ export function ContextSection({ strategies, prompts, facts }: { strategies: Boa
         </h4>
         <p>
           Every turn, the model gets the whole conversation so far: the instructions, every tool call it made, every
-          link list it fetched and everything it wrote. Nothing is lost, but nothing is let go either. One link list can
-          run to tens of thousands of characters, and a run ends once the conversation passes {facts.maxContextChars}{" "}
-          characters.
+          link list it fetched and everything it wrote. Nothing is ever removed, so the prompt keeps growing. One link
+          list can run to tens of thousands of characters, and a run ends once the conversation passes{" "}
+          {facts.maxContextChars} characters.
         </p>
         <p>
-          It costs less than it sounds. The conversation only ever grows at the end, so the provider has seen most of
-          each prompt before and serves it from its cache, at a fraction of the price.
+          Sending it all again every turn is cheaper than it seems. The conversation only ever grows at the end, so the
+          provider has seen most of each prompt before, serves that part from its cache, and charges a fraction of the
+          price for it.
         </p>
         <StrategyTable board={strategies} strategy="full" />
       </div>
@@ -51,9 +52,9 @@ export function ContextSection({ strategies, prompts, facts }: { strategies: Boa
         </p>
         <p>
           The idea comes from coding agents (SWE-agent, and JetBrains' study "The Complexity Trap"), where old tool
-          output fills most of the context and is rarely needed again. The price: the cut moves forward every turn, so
-          the prompt changes near its start and the cache serves much less of it, and a model that needs an old list has to fetch
-          it again.
+          output fills most of the context and is rarely needed again. It has two costs. The cut moves forward every
+          turn, so each prompt differs from the last one much earlier, and the cache, which only serves a prompt up to
+          its first change, covers much less of it. And a model that needs an old list has to fetch it again.
         </p>
         <StrategyTable board={strategies} strategy="masked" />
       </div>
@@ -69,8 +70,8 @@ export function ContextSection({ strategies, prompts, facts }: { strategies: Boa
           refused on this page). None of the model's own words carry over.
         </p>
         <p>
-          The idea is to hand the model facts rather than its own story about them, so it can't talk itself into a
-          mistake, and to keep the prompt small. The price: any link list older than the last turn is gone, so the model
+          The idea is to give the model the facts rather than its own earlier reasoning about them, which may be wrong,
+          and to keep the prompt small. The downside is that any link list older than the last turn is gone, so the model
           can't plan across pages it looked at earlier without fetching them again.
         </p>
         <StrategyTable board={strategies} strategy="state" />
@@ -79,8 +80,8 @@ export function ContextSection({ strategies, prompts, facts }: { strategies: Boa
 
       <h3>The prompt</h3>
       <p>
-        The instructions, rewritten to say which goal comes first: reaching the target, then fewer hops. Everything else
-        in the prompt stayed the same.
+        One change to the system prompt: it now says which goal comes first, reaching the target, then fewer hops. The
+        context strategy stayed at full history.
       </p>
       <ExperimentBoard board={prompts} />
       <Source board={prompts} />
@@ -88,8 +89,8 @@ export function ContextSection({ strategies, prompts, facts }: { strategies: Boa
       <p className="rule">
         <strong>Reading the gaps.</strong> The range is where the gap could land on another set of races like these; if
         it includes 0, the change may do nothing. The p-value asks a narrower question: on these same races, how likely
-        is a gap this big if the change did nothing? A small p with a range touching 0 means the change helped here, but
-        25 races can't say it would elsewhere.
+        is a gap this big if the change did nothing? A small p with a range touching 0 means the change helped on these
+        races, but 25 races aren't enough to say it would on others.
       </p>
     </section>
   );
