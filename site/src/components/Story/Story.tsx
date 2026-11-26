@@ -54,7 +54,7 @@ export function Story({ facts }: { facts: Facts }) {
           Every list it looks up stays in the conversation, and DeepSeek's reasoning grew with it. So we tested the
           standard fix, masking old link lists, on all 25 races. Masking did what it promises: prompts shrank and the
           context-limit losses disappeared. The output-limit losses didn't. They kept happening in prompts a fraction of
-          the size. Context wasn't the cause (see <a href="#context">the strategy board</a>).
+          the size. Context wasn't the cause (see <a href="#experiments">the strategy board</a>).
         </p>
       </Chapter>
 

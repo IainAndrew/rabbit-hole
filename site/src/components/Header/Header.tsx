@@ -3,9 +3,9 @@ import styles from "./Header.module.scss";
 
 const SECTIONS = [
   ["leaderboard", "Leaderboard"],
-  ["context", "Context"],
+  ["experiments", "Experiments"],
   ["replays", "Replays"],
-  ["story", "The story"],
+  ["story", "Failure story"],
   ["method", "Method"],
 ] as const;
 

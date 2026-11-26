@@ -9,8 +9,8 @@ import styles from "./ContextSection.module.scss";
 /** The context strategies, each explained with its own table, then the prompt. */
 export function ContextSection({ strategies, prompts, facts }: { strategies: Board; prompts: Board; facts: Facts }) {
   return (
-    <section id="context" aria-labelledby="context-title">
-      <h2 id="context-title">Changing what the model sees</h2>
+    <section id="experiments" aria-labelledby="experiments-title">
+      <h2 id="experiments-title">Changing what the model sees</h2>
       <p>
         A page can have over a thousand links, so the conversation grows fast. Two models that lost often, DeepSeek V4.1
         Flash and Mistral Small 4, ran the same races again with each change below. Every other setting stayed the same,
