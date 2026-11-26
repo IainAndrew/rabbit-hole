@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
+import { existsSync, mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { test } from "node:test";
-import { parseTrace } from "./trace.ts";
+import { openTrace, parseTrace } from "./trace.ts";
 
 const runEnd = {
   t: 900,
@@ -48,4 +51,12 @@ test("a run_start from before strategies and variants is read as the full histor
   const [masked] = parseTrace(JSON.stringify({ ...runStart, contextStrategy: "masked" }));
   assert.equal(masked?.type === "run_start" && masked.contextStrategy, "masked");
   assert.throws(() => parseTrace(JSON.stringify({ ...runStart, contextStrategy: 3 })), /"contextStrategy" should be string/);
+});
+
+test("traces opened at once with the same name each get their own file", () => {
+  const dir = mkdtempSync(join(tmpdir(), "trace-"));
+  // Opened in a tight loop, many share a millisecond, so their names would clash.
+  const paths = Array.from({ length: 50 }, () => openTrace(dir, "same race").path);
+  assert.equal(new Set(paths).size, 50);
+  assert.ok(paths.every((path) => existsSync(path)));
 });

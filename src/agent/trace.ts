@@ -122,20 +122,36 @@ export type Totals = {
  * written as they happen, so a run that dies part-way still leaves a record.
  *
  * @param dir Where to write it; created if missing.
- * @param name Describes the run in the file name, after a timestamp.
- * @throws If the file already exists: a trace is never overwritten.
+ * @param name Describes the run in the file name, after a timestamp. Two
+ *   traces opened in the same millisecond with the same name get "-2", "-3"
+ *   and so on: a trace is never overwritten.
  */
 export function openTrace(dir: string, name: string): { path: string; record: (event: TraceEvent) => void } {
   mkdirSync(dir, { recursive: true });
-  const path = join(dir, `${new Date().toISOString().replaceAll(":", "-")}_${slug(name)}.jsonl`);
-  // "wx" fails if the file exists: a trace is never overwritten.
-  writeFileSync(path, "", { flag: "wx" });
+  const stem = join(dir, `${new Date().toISOString().replaceAll(":", "-")}_${slug(name)}`);
+  const path = createNewFile(stem);
   const opened = performance.now();
   const record = (event: TraceEvent) => {
     const line = { t: Math.round(performance.now() - opened), ...event };
     appendFileSync(path, `${JSON.stringify(line)}\n`);
   };
   return { path, record };
+}
+
+/** Create an empty `<stem>.jsonl`, or `<stem>-2.jsonl` and on if that's taken; returns its path. */
+function createNewFile(stem: string): string {
+  for (let copy = 1; ; copy++) {
+    const path = copy === 1 ? `${stem}.jsonl` : `${stem}-${copy}.jsonl`;
+    try {
+      // "wx" fails if the file exists, so an existing trace is never touched.
+      writeFileSync(path, "", { flag: "wx" });
+      return path;
+    } catch (err) {
+      if (!(err instanceof Error && "code" in err && err.code === "EEXIST")) {
+        throw err;
+      }
+    }
+  }
 }
 
 /**
