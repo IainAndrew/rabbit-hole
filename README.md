@@ -82,6 +82,7 @@ results is edited by hand.
 | `src/models` | The model registry and the OpenRouter client |
 | `src/wikipedia` | The Wikipedia client and the snapshot |
 | `src/evals` | Running evals, scoring, intervals, comparisons, race measurement |
+| `src/mcp` | The game as an MCP server |
 | `src/site-data` | Turning traces into the site's data |
 | `src/commands` | The command-line scripts below |
 | `site` | The site: React, built to static files |
@@ -124,6 +125,37 @@ npm run race-agent -- "Penguin" "Bauhaus" --max-cost 0.05
 
 [CLAUDE.md](CLAUDE.md) lists every command and its options.
 
+## Play it over MCP
+
+The game is also an [MCP](https://modelcontextprotocol.io) server, so any AI app or
+coding agent that can run local MCP servers can play a race with the same tools and
+rules as the evals. Add it to the app's MCP config, approve it if asked, and ask for
+something like "race from Penguin to Bauhaus". Most apps take a config like this (use the
+full path to the repo):
+
+```json
+{
+  "mcpServers": {
+    "rabbit-hole": {
+      "command": "node",
+      "args": ["/path/to/rabbit-hole/src/commands/mcp-server.ts"]
+    }
+  }
+}
+```
+
+The repo also has a `.mcp.json` with the same server, for apps that read MCP config from
+the project folder.
+
+The server has one extra tool, `start_race`, because the server is the referee. It holds
+the race, checks every move against the current page and decides when you've won. The
+other three tools are the ones the models were scored with, word for word.
+
+These races aren't evals. The app runs its own loop with its own prompt and context, and
+there are no turn or context limits, so nothing is recorded or scored. It's a way to
+watch a model play, not a result. Pages that aren't in the snapshot yet are fetched live
+and added to `snapshot/`.
+
 ## Roadmap
 
 - [x] Wikipedia client, tools and race rules
@@ -132,4 +164,4 @@ npm run race-agent -- "Penguin" "Bauhaus" --max-cost 0.05
 - [x] Model comparison: ten models from nine labs
 - [x] Context strategies, and the prompt fix
 - [x] The site, with leaderboards and replays of every run
-- [ ] An MCP server for the same tools
+- [x] An MCP server for the same tools

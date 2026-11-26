@@ -1,4 +1,4 @@
-// Serve the race over MCP on stdin and stdout, for a host such as Claude Code.
+// Serve the race over MCP on stdin and stdout, for any MCP host.
 // Usage: npm run mcp-server (normally started by the host, not by hand)
 
 import { fileURLToPath } from "node:url";

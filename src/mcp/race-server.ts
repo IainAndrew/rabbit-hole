@@ -1,6 +1,6 @@
 // The race as an MCP server: the same tools and rules the evals use, for any
-// MCP host (Claude Code, Claude Desktop) to play. The host runs the agent loop
-// and owns the context; this server only holds the race.
+// MCP host to play. The host runs the agent loop and owns the context; this
+// server only holds the race.
 
 import { fromJsonSchema, McpServer, type CallToolResult } from "@modelcontextprotocol/server";
 import { SCORING_RULE } from "../agent/prompt.ts";

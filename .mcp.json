@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "rabbit-hole": {
+      "command": "node",
+      "args": ["src/commands/mcp-server.ts"]
+    }
+  }
+}
