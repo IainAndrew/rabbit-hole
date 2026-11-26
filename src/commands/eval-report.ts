@@ -42,7 +42,8 @@ const started = slots.filter((slot) => slot.length > 0).length;
 const unresolved = slots.filter((slot) => slot.length > 0 && scoreRuns(slot).decided === 0).length;
 console.log(
   `runs: ${runs.length} (${started} of ${manifest.plannedRuns} planned started, ${runs.length - started} re-runs)` +
-    ` | spent ${money(spent)} of a $${manifest.maxCost} cap\n`,
+    // The cap is summed across resumes, so it can carry float noise (1.3599999999999999).
+    ` | spent ${money(spent)} of a ${money(manifest.maxCost)} cap\n`,
 );
 
 const overall = scoreRuns(runs);
