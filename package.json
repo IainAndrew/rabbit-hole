@@ -21,7 +21,8 @@
     "eval-report": "node src/commands/eval-report.ts",
     "compare-evals": "node src/commands/compare-evals.ts",
     "build-site": "node src/commands/build-site.ts && vite build site",
-    "serve-site": "vite site"
+    "serve-site": "vite site",
+    "mcp-server": "node src/commands/mcp-server.ts"
   },
   "devDependencies": {
     "@fontsource/ibm-plex-sans": "5.3.0",
@@ -36,5 +37,8 @@
     "sass": "^1.108.2",
     "typescript": "^7.0.2",
     "vite": "^8.3.8"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "2.4.0"
   }
 }

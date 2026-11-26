@@ -102,5 +102,8 @@ Needs Node 24 or later. Copy `.env.example` to `.env` before anything that calls
   seconds to a few minutes)
 - `npm run check-races`: check every race in `races.json` against the snapshot, recording
   pages it doesn't have yet (free)
+- `npm run mcp-server`: serve the race over MCP on stdio (`start_race` plus the eval
+  tools, on the snapshot), for a host such as Claude Code to start; nothing is recorded
+  or scored (free here; the host's model calls are the host's)
 
 Add each new command here when the step that introduces it lands.
