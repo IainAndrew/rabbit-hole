@@ -14,7 +14,8 @@ of races, and a static site shows the results and replays of real runs.
 4. Model comparison across a field of models.
 5. Context strategies, and a failure story from a real trace.
 6. The static site: leaderboards, replays, method. Then the README.
-7. An MCP server for the same tools, and a shortest-path baseline.
+7. An MCP server for the same tools. (The shortest-path baseline came earlier:
+   `race-distance` measures each race's shortest route, and the site shows it.)
 
 ## Working rules
 
