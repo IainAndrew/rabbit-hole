@@ -17,3 +17,6 @@ runs/
 site/public/data/
 site/public/docs/
 site/dist/
+
+# Wrangler's local state from wrangler dev.
+.wrangler/

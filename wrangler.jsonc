@@ -1,0 +1,27 @@
+// Cloudflare Workers static-assets deployment of the site. No Worker script,
+// just files: Workers Builds runs `npm run build-site`, then `npx wrangler
+// deploy`, on every push to main. The build reads only committed files, so it
+// never calls a model.
+{
+  "name": "rabbit-hole",
+  "compatibility_date": "2026-11-26",
+  // The site lives at iainandrew.com/rabbit-hole only; no second URL on workers.dev.
+  "workers_dev": false,
+  // The portfolio Worker owns iainandrew.com as a Custom Domain. A route on the
+  // same hostname takes precedence, so this path comes here and the rest of the
+  // domain stays with the portfolio.
+  "routes": [{ "pattern": "iainandrew.com/rabbit-hole*", "zone_name": "iainandrew.com" }],
+  "assets": {
+    // Only the built site is published: site/dist, from npm run build-site.
+    "directory": "./site/dist",
+    // Requests to /rabbit-hole/... are served from the root of site/dist.
+    "base_path": "/rabbit-hole",
+    // /docs/method/index.html is served at /docs/method/; /docs/method redirects there.
+    "html_handling": "auto-trailing-slash",
+    // Unknown paths return a plain 404: the site has no 404 page.
+    "not_found_handling": "none"
+  },
+  // Non-production branch builds run `wrangler preview`, which requires this
+  // block. Empty is fine: assets and settings above apply to previews too.
+  "previews": {}
+}

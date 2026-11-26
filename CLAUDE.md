@@ -86,7 +86,9 @@ Needs Node 24 or later. Copy `.env.example` to `.env` before anything that calls
   refuses evals with a different prompt, race set, repeats, limits or commit (free)
 - `npm run build-site`: write the site's data into `site/public/` (leaderboards ranked by
   the same code as `compare-evals`, a replay of every run, and each `docs/*.md` rendered),
-  then build the React site into `site/dist/rabbit-hole/`; all gitignored (free)
+  then build the React site into `site/dist/`; all gitignored (free). Workers Builds runs it
+  and `npx wrangler deploy` on every push to main, serving it at iainandrew.com/rabbit-hole
+  (see `wrangler.jsonc`)
 - `npm run serve-site`: run the site with Vite's dev server at
   http://localhost:8765/rabbit-hole/, reloading on save (run `build-site` once first for
   the data; free)

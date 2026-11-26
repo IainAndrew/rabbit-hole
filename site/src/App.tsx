@@ -1,6 +1,6 @@
-// The whole site: the results page, or one of the docs at docs/<name>/. The
-// host serves index.html for any path it has no file for, so the app picks
-// the page from the address.
+// The whole site: the results page, or one of the docs at docs/<name>/. Every
+// page is the same index.html (the build copies it to each doc's address), so
+// the app picks the page from the address.
 
 import { DocPage } from "./components/DocPage/DocPage.tsx";
 import { Footer } from "./components/Footer/Footer.tsx";
