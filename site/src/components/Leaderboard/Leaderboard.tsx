@@ -2,10 +2,11 @@
 // them. Every number shown was computed by the eval code at build time.
 
 import type { RankRange } from "@harness/evals/compare.ts";
-import type { Board } from "@harness/site-data/leaderboards.ts";
-import { money } from "../../format.ts";
+import type { Board, BoardEntry } from "@harness/site-data/leaderboards.ts";
+import { money, percent } from "../../format.ts";
 import styles from "./Leaderboard.module.scss";
 import { RunEndings } from "../RunEndings/RunEndings.tsx";
+import { InfoTip } from "../InfoTip/InfoTip.tsx";
 import { SuccessCell } from "../SuccessCell/SuccessCell.tsx";
 import table from "../../styles/table.module.scss";
 
@@ -21,7 +22,15 @@ export function Leaderboard({ board }: { board: Board }) {
               Success rate <span className="hint">with its 95% range</span>
             </th>
             <th scope="col" className={table.number}>
-              Hops <span className="hint">on wins</span>
+              <span className={styles.withTip}>
+                Hops wasted
+                <InfoTip label="How hops wasted is worked out">
+                  For each race a model won: the hops it took, minus the fewest hops that race can be done in. Then
+                  the average over all its wins, so 0 would mean every win took a shortest route. Each race's fewest
+                  hops were found by searching Wikipedia's links from both ends.
+                </InfoTip>
+              </span>
+              <span className="hint">per win</span>
             </th>
             <th scope="col" className={table.number}>
               Cost <span className="hint">per win</span>
@@ -44,7 +53,7 @@ export function Leaderboard({ board }: { board: Board }) {
                 <SuccessCell score={entry.score} interval={entry.interval} />
               </td>
               <td className={table.number}>
-                {entry.score.meanHopsOnWins === null ? "–" : entry.score.meanHopsOnWins.toFixed(1)}
+                <HopsWasted entry={entry} />
               </td>
               <td className={table.number}>{entry.costPerWin === null ? "–" : money(entry.costPerWin)}</td>
               <td className={table.losses}>
@@ -55,6 +64,27 @@ export function Leaderboard({ board }: { board: Board }) {
         </tbody>
       </table>
     </div>
+  );
+}
+
+/**
+ * Hops wasted per win: one number, lower is better. Hovering shows the
+ * model's own arithmetic behind it.
+ */
+function HopsWasted({ entry }: { entry: BoardEntry }) {
+  const { routes, score } = entry;
+  if (routes === null || score.meanHopsOnWins === null) {
+    return <>–</>;
+  }
+  const hops = score.meanHopsOnWins;
+  const shortest = hops - routes.meanExtraHops;
+  const working =
+    `${hops.toFixed(1)} hops per win, where the shortest routes average ${shortest.toFixed(1)}. ` +
+    `Took a shortest route in ${percent(routes.shortestShare)} of wins.`;
+  return (
+    <span className={styles.wasted} title={working}>
+      {routes.meanExtraHops.toFixed(1)}
+    </span>
   );
 }
 

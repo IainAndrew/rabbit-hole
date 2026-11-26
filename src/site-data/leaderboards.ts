@@ -9,7 +9,7 @@ import type { Interval } from "../evals/intervals.ts";
 import type { Difficulty, RaceSpec } from "../evals/race-set.ts";
 import { loadEval, type LoadedEval } from "../evals/report.ts";
 import type { EvalManifest } from "../evals/run-eval.ts";
-import type { Averages, Behaviour, Score } from "../evals/score.ts";
+import { routesOf, type Averages, type Behaviour, type Routes, type Score } from "../evals/score.ts";
 import { reasoningLabel } from "../models/models.ts";
 
 /** Which sweep each leaderboard shows: the current ones in results/README.md. */
@@ -81,6 +81,8 @@ export type BoardEntry = {
   vsNextP: number | null;
   averages: Averages | null;
   costPerWin: number | null;
+  /** Wins against each race's shortest route; null with no wins. */
+  routes: Routes | null;
   endReasons: Record<EndReason, number>;
   behaviour: Behaviour | null;
   /** The gap to this eval's baseline. Null on the baseline itself, or a board without one. */
@@ -103,9 +105,11 @@ export function loadSweep(dir: string): SweepEval[] {
 /**
  * Rank a sweep's evals and keep what the site shows.
  *
- * @throws If the evals can't be compared (see checkComparable).
+ * @param shortest The fewest hops between each race's pages, by race id (from races.json).
+ * @throws If the evals can't be compared (see checkComparable), or a won race
+ *   has no shortest route.
  */
-export function buildBoard(spec: BoardSpec, sweep: SweepEval[]): Board {
+export function buildBoard(spec: BoardSpec, sweep: SweepEval[], shortest: ReadonlyMap<string, number>): Board {
   const folderOf = new Map(sweep.map(({ folder, loaded }) => [loaded, folder]));
   const ranked = rankEvals(sweep.map(({ loaded }) => loaded));
   // rankEvals has checked these are the same for every eval.
@@ -118,7 +122,7 @@ export function buildBoard(spec: BoardSpec, sweep: SweepEval[]): Board {
     races: manifest.races,
     entries: ranked.map((entry) => {
       const base = spec.baseline ? baselineOf(entry.eval, ranked.map((other) => other.eval), spec.baseline) : null;
-      return entryOf(entry, folderOf.get(entry.eval)!, base === null ? null : gapToBaseline(entry.eval, base));
+      return entryOf(entry, folderOf.get(entry.eval)!, base === null ? null : gapToBaseline(entry.eval, base), shortest);
     }),
   };
 }
@@ -148,7 +152,12 @@ function baselineOf(loaded: LoadedEval, evals: LoadedEval[], baseline: Baseline)
 }
 
 /** One ranked eval as a site row. */
-function entryOf(entry: Ranked, folder: string, vsBaseline: BaselineGap | null): BoardEntry {
+function entryOf(
+  entry: Ranked,
+  folder: string,
+  vsBaseline: BaselineGap | null,
+  shortest: ReadonlyMap<string, number>,
+): BoardEntry {
   const { model, contextStrategy, promptVariant, promptHash } = entry.eval.manifest;
   return {
     rank: entry.rank,
@@ -172,6 +181,7 @@ function entryOf(entry: Ranked, folder: string, vsBaseline: BaselineGap | null):
     vsNextP: entry.vsNextP,
     averages: entry.averages,
     costPerWin: entry.costPerWin,
+    routes: routesOf(entry.eval.runs, shortest),
     endReasons: entry.endReasons,
     behaviour: entry.behaviour,
     vsBaseline,

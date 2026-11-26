@@ -1,0 +1,62 @@
+@use "../../styles/mixins" as *;
+
+.tip {
+  position: relative;
+  display: inline-block;
+  margin-left: 0.3rem;
+  vertical-align: 0.1em;
+}
+
+.button {
+  width: 1.05rem;
+  height: 1.05rem;
+  padding: 0;
+  border: 1px solid var(--ink-soft);
+  border-radius: 999px;
+  background: none;
+  color: var(--ink-soft);
+  font: italic 600 0.7rem/1 var(--serif);
+  cursor: help;
+}
+
+// Hidden until the "i" is hovered or focused; it opens below, right-aligned,
+// so it stays inside a table that scrolls sideways.
+.bubble {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  right: -0.5rem;
+  z-index: 2;
+  width: 17rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  background: var(--paper-raised);
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.18);
+  color: var(--ink);
+  font-size: 0.85rem;
+  font-weight: 400;
+  line-height: 1.45;
+  text-align: left;
+  white-space: normal;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.12s;
+
+  // On a phone the table scrolls sideways and would cut the bubble off, so it
+  // sits across the bottom of the screen instead.
+  @include phone {
+    position: fixed;
+    top: auto;
+    right: 1rem;
+    bottom: 1rem;
+    left: 1rem;
+    width: auto;
+  }
+}
+
+.tip:hover .bubble,
+.button:focus-visible + .bubble,
+.button:focus + .bubble {
+  visibility: visible;
+  opacity: 1;
+}

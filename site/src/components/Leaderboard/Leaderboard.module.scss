@@ -8,3 +8,14 @@
   font-family: var(--serif);
   font-size: 1.35rem;
 }
+
+.wasted {
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  cursor: help;
+}
+
+// The header's label and its "i" stay on one line.
+.withTip {
+  white-space: nowrap;
+}

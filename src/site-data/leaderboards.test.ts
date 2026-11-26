@@ -12,6 +12,8 @@ import type { Message } from "../models/openrouter.ts";
 import { buildBoard, loadSweep, racesOf } from "./leaderboards.ts";
 
 const spec = { id: "models", title: "Models", sweep: "test-sweep" };
+// The fake races' shortest routes, as races.json would give them.
+const shortest = new Map([["a", 2], ["b", 2]]);
 
 /** A sweep folder of fake evals, each in the named folder. By default a model that gives up and a winner. */
 async function fakeSweep(
@@ -33,7 +35,7 @@ const masked = { name: "masked", view: (history: readonly Message[]) => [...hist
 
 test("a board ranks a sweep's evals the same way compare-evals does", async () => {
   const sweep = loadSweep(await fakeSweep());
-  const board = buildBoard(spec, sweep);
+  const board = buildBoard(spec, sweep, shortest);
   const ranked = rankEvals(sweep.map(({ loaded }) => loaded));
   assert.deepEqual(
     board.entries.map((entry) => [entry.rank, entry.model.id, entry.score]),
@@ -42,12 +44,19 @@ test("a board ranks a sweep's evals the same way compare-evals does", async () =
 });
 
 test("each entry names the folder its eval was loaded from", async () => {
-  const board = buildBoard(spec, loadSweep(await fakeSweep()));
+  const board = buildBoard(spec, loadSweep(await fakeSweep()), shortest);
   assert.deepEqual(board.entries.map((entry) => entry.eval), ["b-winner", "a-loser"]);
 });
 
+test("each entry's wins are measured against the races' shortest routes", async () => {
+  // The fake winner takes 2 hops on every race: 1 more than race a's shortest, none more than b's.
+  const board = buildBoard(spec, loadSweep(await fakeSweep()), new Map([["a", 1], ["b", 2]]));
+  const routes = Object.fromEntries(board.entries.map((entry) => [entry.eval, entry.routes]));
+  assert.deepEqual(routes, { "b-winner": { meanExtraHops: 0.5, shortestShare: 0.5 }, "a-loser": null });
+});
+
 test("races come from races.json, with their measured distance", async () => {
-  const board = buildBoard(spec, loadSweep(await fakeSweep()));
+  const board = buildBoard(spec, loadSweep(await fakeSweep()), shortest);
   const races = racesOf([board], [fakeRace("a"), fakeRace("b"), fakeRace("unused")]);
   assert.deepEqual(
     races.map((race) => [race.id, race.distance]),
@@ -56,7 +65,7 @@ test("races come from races.json, with their measured distance", async () => {
 });
 
 test("a race that races.json no longer has stops the build", async () => {
-  const board = buildBoard(spec, loadSweep(await fakeSweep()));
+  const board = buildBoard(spec, loadSweep(await fakeSweep()), shortest);
   assert.throws(() => racesOf([board], [fakeRace("a")]), /ran race b/);
 });
 
@@ -74,7 +83,7 @@ test("each strategy is measured against the same model's baseline, and the basel
     ["b-full", winningModel(0.001), { model: models[1]! }],
     ["b-masked", givingUpModel(0.001), { model: models[1]!, context: masked }],
   ]);
-  const board = buildBoard(strategies, loadSweep(sweep));
+  const board = buildBoard(strategies, loadSweep(sweep), shortest);
   const gaps = Object.fromEntries(board.entries.map((entry) => [entry.eval, entry.vsBaseline?.gap ?? null]));
   assert.deepEqual(gaps, { "a-full": null, "a-masked": 1, "b-full": null, "b-masked": -1 });
 });
@@ -84,5 +93,5 @@ test("a strategy whose model has no baseline in the sweep stops the build", asyn
     ["a-full", givingUpModel(0.001), { model: models[0]! }],
     ["b-masked", winningModel(0.001), { model: models[1]!, context: masked }],
   ]);
-  assert.throws(() => buildBoard(strategies, loadSweep(sweep)), /has no baseline/);
+  assert.throws(() => buildBoard(strategies, loadSweep(sweep), shortest), /has no baseline/);
 });

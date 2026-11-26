@@ -24,6 +24,10 @@ export function LeaderboardSection({ board, facts }: { board: Board; facts: Fact
         on another set of races like these. Where two ranges overlap, the order between those models could be chance, so
         each rank also says which ranks the model could really hold.
       </p>
+      <p>
+        Hops wasted is how many more hops than necessary a model took per win, on average. Every race has a shortest
+        route, so a model that only wins the short races gets no credit for it.
+      </p>
       <Leaderboard board={board} />
       <Source board={board} />
 

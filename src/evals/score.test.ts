@@ -3,14 +3,14 @@ import assert from "node:assert/strict";
 import type { RunEnd } from "../agent/agent.ts";
 import { buildModel } from "../models/models.ts";
 import type { LoadedRun } from "./report.ts";
-import { averagesOf, behaviourOf, outcomeOf, scoreRuns } from "./score.ts";
+import { averagesOf, behaviourOf, outcomeOf, routesOf, scoreRuns } from "./score.ts";
 
 type Ending = "won" | "gave_up" | "turn_limit" | "crashed" | "killed";
 
 // A run built by hand: only the fields the scoring reads matter.
 function run(
   ending: Ending,
-  numbers: { hops?: number; turns?: number; cost?: number | null; cached?: number; moves?: LoadedRun["moves"] } = {},
+  numbers: { race?: string; hops?: number; turns?: number; cost?: number | null; cached?: number; moves?: LoadedRun["moves"] } = {},
 ): LoadedRun {
   let end: RunEnd;
   if (ending === "crashed") {
@@ -20,7 +20,7 @@ function run(
     end = { kind: "finished", reason: ending === "killed" ? "won" : ending };
   }
   return {
-    raceId: "a",
+    raceId: numbers.race ?? "a",
     difficulty: "medium",
     repeat: 1,
     trace: "a.jsonl",
@@ -101,4 +101,26 @@ test("behaviour pools moves and cached tokens over decided runs", () => {
   assert.deepEqual(behaviour, { refusedMoveShare: 2 / 8, meanFirstMoveTurn: 3, neverMoved: 1, cachedShare: 1200 / 3000 });
   assert.equal(behaviourOf([run("crashed")]), null);
   assert.equal(behaviourOf([run("gave_up", { moves: { attempts: 0, refused: 0, firstTurn: null } })])?.refusedMoveShare, null);
+});
+
+test("wins are measured against their own race's shortest route, losses not at all", () => {
+  const shortest = new Map([["easy", 2], ["hard", 4]]);
+  const runs = [
+    run("won", { race: "easy", hops: 2 }),
+    run("won", { race: "easy", hops: 4 }),
+    run("won", { race: "hard", hops: 4 }),
+    run("gave_up", { race: "hard", hops: 9 }),
+  ];
+  // Extra hops 0, 2 and 0: a mean of 2/3, and two of three wins were shortest routes.
+  const routes = routesOf(runs, shortest);
+  assert.equal(routes?.meanExtraHops, 2 / 3);
+  assert.equal(routes?.shortestShare, 2 / 3);
+});
+
+test("no wins means no route comparison", () => {
+  assert.equal(routesOf([run("gave_up"), run("crashed")], new Map([["a", 2]])), null);
+});
+
+test("a win on a race with no shortest route stops the comparison", () => {
+  assert.throws(() => routesOf([run("won", { race: "unknown" })], new Map()), /No shortest route for race unknown/);
 });

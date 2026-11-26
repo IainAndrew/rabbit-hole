@@ -20,9 +20,10 @@ const DOCS = join("site", "public", "docs");
 rmSync(DATA, { recursive: true, force: true });
 mkdirSync(DATA, { recursive: true });
 
-const sweeps = BOARDS.map((spec) => loadSweep(join("results", spec.sweep)));
-const boards = BOARDS.map((spec, index) => buildBoard(spec, sweeps[index]!));
 const raceSet = parseRaceSet(JSON.parse(readFileSync("races.json", "utf8")));
+const shortest = new Map(raceSet.map((race) => [race.id, race.measured.distance]));
+const sweeps = BOARDS.map((spec) => loadSweep(join("results", spec.sweep)));
+const boards = BOARDS.map((spec, index) => buildBoard(spec, sweeps[index]!, shortest));
 const data: SiteData = { races: racesOf(boards, raceSet), boards };
 writeFileSync(LEADERBOARDS, JSON.stringify(data, null, 2) + "\n");
 

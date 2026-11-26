@@ -55,6 +55,19 @@ export type Behaviour = {
   cachedShare: number;
 };
 
+/**
+ * How close wins came to the shortest route between their pages. Raw hops
+ * depend on which races a model won (a model that only wins 2-hop races
+ * averages 2 hops), so this is the fairer way to compare how directly models
+ * move. Reported only: the scoring rule's tie-break stays raw hops.
+ */
+export type Routes = {
+  /** Hops beyond the shortest route, averaged over wins: 0 means every win was a shortest route. */
+  meanExtraHops: number;
+  /** Wins that took a shortest route, from 0 to 1. */
+  shortestShare: number;
+};
+
 /** How a run counts under the scoring rule. */
 export function outcomeOf(run: LoadedRun): Outcome {
   if (!run.end) {
@@ -79,6 +92,33 @@ export function scoreRuns(runs: LoadedRun[]): Score {
     meanHopsOnWins: wins.length === 0 ? null : mean(wins.map((end) => end.hops)),
     crashed: count("crashed"),
     killed: count("killed"),
+  };
+}
+
+/**
+ * Wins measured against each race's shortest route; null if nothing was won.
+ *
+ * @param shortest The fewest hops between a race's pages, by race id.
+ * @throws If a won race has no shortest route: the comparison would be made up.
+ */
+export function routesOf(runs: LoadedRun[], shortest: ReadonlyMap<string, number>): Routes | null {
+  const extras: number[] = [];
+  for (const run of runs) {
+    if (outcomeOf(run) !== "won") {
+      continue;
+    }
+    const best = shortest.get(run.raceId);
+    if (best === undefined) {
+      throw new Error(`No shortest route for race ${run.raceId}`);
+    }
+    extras.push(run.end!.hops - best);
+  }
+  if (extras.length === 0) {
+    return null;
+  }
+  return {
+    meanExtraHops: mean(extras),
+    shortestShare: extras.filter((extra) => extra <= 0).length / extras.length,
   };
 }
 
