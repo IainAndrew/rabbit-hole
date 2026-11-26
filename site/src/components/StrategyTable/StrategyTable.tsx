@@ -1,5 +1,5 @@
 // One context strategy's results: a row per model, each against that model's
-// usual setup (full history), plus what a run cost and how much of its
+// default setup (full history), plus what a run cost and how much of its
 // prompt the provider's cache served, since strategies trade those off.
 
 import type { Board } from "@harness/site-data/leaderboards.ts";

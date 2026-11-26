@@ -1,5 +1,5 @@
 // A board of changes: one model at a time, each change beside that model's
-// usual setup, with the gap between them and how sure we are. The gaps,
+// default setup, with the gap between them and how sure we are. The gaps,
 // ranges and p-values were all computed at build time.
 
 import type { BaselineGap } from "@harness/evals/compare.ts";
@@ -31,7 +31,7 @@ export function ExperimentBoard({ board }: { board: Board }) {
             <th scope="col">
               Success rate <span className="hint">with its 95% range</span>
             </th>
-            <th scope="col">Against the usual setup</th>
+            <th scope="col">Against the default setup</th>
             <th scope="col">How the runs ended</th>
           </tr>
         </thead>
@@ -88,7 +88,7 @@ function Setting({ board, entry, baseline }: { board: Board; entry: BoardEntry; 
   return (
     <>
       <strong>{baseline.varies === "context" ? strategyName(name) : promptName(name)}</strong> <code>{name}</code>
-      {name === baseline.value && <span className={styles.usual}>usual</span>}
+      {name === baseline.value && <span className={styles.defaultTag}>default</span>}
       <span className="hint">{meaning}</span>
       <a className={table.runsLink} href={runsHref(board, entry)}>
         Watch these runs

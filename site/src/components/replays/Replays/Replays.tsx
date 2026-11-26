@@ -95,9 +95,9 @@ export function Replays({ data }: { data: SiteData }) {
     <section id="replays" aria-labelledby="replays-title">
       <h2 id="replays-title">Replays</h2>
       <p>
-        Every run above, turn by turn: what the model thought, what it did, and how big its context grew. Choose a model,
-        a context strategy and a prompt, then a run (green won, red lost, grey crashed and not counted) to open it, and step through it with Next or
-        the arrow keys.
+        Every run above, turn by turn: what the model thought, what it did, and how big its context grew. Choose a model
+        and a setup it ran with, then a run (green won, red lost, grey crashed and not counted) to open it, and step
+        through it with Next or the arrow keys.
       </p>
       <ReplayFilters
         boards={data.boards}

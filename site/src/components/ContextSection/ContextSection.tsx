@@ -20,12 +20,12 @@ export function ContextSection({ strategies, prompts, facts }: { strategies: Boa
       <h3>Context strategies</h3>
       <p>
         A context strategy decides what the model is shown each turn. Its tools and rules stay the same, and the trace
-        keeps the whole run either way; only the model's view changes. We tried two strategies against the usual one.
+        keeps the whole run either way; only the model's view changes. We tried two strategies against the default one.
       </p>
 
       <div className={styles.strategy}>
         <h4>
-          {strategyName("full")} <code>full</code> <span className={styles.usual}>usual</span>
+          {strategyName("full")} <code>full</code> <span className={styles.defaultTag}>default</span>
         </h4>
         <p>
           Every turn, the model gets the whole conversation so far: the instructions, every tool call it made, every
