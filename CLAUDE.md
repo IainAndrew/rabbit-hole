@@ -1,6 +1,6 @@
 # Rabbit Hole
 
-> Can a model get out of a Wikipedia rabbit hole faster than you?
+> AI agents play the Wikipedia game.
 
 An agent races from one Wikipedia page to another by following links, in as few hops as
 possible. Evals compare how different models and context strategies do on a fixed set
